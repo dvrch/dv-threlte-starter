@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - master # ou master, selon votre branche par défaut
+      - master
   workflow_dispatch:
 
 permissions:
@@ -18,11 +18,27 @@ jobs:
       - name: Checkout your repository using git
         uses: actions/checkout@v4
 
-      - name: Install, build, and upload your site
-        uses: withastro/action@v2
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
         with:
-          package-manager: pnpm@latest # ou pnpm@latest, yarn@latest
-          # node-version: 20 # optionnel
+          version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./build
 
   deploy:
     needs: build
