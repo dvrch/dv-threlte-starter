@@ -1,77 +1,99 @@
 <script>
+	import { onMount } from 'svelte';
 	import { confetti } from '@neoconfetti/svelte';
-	import { enhance } from '$app/forms';
-
 	import { reduced_motion } from './reduced-motion';
+	import { Game } from './game';
 
-	export let data;
+	let game;
 
-	export let form;
+	let guesses = ['', '', '', '', '', ''];
+	let answers = [];
+	let answer = '';
+	let won = false;
+	let lost = false;
+	let badGuess = false;
 
-	/** Whether or not the user has won */
-	$: won = data.answers.at(-1) === 'xxxxx';
+	let i = 0; // current guess index
+	$: submittable = guesses[i]?.length === 5;
 
-	/** The index of the current guess */
-	$: i = won ? -1 : data.answers.length;
+	let classnames = {};
+	let description = {};
 
-	/** Whether the current guess can be submitted */
-	$: submittable = data.guesses[i]?.length === 5;
+	onMount(() => {
+		start_new_game();
+	});
 
-	/**
-	 * A map of classnames for all letters that have been guessed,
-	 * used for styling the keyboard
-	 */
-	let classnames;
+	function start_new_game() {
+		game = new Game();
+		guesses = ['', '', '', '', '', ''];
+		answers = [];
+		answer = game.answer;
+		won = false;
+		lost = false;
+		badGuess = false;
+		i = 0;
+		update_classnames();
+	}
 
-	/**
-	 * A map of descriptions for all letters that have been guessed,
-	 * used for adding text for assistive technology (e.g. screen readers)
-	 */
-	let description;
-
-	$: {
+	function update_classnames() {
 		classnames = {};
 		description = {};
 
-		data.answers.forEach((answer, i) => {
-			const guess = data.guesses[i];
+		answers.forEach((answer_row, i) => {
+			const guess = guesses[i];
 
 			for (let i = 0; i < 5; i += 1) {
 				const letter = guess[i];
 
-				if (answer[i] === 'x') {
+				if (answer_row[i] === 'x') {
 					classnames[letter] = 'exact';
 					description[letter] = 'correct';
 				} else if (!classnames[letter]) {
-					classnames[letter] = answer[i] === 'c' ? 'close' : 'missing';
-					description[letter] = answer[i] === 'c' ? 'present' : 'absent';
+					classnames[letter] = answer_row[i] === 'c' ? 'close' : 'missing';
+					description[letter] = answer_row[i] === 'c' ? 'present' : 'absent';
 				}
 			}
 		});
 	}
 
-	/**
-	 * Modify the game state without making a trip to the server,
-	 * if client-side JavaScript is enabled
-	 */
-	function update(event) {
-		const guess = data.guesses[i];
+	function handle_enter() {
+		if (!submittable) return;
+
+		const valid = game.enter(guesses[i].split(''));
+
+		if (!valid) {
+			badGuess = true;
+			setTimeout(() => (badGuess = false), 500);
+			return;
+		}
+
+		answers = game.answers;
+		won = game.answers.at(-1) === 'xxxxx';
+		lost = !won && game.answers.length >= 6;
+		i = won || lost ? -1 : game.answers.length;
+
+		update_classnames();
+	}
+
+	function handle_keyboard_update(event) {
+		if (won || lost) return;
 		const key = (event.target).getAttribute('data-key');
 
 		if (key === 'backspace') {
-			data.guesses[i] = guess.slice(0, -1);
-			if (form?.badGuess) form.badGuess = false;
-		} else if (guess.length < 5) {
-			data.guesses[i] += key;
+			guesses[i] = guesses[i].slice(0, -1);
+			if (badGuess) badGuess = false;
+		} else if (guesses[i].length < 5) {
+			guesses[i] += key;
 		}
 	}
 
-	/**
-	 * Trigger form logic in response to a keydown event, so that
-	 * desktop users can use the keyboard to play the game
-	 */
-	function keydown(event) {
-		if (event.metaKey) return;
+	function handle_keydown(event) {
+		if (event.metaKey || won || lost) return;
+
+		if (event.key === 'Enter') {
+			handle_enter();
+			return;
+		}
 
 		document
 			.querySelector(`[data-key="${event.key}" i]`)
@@ -79,7 +101,7 @@
 	}
 </script>
 
-<svelte:window on:keydown={keydown} />
+<svelte:window on:keydown={handle_keydown} />
 
 <svelte:head>
 	<title>Sverdle</title>
@@ -88,44 +110,26 @@
 
 <h1 class="visually-hidden">Sverdle</h1>
 
-<form
-	method="POST"
-	action="?/enter"
-	use:enhance={() => {
-		// prevent default callback from resetting the form
-		return ({ update }) => {
-			update({ reset: false });
-		};
-	}}
->
+<div>
 	<a class="how-to-play" href="/how-to-play">How to play</a>
 
-	<div class="grid" class:playing={!won} class:bad-guess={form?.badGuess}>
+	<div class="grid" class:playing={!won} class:bad-guess={badGuess}>
 		{#each Array.from(Array(6).keys()) as row (row)}
 			{@const current = row === i}
 			<h2 class="visually-hidden">Row {row + 1}</h2>
 			<div class="row" class:current>
 				{#each Array.from(Array(5).keys()) as column (column)}
-					{@const answer = data.answers[row]?.[column]}
-					{@const value = data.guesses[row]?.[column] ?? ''}
-					{@const selected = current && column === data.guesses[row].length}
+					{@const answer = answers[row]?.[column]}
+					{@const value = guesses[row]?.[column] ?? ''}
+					{@const selected = current && column === guesses[row].length}
 					{@const exact = answer === 'x'}
 					{@const close = answer === 'c'}
 					{@const missing = answer === '_'}
 					<div class="letter" class:exact class:close class:missing class:selected>
 						{value}
 						<span class="visually-hidden">
-							{#if exact}
-								(correct)
-							{:else if close}
-								(present)
-							{:else if missing}
-								(absent)
-							{:else}
-								empty
-							{/if}
+							{#if exact}(correct){:else if close}(present){:else if missing}(absent){:else}empty{/if}
 						</span>
-						<input name="guess" disabled={!current} type="hidden" {value} />
 					</div>
 				{/each}
 			</div>
@@ -133,24 +137,18 @@
 	</div>
 
 	<div class="controls">
-		{#if won || data.answers.length >= 6}
-			{#if !won && data.answer}
-				<p>the answer was "{data.answer}"</p>
+		{#if won || lost}
+			{#if !won && answer}
+				<p>the answer was "{answer}"</p>
 			{/if}
-			<button data-key="enter" class="restart selected" formaction="?/restart">
+			<button data-key="enter" class="restart selected" on:click={start_new_game}>
 				{won ? 'you won :)' : `game over :(`} play again?
 			</button>
 		{:else}
 			<div class="keyboard">
-				<button data-key="enter" class:selected={submittable} disabled={!submittable}>enter</button>
+				<button data-key="enter" class:selected={submittable} disabled={!submittable} on:click={handle_enter}>enter</button>
 
-				<button
-					on:click|preventDefault={update}
-					data-key="backspace"
-					formaction="?/update"
-					name="key"
-					value="backspace"
-				>
+				<button on:click|preventDefault={handle_keyboard_update} data-key="backspace">
 					back
 				</button>
 
@@ -158,13 +156,10 @@
 					<div class="row">
 						{#each row as letter}
 							<button
-								on:click|preventDefault={update}
+								on:click|preventDefault={handle_keyboard_update}
 								data-key={letter}
 								class={classnames[letter]}
-								disabled={data.guesses[i].length === 5}
-								formaction="?/update"
-								name="key"
-								value={letter}
+								disabled={guesses[i].length === 5 && !submittable}
 								aria-label="{letter} {description[letter] || ''}"
 							>
 								{letter}
@@ -175,7 +170,7 @@
 			</div>
 		{/if}
 	</div>
-</form>
+</div>
 
 {#if won}
 	<div
@@ -191,7 +186,7 @@
 {/if}
 
 <style>
-	form {
+	div {
 		width: 100%;
 		height: 100%;
 		display: flex;
