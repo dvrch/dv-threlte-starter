@@ -1,11 +1,13 @@
 <script>
     import { interactivity } from '@threlte/extras';
     import { onMount } from 'svelte';
-    import { useThrelte, useFrame } from '@threlte/core'; // Correction ici
-    import { useStore } from 'svelte/store';
+    import { useThrelte, useTask } from '@threlte/core';
+    // import { useStore } from 'svelte/store'; // Supprimer cette importation
     import { browser } from '$app/environment';
 
     export let orbitControls; // Accepter l'instance OrbitControls comme prop
+
+    let hovered; // Déclarer hovered comme une variable réactive pour utiliser la syntaxe $hovered
 
     onMount(() => {
         if (browser) { // Exécuter cette logique uniquement côté client
@@ -13,19 +15,19 @@
             interactivity();
 
             // Obtenir le store 'hovered' du système d'interactivité de Threlte
-            const { hovered } = useThrelte().interactivity;
-            const $hovered = useStore(hovered);
+            const threlte = useThrelte();
+            hovered = threlte.interactivity.hovered; // Assigner le store à la variable réactive
 
-            // Configurer useFrame pour gérer l'état des OrbitControls
-            const unsubscribeFrame = useFrame(() => {
+            // Configurer useTask pour gérer l'état des OrbitControls
+            const unsubscribeTask = useTask(() => {
                 if (orbitControls) {
-                    orbitControls.enabled = $hovered.length === 0;
+                    orbitControls.enabled = $hovered.length === 0; // Utiliser la syntaxe $hovered
                 }
             });
 
             return () => {
                 // Nettoyage lors de la destruction du composant
-                unsubscribeFrame();
+                unsubscribeTask();
             };
         }
     });
