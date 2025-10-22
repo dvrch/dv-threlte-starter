@@ -1,16 +1,15 @@
 <script>
 	import { Canvas, T } from '@threlte/core';
 	import { OrbitControls } from '@threlte/extras';
-	import { spring } from 'svelte/motion';
 	import { degToRad } from 'three/src/math/MathUtils';
 
-	
+	console.log('Scene 3D page initialized');
 </script>
 
 <div>
 	<Canvas>
 		<T.PerspectiveCamera makeDefault position={[10, 10, 10]} fov={24}>
-			<OrbitControls maxPolarAngle={degToRad(80)} enableZoom={false} target={{ y: 0.5 }} />
+			<OrbitControls />
 		</T.PerspectiveCamera>
 
 		<T.DirectionalLight castShadow position={[3, 10, 10]} />
