@@ -1,23 +1,18 @@
 <script>
 	import { Canvas, T } from '@threlte/core';
-	import { OrbitControls, interactivity } from '@threlte/extras';
-	import { spring } from 'svelte/motion';
+	import { OrbitControls } from '@threlte/extras';
 	import { degToRad } from 'three/src/math/MathUtils';
 	import { writable } from 'svelte/store';
-	import { onMount } from 'svelte';
+	import InteractivitySetup from '$lib/InteractivitySetup.svelte';
 
 	const scale = writable(1);
-
-	onMount(() => {
-		// Activer l'interactivité pour la scène après que le Canvas soit monté
-		interactivity();
-	});
 </script>
 
 <div>
 	<Canvas>
+		<InteractivitySetup />
 		<T.PerspectiveCamera makeDefault position={[10, 10, 10]} fov={24}>
-			<OrbitControls maxPolarAngle={degToRad(80)} enableZoom={false} target={{ y: 0.5 }} />
+			<!-- <OrbitControls maxPolarAngle={degToRad(80)} enableZoom={false} target={{ y: 0.5 }} /> -->
 		</T.PerspectiveCamera>
 
 		<T.DirectionalLight castShadow position={[3, 10, 10]} />

@@ -1,12 +1,12 @@
 <script>
-	import Header from './Header.svelte';
+	import Header from './Header.svelte'; // Réactivé
 	import './styles.css';
 </script>
 
-<svelte:head>
+<!-- <svelte:head>
     <title>Sverdle</title>
-    <!-- <script async defer src="https://demo.tianji.msgbyte.com/tracker.js" data-website-id="cm03x03dzbxnpevvrpg8zyex4"></script> -->
-</svelte:head>
+    <script async defer src="https://demo.tianji.msgbyte.com/tracker.js" data-website-id="cm03x03dzbxnpevvrpg8zyex4"></script>
+</svelte:head> -->
 
 
 <div class="app">
@@ -18,9 +18,9 @@
 		</div>
 	</main>
 
-	<footer>
+	<!-- <footer>
 		<p>© 2023 - PRESENT</p>
-	</footer>
+	</footer> -->
 </div>
 
 <style>
@@ -39,14 +39,6 @@
 		max-width: 64rem;
 		margin: 0 auto;
 		box-sizing: border-box;
-	}
-
-	footer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		padding: 12px;
 	}
 
 
