@@ -4,10 +4,7 @@
 	import welcome_fallback from '$lib/images/svelte-welcome.png';
 </script>
 
-<svelte:head>
-	<title>Home</title>
-	<meta name="description" content="Wordle clone made with SvelteKit" />
-</svelte:head>
+
 
 <section>
 	<h1>

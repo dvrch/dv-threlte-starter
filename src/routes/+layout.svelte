@@ -1,5 +1,5 @@
 <script>
-	import Header from './Header.svelte'; // Réactivé
+	// import Header from './Header.svelte';
 	import './styles.css';
 </script>
 
@@ -10,7 +10,7 @@
 
 
 <div class="app">
-	<Header />
+	<!-- <Header /> -->
 
 	<main>
 		<div id="svelte-content">
@@ -18,9 +18,9 @@
 		</div>
 	</main>
 
-	<!-- <footer>
+	<footer>
 		<p>© 2023 - PRESENT</p>
-	</footer> -->
+	</footer>
 </div>
 
 <style>
