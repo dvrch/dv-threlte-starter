@@ -1,15 +1,17 @@
 <script>
 	import { Canvas, T } from '@threlte/core';
-	import { OrbitControls } from '@threlte/extras';
+	import { OrbitControls, InteractiveObject } from '@threlte/extras';
+	import { spring } from 'svelte/motion';
 	import { degToRad } from 'three/src/math/MathUtils';
+	import { writable } from 'svelte/store';
 
-	console.log('Scene 3D page initialized');
+	const scale = writable(1);
 </script>
 
 <div>
 	<Canvas>
 		<T.PerspectiveCamera makeDefault position={[10, 10, 10]} fov={24}>
-			<OrbitControls />
+			<OrbitControls maxPolarAngle={degToRad(80)} enableZoom={false} target={{ y: 0.5 }} />
 		</T.PerspectiveCamera>
 
 		<T.DirectionalLight castShadow position={[3, 10, 10]} />
@@ -17,8 +19,16 @@
 		<T.AmbientLight intensity={0.2} />
 
 		<!-- Cube -->
-		<T.Group>
-			<T.Mesh position.y={0.5} castShadow>
+		<T.Group scale={$scale}>
+			<T.Mesh position.y={0.5} castShadow let:ref>
+				<!-- Add interaction -->
+				<InteractiveObject
+					object={ref}
+					interactive
+					on:pointerenter={() => ($scale.set(2))}
+					on:pointerleave={() => ($scale.set(1))}
+				/>
+
 				<T.BoxGeometry />
 				<T.MeshStandardMaterial color="#333333" />
 			</T.Mesh>
