@@ -1,11 +1,17 @@
 <script>
 	import { Canvas, T } from '@threlte/core';
-	import { OrbitControls, InteractiveObject } from '@threlte/extras';
+	import { OrbitControls, interactivity } from '@threlte/extras';
 	import { spring } from 'svelte/motion';
 	import { degToRad } from 'three/src/math/MathUtils';
 	import { writable } from 'svelte/store';
+	import { onMount } from 'svelte';
 
 	const scale = writable(1);
+
+	onMount(() => {
+		// Activer l'interactivité pour la scène après que le Canvas soit monté
+		interactivity();
+	});
 </script>
 
 <div>
@@ -20,15 +26,12 @@
 
 		<!-- Cube -->
 		<T.Group scale={$scale}>
-			<T.Mesh position.y={0.5} castShadow let:ref>
-				<!-- Add interaction -->
-				<InteractiveObject
-					object={ref}
-					interactive
-					on:pointerenter={() => ($scale.set(2))}
-					on:pointerleave={() => ($scale.set(1))}
-				/>
-
+			<T.Mesh
+				position.y={0.5}
+				castShadow
+				on:pointerenter={() => ($scale.set(2))}
+				on:pointerleave={() => ($scale.set(1))}
+			>
 				<T.BoxGeometry />
 				<T.MeshStandardMaterial color="#333333" />
 			</T.Mesh>

@@ -13,7 +13,9 @@
 	<Header />
 
 	<main>
-		<slot />
+		<div id="svelte-content">
+			<slot />
+		</div>
 	</main>
 
 	<footer>
