@@ -1,20 +1,18 @@
 <script>
 	import { Canvas, T } from '@threlte/core';
-	import { OrbitControls } from '@threlte/extras';
+	import { OrbitControls } from '@threlte/extras'; // Réactivé
 	import { degToRad } from 'three/src/math/MathUtils';
 	import { writable } from 'svelte/store';
 	import InteractivitySetup from '$lib/InteractivitySetup.svelte';
 
 	const scale = writable(1);
-
-	let orbitControls;
 </script>
 
 <div>
 	<Canvas>
-		<InteractivitySetup {orbitControls} />
+		<InteractivitySetup />
 		<T.PerspectiveCamera makeDefault position={[10, 10, 10]} fov={24}>
-			<OrbitControls maxPolarAngle={degToRad(80)} enableZoom={false} target={{ y: 0.5 }} bind:this={orbitControls} />
+			<OrbitControls maxPolarAngle={degToRad(80)} enableZoom={false} target={{ y: 0.5 }} />
 		</T.PerspectiveCamera>
 
 		<T.DirectionalLight castShadow position={[3, 10, 10]} />
@@ -37,8 +35,7 @@
 		<!-- Floor -->
 		<T.Mesh receiveShadow rotation.x={degToRad(-90)}>
 			<T.CircleGeometry args={[3, 72]} />
-			<T.MeshStandardMaterial color="white" />
-		</T.Mesh>
+			<T.MeshStandardMaterial color="white" />		</T.Mesh>
 	</Canvas>
 </div>
 

@@ -2,8 +2,8 @@
     import { interactivity } from '@threlte/extras';
     import { onMount } from 'svelte';
     import { useThrelte, useTask } from '@threlte/core';
-    // import { useStore } from 'svelte/store'; // Supprimer cette importation
     import { browser } from '$app/environment';
+    // import { useStore } from 'svelte/store'; // Supprimer cette importation
 
     export let orbitControls; // Accepter l'instance OrbitControls comme prop
 
