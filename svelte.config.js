@@ -11,7 +11,10 @@ const config = {
 			fallback: 'index.html', // Use 'index.html' as a fallback for SPA mode
 			precompress: false,
 			strict: true
-		})
+		}),
+		paths: {
+			base: process.env.NODE_ENV === 'production' ? '/dv-Sverdle' : ''
+		}
 	}
 };
 
