@@ -6,13 +6,15 @@
 	import InteractivitySetup from '$lib/InteractivitySetup.svelte';
 
 	const scale = writable(1);
+
+	let orbitControls;
 </script>
 
 <div>
 	<Canvas>
-		<InteractivitySetup />
+		<InteractivitySetup {orbitControls} />
 		<T.PerspectiveCamera makeDefault position={[10, 10, 10]} fov={24}>
-			<OrbitControls maxPolarAngle={degToRad(80)} enableZoom={false} target={{ y: 0.5 }} />
+			<OrbitControls maxPolarAngle={degToRad(80)} enableZoom={false} target={{ y: 0.5 }} bind:this={orbitControls} />
 		</T.PerspectiveCamera>
 
 		<T.DirectionalLight castShadow position={[3, 10, 10]} />
@@ -24,8 +26,8 @@
 			<T.Mesh
 				position.y={0.5}
 				castShadow
-				on:pointerenter={() => ($scale.set(2))}
-				on:pointerleave={() => ($scale.set(1))}
+				on:pointerenter={() => { console.log('pointerenter'); $scale.set(2); }}
+				on:pointerleave={() => { console.log('pointerleave'); $scale.set(1); }}
 			>
 				<T.BoxGeometry />
 				<T.MeshStandardMaterial color="#333333" />
