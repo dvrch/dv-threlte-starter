@@ -2,11 +2,16 @@
 	import { Canvas, T } from '@threlte/core';
 	import { OrbitControls } from '@threlte/extras'; // Réactivé
 	import { degToRad } from 'three/src/math/MathUtils';
+	import { tweened } from 'svelte/motion';
+	import InteractivitySetup from '$lib/InteractivitySetup.svelte';
+
+	const zoom = tweened(1, { duration: 250 });
 </script>
 
 <div>
 	<Canvas>
-		<T.PerspectiveCamera makeDefault position={[10, 10, 10]} fov={24}>
+		<InteractivitySetup />
+		<T.PerspectiveCamera makeDefault position={[10, 10, 10]} fov={24} zoom={$zoom}>
 			<OrbitControls maxPolarAngle={degToRad(80)} enableZoom={false} target={{ y: 0.5 }} />
 		</T.PerspectiveCamera>
 
@@ -19,6 +24,8 @@
 			<T.Mesh
 				position.y={0.5}
 				castShadow
+				on:pointerenter={() => zoom.set(1.5)}
+				on:pointerleave={() => zoom.set(1)}
 			>
 				<T.BoxGeometry />
 				<T.MeshStandardMaterial color="#333333" />
