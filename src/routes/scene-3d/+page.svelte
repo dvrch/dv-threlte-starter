@@ -2,15 +2,10 @@
 	import { Canvas, T } from '@threlte/core';
 	import { OrbitControls } from '@threlte/extras'; // Réactivé
 	import { degToRad } from 'three/src/math/MathUtils';
-	import { writable } from 'svelte/store';
-	import InteractivitySetup from '$lib/InteractivitySetup.svelte';
-
-	const scale = writable(1);
 </script>
 
 <div>
 	<Canvas>
-		<InteractivitySetup />
 		<T.PerspectiveCamera makeDefault position={[10, 10, 10]} fov={24}>
 			<OrbitControls maxPolarAngle={degToRad(80)} enableZoom={false} target={{ y: 0.5 }} />
 		</T.PerspectiveCamera>
@@ -20,12 +15,10 @@
 		<T.AmbientLight intensity={0.2} />
 
 		<!-- Cube -->
-		<T.Group scale={$scale}>
+		<T.Group>
 			<T.Mesh
 				position.y={0.5}
 				castShadow
-				on:pointerenter={() => { console.log('pointerenter'); $scale.set(2); }}
-				on:pointerleave={() => { console.log('pointerleave'); $scale.set(1); }}
 			>
 				<T.BoxGeometry />
 				<T.MeshStandardMaterial color="#333333" />
