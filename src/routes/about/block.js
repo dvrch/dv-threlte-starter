@@ -1,6 +1,6 @@
 import { Mesh } from "three";
 import Rapier from "@dimforge/rapier3d-compat";
-import { removeFromArray, creatRigidBox } from "../tool/function";
+import { removeFromArray, creatRigidBox } from "../fkisios-main/src/tool/function.js";
 
 export default class Block extends Mesh {
   static soundPush = new Audio("./sound/push.wav");

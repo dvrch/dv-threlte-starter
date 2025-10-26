@@ -8,7 +8,7 @@ Title: Nissan Skyline GTR r35
 -->
 
 <script>
-	import { T, forwardEventHandlers } from '@threlte/core'
+	import { T } from '@threlte/core'
 	import { useGltf } from '@threlte/extras'
 	import { AddEquation, CustomBlending, Group, LessEqualDepth, OneFactor } from 'three';
     import Bloom from './bloom.svelte';
@@ -40,7 +40,7 @@ Title: Nissan Skyline GTR r35
 		materials.forEach(materialName => alphaFix(model.materials[materialName]));
 	});
 
-	const component = forwardEventHandlers()
+	
 </script>
 
 <Bloom 
@@ -51,7 +51,7 @@ Title: Nissan Skyline GTR r35
   luminanceSmoothing={0}
   mipmapBlur={true}
 />
-<T is={ref} dispose={false} {...$$restProps} bind:this={$component}>
+<T is={ref} dispose={false} {...$restProps}>
 	{#await gltf}
 		<slot name="fallback" />
 	{:then gltf}

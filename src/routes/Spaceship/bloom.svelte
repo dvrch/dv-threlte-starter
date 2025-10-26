@@ -8,7 +8,7 @@
 		SMAAEffect,
 		SMAAPreset,
 	} from 'postprocessing'
-	import { useRender, useThrelte } from '@threlte/core'
+	import { useFrame, useThrelte } from '@threlte/core'
 	import { onMount } from 'svelte';
 	import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 	import { Vector2 } from 'three';

@@ -29,6 +29,39 @@
 			<li aria-current={$page.url.pathname === base + '/scene-3d' ? 'page' : undefined}>
 				<a href="{base}/scene-3d">Scene 3D</a>
 			</li>
+			<li aria-current={$page.url.pathname === base + '/vague' ? 'page' : undefined}>
+				<a href="{base}/vague">Vague</a>
+			</li>
+			<li aria-current={$page.url.pathname === base + '/models' ? 'page' : undefined}>
+				<a href="{base}/models">model</a>
+			</li>
+			<li aria-current={$page.url.pathname === base + '/sphere' ? 'page' : undefined}>
+				<a href="{base}/sphere">sphere</a>
+			</li>
+			<li aria-current={$page.url.pathname === base + '/Spaceship' ? 'page' : undefined}>
+				<a href="{base}/Spaceship">Spaceship</a>
+			</li>
+			<li aria-current={$page.url.pathname === base + '/desksc' ? 'page' : undefined}>
+				<a href="{base}/desksc">desktop</a>
+			</li>
+			<li aria-current={$page.url.pathname === base + '/films' ? 'page' : undefined}>
+				<a href="{base}/films">films</a>
+			</li>
+			<li aria-current={$page.url.pathname === base + '/app/' ? 'page' : undefined}> 
+				<a href="{base}/app/">App</a> 
+			</li> 
+			<li aria-current={$page.url.pathname === base + '/mdwd/' ? 'page' : undefined}>
+				<a href="{base}/mdwd/">mdwd</a>
+			</li> 
+			<li aria-current={$page.url.pathname === base + '/bibi/' ? 'page' : undefined}>
+				<a href="{base}/bibi/">Bibi</a>
+			</li>
+			<li aria-current={$page.url.pathname === base + '/planet/' ? 'page' : undefined}>
+				<a href="{base}/planet/">Planet</a>
+			</li>
+			<li aria-current={$page.url.pathname === base + '/fkisios-main/' ? 'page' : undefined}>
+				<a href="{base}/fkisios-main/">GameZ</a>
+			</li>
 		</ul>
 		<svg viewBox="0 0 2 3" aria-hidden="true">
 			<path d="M0,0 L0,3 C0.5,3 0.5,3 1,2 L2,0 Z" />

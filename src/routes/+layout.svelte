@@ -1,21 +1,16 @@
 <script>
+	import { page } from '$app/stores';
 	import Header from './Header.svelte';
-	import './styles.css';
+	import './../app.css';
 </script>
-
-<!-- <svelte:head>
-    <title>Sverdle</title>
-    <script async defer src="https://demo.tianji.msgbyte.com/tracker.js" data-website-id="cm03x03dzbxnpevvrpg8zyex4"></script>
-</svelte:head> -->
-
 
 <div class="app">
 	<Header />
 
 	<main>
-		<div id="svelte-content">
+		{#key $page.url.pathname}
 			<slot />
-		</div>
+		{/key}
 	</main>
 
 	<footer>
@@ -41,6 +36,13 @@
 		box-sizing: border-box;
 	}
 
+	footer {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		padding: 12px;
+	}
 
 	@media (min-width: 480px) {
 		footer {

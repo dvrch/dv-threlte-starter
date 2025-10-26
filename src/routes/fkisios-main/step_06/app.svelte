@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   import { Scene } from 'three';
   import Camera from './engine/camera';
