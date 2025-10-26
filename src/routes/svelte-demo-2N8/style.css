@@ -1,0 +1,103 @@
+body {
+  overflow: hidden;
+  padding: 0.25rem 0;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  background-color: #3c3838;
+}
+
+panel {
+  display: block;
+  position: relative;
+  height: 20rem;
+  padding: 2rem;
+  margin: 0.5rem;
+  background-color: #ddd;
+  border-radius: 0.5rem;
+  box-sizing: border-box;
+}
+
+input {
+  width: calc(100% - 19rem);
+  margin: 0.5rem 43px 0.5rem 0;
+  border: solid #848a84;
+  text-align: center;
+  font-size: 2rem;
+}
+
+button {
+  display: block;
+  width: 12rem;
+  margin: 0.5rem 0;
+  line-height: 2.5rem;
+  font-size: 2rem;
+  text-align: center;
+  border-radius: 0.2rem;
+  cursor: pointer;
+}
+
+h1 {
+  margin: 0.5rem 0 2rem;
+  font-size: 2.5rem;
+  line-height: 2rem;
+}
+
+body > h1 {
+  color: #ddd;
+}
+
+img {
+  display: inline-block;
+  position: absolute;
+  margin: 2rem;
+  right: 0;
+  top: 0;
+  height: calc(100% - 4rem);
+  aspect-ratio: 1 / 1;
+  border-radius: 9rem;
+  object-fit: cover;
+  object-position: 100% 0;
+  outline: solid 3px #848a84;
+}
+
+card {
+  display: inline-block;
+  position: relative;
+  padding: 1rem;
+  margin: 0.5rem;
+  width: 10rem;
+  height: 10rem;
+  background-color: #fff;
+  border-radius: 0.5rem;
+  background-size: cover;
+}
+
+card h1 {
+  position: absolute;
+  padding: 0.1rem 1rem;
+  bottom: -2rem;
+  left: 0rem;
+  width: 10rem;
+  text-align: center;
+  background-color: #fefefe;
+  font-size: 1rem;
+}
+
+card img {
+  margin: 0.5rem;
+  height: 11rem;
+  border-radius: 0;
+  outline: none;
+}
+
+info {
+  position: fixed;
+  margin: 0.5rem 0.5rem;
+  padding: 0.5rem 1rem;
+  top: 19rem;
+  left: 1rem;
+  color: white;
+  background-color: black;
+  border-radius: 1rem;
+  font-size: 2rem;
+  z-index: 2;
+}

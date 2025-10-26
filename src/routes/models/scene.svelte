@@ -1,0 +1,44 @@
+<script lang="ts">
+	import { T, useFrame } from '@threlte/core'
+	import { OrbitControls, useGltf } from '@threlte/extras'
+	import { AmbientLight, PointLight } from 'three' // Importer les lumières de Three.js
+
+	let y = 2
+	let rotation = 0
+
+	function levitate() {
+		const time = Date.now() / 1000
+		const speed = 1
+		const offset = 3
+		y = Math.sin(time * speed) + offset
+		requestAnimationFrame(levitate)
+	}
+
+	useFrame((_, delta) => {
+		rotation += delta * 0.4
+	})
+
+	levitate()
+</script>
+
+<!-- <Bloom /> -->
+
+<T.OrthographicCamera position={[10, 10, 10]} zoom={40} makeDefault>
+	<OrbitControls enableDamping />
+</T.OrthographicCamera>
+
+<!-- <T.AmbientLight color="#8f00ff" intensity={1} /> -->
+<T.PointLight intensity={10} position={[1, 2, -4]} color="#76aac8" />
+
+{#await useGltf('/assets/ghost.glb') then ghost}
+	<T is={ghost.scene} position={[0, y, 0]} scale={0.4} />
+{/await}
+
+{#await useGltf('/assets/garden.glb') then garden}
+	<T is={garden.scene} rotation.y={rotation} />
+{/await}
+
+{#await useGltf('/public/nissan2.glb') then nissan}
+	<T is={nissan.scene} position={[2, y, 1]} scale={0.4} />
+{/await}
+

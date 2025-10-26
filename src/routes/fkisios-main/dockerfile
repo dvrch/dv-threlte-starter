@@ -1,0 +1,31 @@
+
+### Dockerfile (inchangé)
+
+```dockerfile
+# Utiliser une image de base Node.js
+FROM node:14
+
+# Définir le répertoire de travail
+WORKDIR /app
+
+# Copier les fichiers package.json et package-lock.json
+COPY package*.json ./
+
+# Installer les dépendances
+RUN npm install
+
+# Copier le reste de l'application
+COPY . .
+
+# Exposer le port sur lequel l'application va tourner
+EXPOSE 3000
+
+# Commande pour démarrer l'application
+CMD ["npm", "start"]
+```
+
+
+# docker run -p 3000:3000 -v C:\Users\dvrch\Desktop\CV 2024\BLABLABLA\Svelte+threlte_Onglet multiprojets\src\routes\fkisios-main:/app nom_de_votre_image
+
+# docker run -p 3000:3000 -v C:\Users\dvrch\Desktop\CV 2024\BLABLABLA\Svelte+threlte_Onglet multiprojets\src\routes\fkisios-main:/app nom_de_votre_image
+
