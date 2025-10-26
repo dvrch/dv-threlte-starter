@@ -3,8 +3,8 @@ import Rapier from "@dimforge/rapier3d-compat";
 import { removeFromArray, creatRigidBox } from "../fkisios-main/src/tool/function.js";
 
 export default class Block extends Mesh {
-  static soundPush = new Audio("./sound/push.wav");
-  static soundDrop = new Audio("./sound/drop.wav");
+  static soundPush;
+  static soundDrop;
 
   physic = null;
   rigidBody = null;
@@ -12,6 +12,10 @@ export default class Block extends Mesh {
 
   constructor(mesh, physic) {
     super();
+    if (typeof window !== 'undefined') {
+      Block.soundPush = new Audio("./sound/push.wav");
+      Block.soundDrop = new Audio("./sound/drop.wav");
+    }
     this.initVisual(mesh);
     this.initPhysic(physic);
   }
