@@ -12,18 +12,18 @@ Title: Japanese Bridge Garden
 
 <script>
   import { Group } from 'three'
-  import { T, forwardEventHandlers } from '@threlte/core'
+  import { T } from '@threlte/core'
   import { useGltf } from '@threlte/extras'
  
   export const ref = new Group()
 
   const gltf = useGltf('/models/garden.glb')
 
-  const component = forwardEventHandlers()
+
 </script>
 
 
-<T is={ref} dispose={false} {...$$restProps} bind:this={$component}>
+<T is={ref} dispose={false} {...$restProps}>
   {#await gltf}
     <slot name="fallback" />
   {:then gltf}

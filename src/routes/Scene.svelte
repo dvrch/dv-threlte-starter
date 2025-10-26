@@ -2,7 +2,7 @@
   // ... autres imports existants ...
   import { BloomEffect, EffectComposer, EffectPass, KernelSize, RenderPass, SMAAEffect, SMAAPreset } from 'postprocessing'
   
-  const { scene, renderer, camera } = useThrelte()
+  import { useThrelte, useTask } from '@threlte/core'
   const composer = new EffectComposer(renderer)
   composer.setSize(innerWidth, innerHeight)
 
@@ -35,7 +35,7 @@
 
   $: if ($camera) setupEffectComposer($camera)
 
-  useRender((_, delta) => {
+  useTask((_, delta) => {
     // Mettre à jour l'environnement et le rendu
     setupEnvironmentMapping()
     composer.render(delta)

@@ -17,8 +17,6 @@
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.47.3",
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
-		"@threlte/core": "^8.1.7",
-		"@threlte/extras": "^9.5.5",
 		"@threlte/rapier": "^3.1.5",
 		"@types/three": "^0.146.0",
 		"eslint": "^8.30.0",
@@ -34,6 +32,8 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@threlte/core": "^8.1.8",
+		"@threlte/extras": "^9.5.5",
 		"@types/marked": "^5.0.2",
 		"mammoth": "^1.11.0",
 		"marked": "^16.4.1",

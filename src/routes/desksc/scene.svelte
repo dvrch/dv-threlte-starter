@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { T, useFrame } from '@threlte/core';
+	import { T } from '@threlte/core';
 	import { OrbitControls, useGltf } from '@threlte/extras';
 	import Bloom from './bloom.svelte';
   import Vague from './vague.svelte';

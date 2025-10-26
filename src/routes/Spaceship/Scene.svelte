@@ -1,6 +1,6 @@
 <script>
 	import Vague from '../vague/+page.svelte';
-	import { T, useRender, useThrelte } from '@threlte/core';
+	import { T, useTask, useThrelte } from '@threlte/core';
 	import { OrbitControls, useGltf } from '@threlte/extras';
 	import Spaceship from './models/spaceship.svelte';
 	import { Color, Mesh, PMREMGenerator, PlaneGeometry, Raycaster, Vector2, Vector3 } from 'three';
@@ -64,7 +64,7 @@
 		if (nissanRef) updateMaterials(nissanRef);
 	};
 
-	useRender(({ scene, delta }) => {
+	useTask(({ scene, delta }) => {
 		if (intersectionPoint) {
 			const targetY = intersectionPoint?.y || 0;
 			translAccelleration += (targetY - translY) * 0.002; // stiffness

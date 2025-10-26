@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Canvas, useFrame } from '@threlte/core';
+	import { Canvas, useTask } from '@threlte/core';
 	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 	import { TextureLoader, MeshStandardMaterial } from 'three';
 	import { OrbitControls } from '@threlte/extras';
@@ -59,7 +59,7 @@
 	});
   
 	// Animate the model every frame
-	useFrame(() => {
+	useTask(() => {
 	  if (mixer) {
 		const delta = clock.getDelta();
 		mixer.update(delta);

@@ -8,7 +8,7 @@
 		SMAAEffect,
 		SMAAPreset,
 	} from 'postprocessing'
-	import { useRender, useThrelte } from '@threlte/core'
+	import { useTask, useThrelte } from '@threlte/core'
 	import * as THREE from 'three'; // Ajout de l'importation de THREE
 
 	export let intensity = 0.8;
@@ -50,7 +50,7 @@
 
 	$: setupEffectComposer($camera)
 
-	useRender((_, delta) => {
+	useTask((_, delta) => {
 		composer.render(delta)
 	})
 </script>

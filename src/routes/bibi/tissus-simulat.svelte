@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { T, useFrame } from '@threlte/core';
+  import { T, useTask } from '@threlte/core';
   import { useGltf } from '@threlte/extras';
   import * as THREE from 'three';
 
@@ -12,7 +12,7 @@
 
   // Animate the model using useTask
   let mixer: THREE.AnimationMixer | undefined;
-  useFrame((_, delta) => {
+  useTask((_, delta) => {
     if (!mixer) return;
     mixer.update(delta);
   });

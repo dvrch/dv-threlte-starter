@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { T, useFrame } from '@threlte/core'
+	import { T, useTask } from '@threlte/core'
 	import { OrbitControls, useGltf } from '@threlte/extras'
 	import { AmbientLight, PointLight } from 'three' // Importer les lumières de Three.js
 
@@ -14,7 +14,7 @@
 		requestAnimationFrame(levitate)
 	}
 
-	useFrame((_, delta) => {
+	useTask((_, delta) => {
 		rotation += delta * 0.4
 	})
 

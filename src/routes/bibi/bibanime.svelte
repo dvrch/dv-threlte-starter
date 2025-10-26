@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { T, useFrame } from '@threlte/core';
+  import { T, useTask } from '@threlte/core';
   import { useGltf } from '@threlte/extras';
   import * as THREE from 'three';
 
@@ -22,7 +22,7 @@
   }
 
   // Update the mixer on each frame
-  useFrame((_, delta) => {
+  useTask((_, delta) => {
     mixer?.update(delta);
   });
 
