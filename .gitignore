@@ -12,3 +12,12 @@ vite.config.ts.timestamp-*
 .vercel
 
 6f1f447f-bd65-4f1b-93a2-e69b80428ee4.zip
+
+# Django backend specific
+backend/venv-backend/
+backend/films_backend/db.sqlite3
+backend/films_backend/media/
+**/*.pyc
+**/__pycache__/
+backend/films_backend/.DS_Store
+

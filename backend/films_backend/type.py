@@ -1,0 +1,1 @@
+type_py = 'nissangame'
