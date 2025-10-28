@@ -122,7 +122,7 @@
         position={[739.37, 145.69, 315.6]}
         rotation={[0.17, 0, 0]}
       />
-      {#await map then mapValue}
+      {#await texture then mapValue}
         <T.Mesh position={[740, -60, -1350]} rotation.x={Math.PI * 0.5}>
           <T.CylinderGeometry args={[70, 25, 1600, 15]} />
           <T.MeshBasicMaterial
