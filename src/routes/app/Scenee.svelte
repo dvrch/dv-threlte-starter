@@ -57,7 +57,7 @@
 
   const deleteGeometry = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/geometries/${id}/`, {
+      const response = await fetch(`/api/geometries/${id}/`, {
         method: 'DELETE',
       });
 

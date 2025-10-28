@@ -28,7 +28,7 @@
             return;
         }
 
-        const endpoint = 'http://localhost:8000/api/films/';
+        const endpoint = '/api/films/';
         let data = new FormData();
         data.append('name', name);
         data.append('director', director);

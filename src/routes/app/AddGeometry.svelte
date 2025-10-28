@@ -206,7 +206,7 @@
   // Ajout d'une fonction pour charger les détails d'une géométrie
   const loadGeometryDetails = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/geometries/${id}/`);
+      const response = await fetch(`/api/geometries/${id}/`);
       if (!response.ok) {
         throw new Error('Failed to fetch geometry details');
       }

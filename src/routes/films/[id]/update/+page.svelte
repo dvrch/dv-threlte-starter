@@ -49,7 +49,7 @@
         if ($FilmStore.length) {
             film = $FilmStore.find(film => film.id == id)
         } else {
-            const endpoint = `http://localhost:8000/api/films/${data.id}/`
+            const endpoint = `/api/films/${data.id}/`
             let response = await fetch(endpoint)
             if (response.status == 200) {
                 film = await response.json()
