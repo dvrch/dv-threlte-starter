@@ -8,15 +8,13 @@ const isGhPages = process.env.DEPLOY_TARGET === 'GH_PAGES';
 const config = {
 	preprocess: preprocess(),
 	kit: {
-		adapter: isGhPages
-			? adapterStatic({
+		adapter: adapterStatic({
 					pages: 'build',
 					assets: 'build',
 					fallback: 'index.html',
 					precompress: false,
 					strict: true
-			  })
-			: adapterAuto(),
+			  }),
 		paths: {
 			base: isGhPages ? '/dv-threlte-starter' : ''
 		}
