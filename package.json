@@ -38,6 +38,13 @@
 		"mammoth": "^1.11.0",
 		"marked": "^16.4.1",
 		"postprocessing": "^6.37.8"
+	},
+	"pnpm": {
+		"overrides": {
+			"@threlte/core": "^7.3.0",
+			"@threlte/extras": "^8.11.0",
+			"@threlte/rapier": "^2.0.0"
+		}
 	}
 }
 
