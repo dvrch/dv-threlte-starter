@@ -13,6 +13,10 @@
   ],
   "routes": [
     {
+      "src": "/admin(.*)",
+      "dest": "backend/films_backend/wsgi.py"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "backend/films_backend/wsgi.py"
     },
