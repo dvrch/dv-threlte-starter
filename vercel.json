@@ -13,11 +13,11 @@
   ],
   "routes": [
     {
-      "src": "/admin",
+      "src": "/dashboard",
       "dest": "backend/films_backend/wsgi.py"
     },
     {
-      "src": "/admin/(.*)",
+      "src": "/dashboard/(.*)",
       "dest": "backend/films_backend/wsgi.py"
     },
     {
