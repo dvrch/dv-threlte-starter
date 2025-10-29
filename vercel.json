@@ -7,22 +7,22 @@
       "config": { "distDir": "build" }
     },
     {
-      "src": "backend/films_backend/wsgi.py",
+      "src": "backend/films_backend/films_backend/asgi.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/dashboard",
-      "dest": "backend/films_backend/wsgi.py"
+      "dest": "backend/films_backend/films_backend/asgi.py"
     },
     {
       "src": "/dashboard/(.*)",
-      "dest": "backend/films_backend/wsgi.py"
+      "dest": "backend/films_backend/films_backend/asgi.py"
     },
     {
       "src": "/api/(.*)",
-      "dest": "backend/films_backend/wsgi.py"
+      "dest": "backend/films_backend/films_backend/asgi.py"
     },
     {
       "handle": "filesystem"
