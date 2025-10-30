@@ -5,7 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('dashboard/', admin.site.urls),
+    path('admin/', admin.site.urls),
     path('api/', include('Base_threlte_dv.urls')), # Ajout de la route pour les films
     path('api/', include('films.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

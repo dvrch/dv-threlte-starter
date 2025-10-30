@@ -13,8 +13,8 @@
   ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/backend/films_backend/films_backend/wsgi.py" },
-    { "source": "/dashboard", "destination": "/backend/films_backend/films_backend/wsgi.py" },
-    { "source": "/dashboard/(.*)", "destination": "/backend/films_backend/films_backend/wsgi.py" },
+    { "source": "/admin", "destination": "/backend/films_backend/films_backend/wsgi.py" },
+    { "source": "/admin/(.*)", "destination": "/backend/films_backend/films_backend/wsgi.py" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

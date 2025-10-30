@@ -6,6 +6,7 @@
 		"dev": "vite dev --host 0.0.0.0",
 		"build": "vite build",
 		"preview": "vite preview",
+		"vercel-build": "python backend/films_backend/manage.py collectstatic --noinput",
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
 		"format": "prettier --plugin-search-dir . --write ."
 	},
