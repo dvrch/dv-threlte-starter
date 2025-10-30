@@ -89,10 +89,9 @@ WSGI_APPLICATION = 'films_backend.wsgi.application'
 # Configuration pour utiliser SQLite en local et PostgreSQL en production via une URL.
 # Vous devrez définir DATABASE_URL dans les variables d'environnement de Vercel.
 DATABASES = {
-    'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600
-    )
+    'default': dj_database_url.parse(
+        'postgresql://neondb_owner:npg_zKtQE5JVDU0R@ep-lucky-truth-agdq4088-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require'
+        )
 }
 
 # Password validation
