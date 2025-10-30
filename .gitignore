@@ -21,3 +21,10 @@ backend/films_backend/media/
 **/__pycache__/
 backend/films_backend/.DS_Store
 
+# Large files and development files
+*.blend
+*.docx
+static/public/cloth_sim.glb
+static/public/DRAP+Barrel Model1.glb
+static/assets/Desk-bati.glb
+
