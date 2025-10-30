@@ -131,7 +131,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 # Point static root to a directory within the SvelteKit build output
-STATIC_ROOT = BASE_DIR.parent.parent / 'build' / 'static'
+STATIC_ROOT = BASE_DIR.parent.parent / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 

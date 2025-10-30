@@ -9,7 +9,7 @@
     {
       "src": "backend/films_backend/films_backend/wsgi.py",
       "use": "@vercel/python",
-      "config": { "includeFiles": "build/static/**" }
+      "config": { "includeFiles": "staticfiles/**" }
     }
   ],
   "rewrites": [
