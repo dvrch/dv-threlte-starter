@@ -10,6 +10,9 @@ https://docs.djangoproject.com/en/4.2/howto/deployment/wsgi/
 import os
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Add the project's parent directory to the sys.path
 # This is the directory that contains the Django project folder.

@@ -6,9 +6,9 @@
 
 # --- Configuration ---
 PROJECT_ROOT="$(pwd)"
-VENV_ACTIVATE="${PROJECT_ROOT}/backend/venv-backend/bin/activate"
+VENV_ACTIVATE="${PROJECT_ROOT}/backend/venv/bin/activate"
 FRONTEND1_DIR="${PROJECT_ROOT}/Base_threlte_dv"
-FRONTEND2_DIR="${PROJECT_ROOT}/front-Film"
+FRONTEND2_DIR="${PROJECT_ROOT}/films_backend"
 
 BACKEND_PORT=8000
 FRONTEND1_PORT=5173

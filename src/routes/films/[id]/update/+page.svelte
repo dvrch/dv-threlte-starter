@@ -1,65 +1,126 @@
 <script>
-    import {FilmStore} from '../../../../film-store'
-    import {goto} from '$app/navigation'
-    import {onMount} from 'svelte'
-    
+    import { FilmStore } from '../../../../film-store';
+    import { goto } from '$app/navigation';
+    import { onMount } from 'svelte';
+
+    export let data; // Passed from +page.js
+
+    let film = {};
     let name = '';
     let director = '';
-    let description = ''
+    let description = '';
     let files;
     let showInvalidMessage = false;
-    export let data;
-    let id;
+    let errorMessage = '';
+    let isLoading = false;
 
-    let validFields = () => {
-        return name.length > 4 && director.length > 4 && description.length > 10
-    }
+    onMount(async () => {
+        const filmId = data.id;
+        const existingFilm = $FilmStore.find(f => f.id == filmId);
 
-    let handleSubmit = () => {
-        if (!validFields()) {
-            showInvalidMessage = true;
-            return
-        }
-        const endpoint = `http://localhost:8000/api/films/${id}/`
-        let data = new FormData()
-        data.append('name', name)
-        data.append('director', director)
-        data.append('description', description)
-
-        if (files) {
-            data.append('image', files[0])
-        }
-        
-        fetch(endpoint, {method: 'PUT', body: data}).then(response => response.json()).then(data => {
-            FilmStore.update(prev => {
-                let updatedFilms = $FilmStore.slice()
-                let index = updatedFilms.findIndex(film => film.id == data.id)
-                updatedFilms[index] = data
-                return updatedFilms
-            })
-        })
-            
-
-        goto('/films/')
-    }
-
-    onMount(async function() {
-        id = data.id
-        let film = {}
-        if ($FilmStore.length) {
-            film = $FilmStore.find(film => film.id == id)
+        if (existingFilm) {
+            film = existingFilm;
         } else {
-            const endpoint = `/api/films/${data.id}/`
-            let response = await fetch(endpoint)
-            if (response.status == 200) {
-                film = await response.json()
-            } else {
+            try {
+                const response = await fetch(`/api/films/${filmId}/`);
+                if (!response.ok) throw new Error("Film not found");
+                film = await response.json();
+            } catch (error) {
+                console.error("Failed to fetch film data:", error);
                 film = null;
             }
         }
-        ({name, director, description} = film)
-    })
 
+        if (film) {
+            name = film.name || '';
+            director = film.director || '';
+            description = film.description || '';
+        }
+    });
+
+    const validFields = () => {
+        return name.length > 4 && director.length > 4 && description.length > 10;
+    };
+
+    const handleSubmit = async () => {
+        if (!validFields()) {
+            errorMessage = "Veuillez vérifier les champs du formulaire.";
+            showInvalidMessage = true;
+            return;
+        }
+
+        isLoading = true;
+        showInvalidMessage = false;
+        let imageUrl = film.image_url; // Start with the existing image URL
+
+        try {
+            // Étape 1 & 2: Si un nouveau fichier est sélectionné, le téléverser
+            if (files && files.length > 0) {
+                const fileToUpload = files[0];
+
+                const presignedUrlResponse = await fetch('/api/handle-upload/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filename: fileToUpload.name }),
+                });
+
+                if (!presignedUrlResponse.ok) {
+                    const errorBody = await presignedUrlResponse.json();
+                    throw new Error(`Erreur du serveur pour obtenir l'URL pré-signée: ${errorBody.error || presignedUrlResponse.statusText}`);
+                }
+                const blobData = await presignedUrlResponse.json();
+
+                const uploadResponse = await fetch(blobData.uploadUrl, {
+                    method: 'PUT',
+                    body: fileToUpload,
+                    headers: { 'Content-Type': fileToUpload.type },
+                });
+
+                if (!uploadResponse.ok) {
+                    throw new Error('Échec du téléversement du fichier sur le stockage blob.');
+                }
+                
+                imageUrl = blobData.downloadUrl; // Update to the new URL
+            }
+
+            // Étape 3: Soumettre les données mises à jour à Django
+            const filmData = new FormData();
+            filmData.append('name', name);
+            filmData.append('director', director);
+            filmData.append('description', description);
+            filmData.append('image_url', imageUrl); // Send the new or existing URL
+
+            const endpoint = `/api/films/${film.id}/`;
+            const filmResponse = await fetch(endpoint, {
+                method: 'PATCH', // PATCH is better for partial updates
+                body: filmData,
+            });
+
+            if (!filmResponse.ok) {
+                throw new Error('Échec de la mise à jour des données du film: ' + filmResponse.statusText);
+            }
+
+            const responseData = await filmResponse.json();
+            
+            // Update the store
+            FilmStore.update(films => {
+                const index = films.findIndex(f => f.id === responseData.id);
+                if (index !== -1) {
+                    films[index] = responseData;
+                }
+                return films;
+            });
+
+            goto('/films/');
+
+        } catch (error) {
+            console.error('Une erreur est survenue durant le processus de mise à jour:', error);
+            errorMessage = error.message;
+            showInvalidMessage = true;
+        } finally {
+            isLoading = false;
+        }
+    };
 </script>
 
 
