@@ -65,6 +65,7 @@ class HandleBlobUploadView(APIView):
 
             headers = {
                 'Authorization': f'Bearer {token}',
+                'Content-Type': uploaded_file.content_type
             }
             
             # Organisation des fichiers par type dans Vercel Blob
@@ -85,6 +86,9 @@ class HandleBlobUploadView(APIView):
             except requests.exceptions.RequestException as e:
                 import traceback
                 print(f"Error communicating with Vercel Blob API: {e}")
+                if response is not None:
+                    print(f"Vercel Blob API Response Status Code: {response.status_code}")
+                    print(f"Vercel Blob API Response Text: {response.text}")
                 traceback.print_exc() # Print the full traceback
                 return Response({"error": "Failed to communicate with the blob storage service."}, 
                               status=status.HTTP_500_INTERNAL_SERVER_ERROR)

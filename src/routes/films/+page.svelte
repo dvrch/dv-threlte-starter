@@ -61,7 +61,7 @@
             
             <div class="card w-100 h-100">
                 <img class="card-img-top" style="height: 300px; object-fit: cover" 
-                    src="{film.image}" 
+                    src="{film.image_url}" 
                     alt="Film">
                 <div class="card-body d-flex flex-column justify-content-between gap-4">
 					<div>

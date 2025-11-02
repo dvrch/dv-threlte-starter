@@ -1,1 +1,1 @@
-type_py = 'tissus'
+type_py = 'icosahedron'
