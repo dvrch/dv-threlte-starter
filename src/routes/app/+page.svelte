@@ -10,6 +10,7 @@
     import type { PageData } from './$types';
 
     export let data: PageData;
+</script>
 
     let geometries = [];
 
@@ -80,23 +81,7 @@
 {/each}
 
 <div class="ui-overlay">
-    <Tabs on:tabChange={handleTabChange} />
-    <Notification />
-
-    {#if activeTab === 'scene'}
-        <div class="controls-container">
-            <div class="upload-form-container">
-                <ModelUploadForm />
-            </div>
-            <div class="geometry-controls">
-                <AddGeometry on:geometryChanged={loadGeometries} />
-            </div>
-        </div>
-    {:else}
-        <div class="full-geometry-view">
-            <AddGeometry on:geometryChanged={loadGeometries} />
-        </div>
-    {/if}
+    <h1>TEST UI OVERLAY</h1>
 </div>
 
 <style>

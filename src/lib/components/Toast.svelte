@@ -5,7 +5,13 @@
 
 <div class="toast-container">
   {#each $toasts as toast (toast.id)}
-    <div class="toast toast-{toast.type}" on:click={() => removeToast(toast.id)}>
+    <div
+      class="toast toast-{toast.type}"
+      on:click={() => removeToast(toast.id)}
+      on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') removeToast(toast.id); }}
+      role="button"
+      tabindex="0"
+    >
       {toast.message}
     </div>
   {/each}
