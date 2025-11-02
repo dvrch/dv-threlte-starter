@@ -35,8 +35,12 @@ class HandleBlobUploadView(APIView):
     Supports both image files and 3D model files (glTF/GLB).
     """
     def post(self, request):
+        print("Données reçues:", request.data)
+        
         filename = request.data.get('filename')
         file_type = request.data.get('type', 'image')  # 'image', 'gltf', ou 'glb'
+        
+        print("Token Vercel:", os.environ.get('BLOB_READ_WRITE_TOKEN', 'Non trouvé'))
         
         if not filename:
             return Response({"error": "A 'filename' must be provided."}, status=status.HTTP_400_BAD_REQUEST)

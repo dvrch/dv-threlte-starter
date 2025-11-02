@@ -10,6 +10,11 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
+from dotenv import load_dotenv
+
+# Chargement des variables d'environnement depuis .env
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(env_path)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -128,10 +133,24 @@ WSGI_APPLICATION = "wsgi.application"
 # Configuration de la base de données avec Neon
 DATABASE_URL = os.environ.get(
     "DATABASE_URL",
-    "postgresql://neondb_owner:npg_zKtQE5JVDU0R@ep-lucky-truth-agdq4088-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require"
+    "postgresql://neondb_owner:npg_zKtQE5JVDU0R@ep-lucky-truth-agdq4088-pooler.c-2.eu-central-1.aws.neon.tech/neondb"
 )
+
+# Parse l'URL de la base de données
+db_config = dj_database_url.parse(DATABASE_URL)
+
+# Ajout des paramètres SSL spécifiques pour Neon
+db_config.update({
+    'OPTIONS': {
+        'sslmode': 'require',
+        'sslcert': None,
+        'sslkey': None,
+        'sslrootcert': None,
+    }
+})
+
 DATABASES = {
-    "default": dj_database_url.parse(DATABASE_URL)
+    "default": db_config
 }
 
 # Password validation
@@ -166,7 +185,14 @@ USE_TZ = True
 
 
 # Static files are served through Vercel Blob
-STATIC_URL = os.environ.get('VERCEL_BLOB_URL', '/static/')
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.0/howto/static-files/
+
+STATIC_URL = "static/"
+
+# Vercel Blob configuration
+VERCEL_BLOB_READ_WRITE_TOKEN = os.environ.get('BLOB_READ_WRITE_TOKEN')
+VERCEL_BLOB_STORE_ID = os.environ.get('STORE_ID', 'your-store-id')
 
 
 # Default primary key field type
