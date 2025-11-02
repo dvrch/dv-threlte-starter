@@ -190,6 +190,27 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+# Vercel Blob Storage Configuration
+VERCEL_BLOB_READ_WRITE_TOKEN = os.environ.get('BLOB_READ_WRITE_TOKEN')
+
+# CORS Configuration
+CORS_ALLOW_ALL_ORIGINS = True  # Only for development
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
 # Vercel Blob configuration
 VERCEL_BLOB_READ_WRITE_TOKEN = os.environ.get('BLOB_READ_WRITE_TOKEN')
 VERCEL_BLOB_STORE_ID = os.environ.get('STORE_ID', 'your-store-id')

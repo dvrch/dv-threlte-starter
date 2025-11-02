@@ -2,9 +2,11 @@
 	import { page } from '$app/stores';
 	import Header from './Header.svelte';
 	import './../app.css';
+	import Toast from '$lib/components/Toast.svelte';
 </script>
 
 <div class="app">
+	<Toast />
 	<Header />
 
 	<main>
