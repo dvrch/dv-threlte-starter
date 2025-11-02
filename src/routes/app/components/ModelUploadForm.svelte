@@ -1,11 +1,97 @@
 <script lang="ts"></script>
     let isOpen = false;
+<script lang="ts">
+    import { fade } from 'svelte/transition';
+    import { notification } from '$lib/stores/notification';
+    
     let file: File | null = null;
-    let uploading = false;
-    let error = '';
-    let success = '';
+    let isUploading = false;
+    let showForm = false;
 
-    function toggleForm() {
+    async function handleSubmit() {
+        if (!file) {
+            notification.show('Please select a file', 'error');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+        isUploading = true;
+
+        try {
+            const response = await fetch('http://localhost:8000/api/upload-blob/', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) throw new Error('Upload failed');
+            
+            const data = await response.json();
+            notification.show('Model uploaded successfully!', 'success');
+            file = null;
+        } catch (error) {
+            notification.show('Failed to upload model', 'error');
+        } finally {
+            isUploading = false;
+        }
+    }
+</script>
+
+<div class="fixed right-4 top-20 z-50">
+    <button 
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-2"
+        on:click={() => showForm = !showForm}
+    >
+        {showForm ? 'Close Upload' : 'Upload Model'}
+    </button>
+
+    {#if showForm}
+        <div 
+            class="bg-white p-4 rounded shadow-lg"
+            transition:fade={{ duration: 200 }}
+        >
+            <form on:submit|preventDefault={handleSubmit} class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">
+                        Select 3D Model (GLB/GLTF)
+                    </label>
+                    <input 
+                        type="file" 
+                        accept=".glb,.gltf"
+                        on:change={(e) => file = e.target.files?.[0] || null}
+                        class="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline"
+                    />
+                </div>
+                <button 
+                    type="submit" 
+                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full"
+                    disabled={isUploading}
+                >
+                    {isUploading ? 'Uploading...' : 'Upload'}
+                </button>
+            </form>
+        </div>
+    {/if}
+</div>
+
+<style>
+    input[type="file"] {
+        cursor: pointer;
+    }
+    
+    input[type="file"]::-webkit-file-upload-button {
+        background: #e5e7eb;
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        margin-right: 1rem;
+        cursor: pointer;
+        border: none;
+    }
+    
+    input[type="file"]::-webkit-file-upload-button:hover {
+        background: #d1d5db;
+    }
+</style>    function toggleForm() {
         isOpen = !isOpen;
         resetForm();
     }
