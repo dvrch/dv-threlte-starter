@@ -38,20 +38,54 @@
         formData.append('file', file);
 
         try {
+            // Première étape : Upload vers Vercel Blob
             const response = await fetch('http://localhost:8000/api/upload-blob/', {
                 method: 'POST',
-                body: formData
+                body: formData,
             });
 
             if (!response.ok) {
-                throw new Error('Upload failed');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Upload failed');
             }
 
             const data = await response.json();
-            notification.show('Model uploaded successfully!', 'success');
-            file = null;
+            
+            if (data.url) {
+                // Deuxième étape : Sauvegarder dans la base de données
+                const modelData = {
+                    name: file.name,
+                    model_url: data.url,
+                    model_type: file.name.split('.').pop()?.toLowerCase(),
+                };
+
+                const dbResponse = await fetch('http://localhost:8000/api/models/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(modelData),
+                });
+
+                if (!dbResponse.ok) {
+                    throw new Error('Failed to save model information');
+                }
+
+                notification.show('Model uploaded and saved successfully!', 'success');
+                file = null;
+                
+                // Dispatch un événement pour informer la scène qu'un nouveau modèle est disponible
+                const modelAddedEvent = new CustomEvent('modelAdded', { 
+                    detail: await dbResponse.json()
+                });
+                window.dispatchEvent(modelAddedEvent);
+            }
         } catch (error) {
-            notification.show(error instanceof Error ? error.message : 'Failed to upload model', 'error');
+            console.error('Upload error:', error);
+            notification.show(
+                error instanceof Error ? error.message : 'Failed to upload model',
+                'error'
+            );
         } finally {
             isUploading = false;
         }

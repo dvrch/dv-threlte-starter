@@ -31,14 +31,23 @@ class TypeView(APIView):
 
 class HandleBlobUploadView(APIView):
     """
-    Handles requests for creating a presigned upload URL for Vercel Blob storage.
+    Handles file uploads to Vercel Blob storage.
     Supports both image files and 3D model files (glTF/GLB).
     """
     def post(self, request):
-        print("Données reçues:", request.data)
+        if 'file' not in request.FILES:
+            return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        uploaded_file = request.FILES['file']
+        filename = uploaded_file.name
         
-        filename = request.data.get('filename')
-        file_type = request.data.get('type', 'image')  # 'image', 'gltf', ou 'glb'
+        # Déterminer le type de fichier
+        ext = filename.lower().split('.')[-1]
+        if ext in ['glb', 'gltf']:
+            file_type = ext
+        else:
+            return Response({"error": "Invalid file type. Must be .glb or .gltf"}, 
+                          status=status.HTTP_400_BAD_REQUEST)
         
         print("Token Vercel:", os.environ.get('BLOB_READ_WRITE_TOKEN', 'Non trouvé'))
         
