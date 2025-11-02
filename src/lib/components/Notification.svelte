@@ -1,6 +1,17 @@
 <script lang="ts">
     import { fade } from 'svelte/transition';
     import { notification } from '$lib/stores/notification';
+    import { onMount } from 'svelte';
+
+    onMount(() => {
+        const handleError = (event: ErrorEvent) => {
+            event.preventDefault();
+            notification.show(event.message, 'error');
+        };
+
+        window.addEventListener('error', handleError);
+        return () => window.removeEventListener('error', handleError);
+    });
 </script>
 
 <div class="notifications-container">
