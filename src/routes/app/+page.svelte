@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Canvas } from '@threlte/core'
-    import Scene from '../Scene.svelte'
-    import ModelUploadForm from './components/ModelUploadForm.svelte'
+    import Scene from '$lib/components/Scene.svelte'
+    import ModelUploadForm from '$lib/components/ModelUploadForm.svelte'
     import AddGeometry from './AddGeometry.svelte'
     import Tabs from './Tabs.svelte'
     import Notification from '$lib/components/Notification.svelte'
