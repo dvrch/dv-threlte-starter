@@ -1,1 +1,1 @@
-type_py = 'nissan'
+type_py = 'tissus'

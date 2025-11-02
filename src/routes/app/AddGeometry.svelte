@@ -64,7 +64,7 @@
       if (!response.ok) {
         throw new Error('Failed to fetch geometries');
       }
-      geometries = await response.json();
+      geometries = (await response.json()).results || [];
     } catch (error) {
       console.error('Error loading geometries:', error);
       addToast('Failed to load geometries. Please try again.', 'error');
