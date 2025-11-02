@@ -12,7 +12,7 @@
     let isLoading = false;
 
     let validFields = () => {
-        return name.length > 4 && director.length > 4 && description.length > 10 && files && files.length > 0;
+        return name.length >= 1 && director.length >= 1 && description.length >= 1 && files && files.length > 0;
     }
 
     let handleSubmit = async () => {
@@ -25,44 +25,30 @@
         isLoading = true;
         showInvalidMessage = false;
         const fileToUpload = files[0];
+        const formData = new FormData();
+        formData.append('file', fileToUpload);
 
         try {
-            // Étape 1: Obtenir l'URL pré-signée depuis notre backend
-            const presignedUrlResponse = await fetch('/api/handle-upload/', {
+            // Étape 1: Upload vers Vercel Blob via notre backend
+            const response = await fetch('/api/upload-blob/', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ filename: fileToUpload.name }),
+                body: formData,
             });
 
-            if (!presignedUrlResponse.ok) {
-                const errorBody = await presignedUrlResponse.json();
-                throw new Error(`Erreur du serveur pour obtenir l'URL pré-signée: ${errorBody.error || presignedUrlResponse.statusText}`);
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Upload failed');
             }
-            const blobData = await presignedUrlResponse.json();
 
-            // Étape 2: Téléverser le fichier directement sur Vercel Blob
-            const uploadResponse = await fetch(blobData.uploadUrl, {
-                method: 'PUT',
-                body: fileToUpload,
-                headers: {
-                    // Certains stockages cloud nécessitent des en-têtes spécifiques, 
-                    // Vercel Blob est souvent simple mais on peut ajouter le type de contenu.
-                    'Content-Type': fileToUpload.type,
-                }
-            });
+            const data = await response.json();
+            const finalBlobUrl = data.url;
 
-            if (!uploadResponse.ok) {
-                throw new Error('Échec du téléversement du fichier sur le stockage blob.');
-            }
-            
-            const finalBlobUrl = blobData.downloadUrl;
-
-            // Étape 3: Soumettre les données du film avec la nouvelle URL à Django
+            // Étape 2: Soumettre les données du film avec la nouvelle URL à Django
             const filmData = new FormData();
             filmData.append('name', name);
             filmData.append('director', director);
             filmData.append('description', description);
-            filmData.append('image_url', finalBlobUrl); // Utilise le nouveau champ et l'URL finale
+            filmData.append('image_url', finalBlobUrl);
 
             if (tags.length) {
                 const tagList = tags.split(",");

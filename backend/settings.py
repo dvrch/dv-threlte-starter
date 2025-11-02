@@ -34,7 +34,7 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 # L'URL de production sera ajoutée automatiquement par Vercel.
-ALLOWED_HOSTS = ["127.0.0.1", ".vercel.app"]
+ALLOWED_HOSTS = ["127.0.0.1", ".vercel.app", "localhost"]
 
 
 # Application definition
