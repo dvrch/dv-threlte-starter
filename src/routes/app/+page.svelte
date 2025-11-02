@@ -20,13 +20,17 @@
 <Tabs on:tabChange={handleTabChange} />
 
 {#if activeTab === 'scene'}
-<div class="app-container" style="overflow: hidden; width: 92vw; height: 92vh; margin: 4vw 4vh;">
-  <Canvas>
-    <Scene />
-  </Canvas>
-  <div class="form-container">
-    <AddGeometry />
-  </div>
+<script lang="ts">
+    import { Canvas } from '@threlte/core'
+    import Scene from '../Scene.svelte'
+    import ModelUploadForm from './components/ModelUploadForm.svelte'
+</script>
+
+<div class="h-screen w-full">
+    <Canvas>
+        <Scene />
+    </Canvas>
+    <ModelUploadForm />
 </div>
 {:else}
     <AddGeometry />
