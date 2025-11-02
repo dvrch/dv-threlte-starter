@@ -23,7 +23,7 @@ urlpatterns = [
     # URLs de l'API
     path('api/', include(router.urls)),  # Toutes les APIs REST sous /api/
     path('api/types/', TypeView.as_view(), name='types'),
-    path('api/upload/', HandleBlobUploadView.as_view(), name='handle-upload'),
+    path('api/upload-blob/', HandleBlobUploadView.as_view(), name='handle-upload'),
     
     # Interface d'administration
     path('admin/', admin.site.urls),

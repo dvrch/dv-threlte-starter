@@ -11,6 +11,7 @@
   import { useGltf } from '@threlte/extras';
   import Nissan from './models/Nissan.svelte';
   import AddGeometry from './AddGeometry.svelte'; // Importation du composant
+  import { addToast } from '$lib/stores/toasts';
   
   import Tissus from '../bibi/tissus-simulat.svelte';
   import Bibanime from '../bibi/bibanime.svelte';
@@ -71,10 +72,10 @@
 
       // Mettre à jour la liste des géométries après la suppression
       geometries = geometries.filter(geometry => geometry.id !== id);
-      alert('Geometry deleted successfully!');
+      addToast('Geometry deleted successfully!', 'success');
     } catch (error) {
       console.error('Error deleting geometry:', error);
-      alert('Failed to delete geometry. Please try again.');
+      addToast('Failed to delete geometry. Please try again.', 'error');
     }
   };
 

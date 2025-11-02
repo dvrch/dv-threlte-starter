@@ -197,11 +197,6 @@ VERCEL_BLOB_READ_WRITE_TOKEN = os.environ.get('BLOB_READ_WRITE_TOKEN')
 CORS_ALLOW_ALL_ORIGINS = True  # Only for development
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-]
-
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',
@@ -212,7 +207,6 @@ CORS_ALLOW_METHODS = [
 ]
 
 # Vercel Blob configuration
-VERCEL_BLOB_READ_WRITE_TOKEN = os.environ.get('BLOB_READ_WRITE_TOKEN')
 VERCEL_BLOB_STORE_ID = os.environ.get('STORE_ID', 'your-store-id')
 
 
@@ -223,19 +217,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Configuration Vercel Blob
 BLOB_READ_WRITE_TOKEN = os.environ.get("BLOB_READ_WRITE_TOKEN")
-VERCEL_BLOB_STORE_ID = os.environ.get("BLOB_STORE_ID")
 
 # Vercel définit automatiquement cette variable d'environnement
 VERCEL_URL = os.environ.get("VERCEL_URL")
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5174",
-    "http://localhost:5175",
-    "http://127.0.0.1:5175",
-]
 
 if VERCEL_URL:
     CORS_ALLOWED_ORIGINS.append(f"https://{VERCEL_URL}")

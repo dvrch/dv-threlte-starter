@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, createEventDispatcher } from 'svelte';
   import { Sphere } from 'three';
+  import { addToast } from '$lib/stores/toasts';
 
   export let selectedGeometry: any = null;
 
@@ -34,7 +35,7 @@
       types = data.map(type => type.id);
     } catch (error) {
       console.error('Error loading types:', error);
-      alert('Failed to load types. Please try again.');
+      addToast('Failed to load types. Please try again.', 'error');
     }
   };
 
@@ -66,7 +67,7 @@
       geometries = await response.json();
     } catch (error) {
       console.error('Error loading geometries:', error);
-      alert('Failed to load geometries. Please try again.');
+      addToast('Failed to load geometries. Please try again.', 'error');
     }
   };
 
@@ -89,13 +90,13 @@
       console.log('Updated geometry:', result);
       
       dispatch('geometryChanged');
-      alert('Geometry updated successfully!');
+      addToast('Geometry updated successfully!', 'success');
       
       // Ne pas réinitialiser le formulaire après la mise à jour
       // pour permettre d'autres modifications si nécessaire
     } catch (error) {
       console.error('Error updating geometry:', error);
-      alert('Failed to update geometry. Please try again.');
+      addToast('Failed to update geometry. Please try again.', 'error');
     }
   };
 
@@ -119,10 +120,10 @@
       
       resetForm();
       dispatch('geometryChanged');
-      alert('Geometry added successfully!');
+      addToast('Geometry added successfully!', 'success');
     } catch (error) {
       console.error('Error adding geometry:', error);
-      alert('Failed to add geometry. Please try again.');
+      addToast('Failed to add geometry. Please try again.', 'error');
     }
   };
 
@@ -159,10 +160,10 @@
       }
       
       dispatch('geometryChanged');
-      alert(isEditing ? 'Geometry updated successfully!' : 'Geometry added successfully!');
+      addToast(isEditing ? 'Geometry updated successfully!' : 'Geometry added successfully!', 'success');
     } catch (error) {
       console.error(isEditing ? 'Error updating geometry:' : 'Error adding geometry:', error);
-      alert(isEditing ? 'Failed to update geometry' : 'Failed to add geometry');
+      addToast(isEditing ? 'Failed to update geometry' : 'Failed to add geometry', 'error');
     }
   };
 
@@ -180,7 +181,7 @@
 
   const deleteGeometry = async () => {
     if (!selectedGeometryId) {
-      alert('Please select a geometry to delete.');
+      addToast('Please select a geometry to delete.', 'info');
       return;
     }
 
@@ -193,13 +194,13 @@
         throw new Error('Failed to delete geometry');
       }
 
-      alert('Geometry deleted successfully!');
+      addToast('Geometry deleted successfully!', 'success');
       resetForm();
       dispatch('geometryChanged');
       await loadGeometries();
     } catch (error) {
       console.error('Error deleting geometry:', error);
-      alert('Failed to delete geometry. Please try again.');
+      addToast('Failed to delete geometry. Please try again.', 'error');
     }
   };
 
@@ -224,7 +225,7 @@
       console.log('Loaded geometry details:', geometry);
     } catch (error) {
       console.error('Error loading geometry details:', error);
-      alert('Failed to load geometry details');
+      addToast('Failed to load geometry details', 'error');
     }
   };
 </script>

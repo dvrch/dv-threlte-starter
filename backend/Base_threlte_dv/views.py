@@ -82,7 +82,7 @@ class HandleBlobUploadView(APIView):
         api_url = f'https://blob.vercel-storage.com?pathname={pathname}'
 
         try:
-            response = requests.post(api_url, headers=headers, json={})
+            response = requests.post(api_url, headers=headers, data=uploaded_file.read())
             response.raise_for_status()
             
             blob_data = response.json()

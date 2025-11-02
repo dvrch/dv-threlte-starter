@@ -3,6 +3,7 @@
 	import Header from './Header.svelte';
 	import './../app.css';
 	import Toast from '$lib/components/Toast.svelte';
+	export let data;
 </script>
 
 <div class="app">
