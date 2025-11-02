@@ -32,33 +32,52 @@ class TypeView(APIView):
 class HandleBlobUploadView(APIView):
     """
     Handles requests for creating a presigned upload URL for Vercel Blob storage.
+    Supports both image files and 3D model files (glTF/GLB).
     """
     def post(self, request):
         filename = request.data.get('filename')
+        file_type = request.data.get('type', 'image')  # 'image', 'gltf', ou 'glb'
+        
         if not filename:
             return Response({"error": "A 'filename' must be provided."}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Vérification des types de fichiers autorisés
+        if file_type not in ['image', 'gltf', 'glb']:
+            return Response({"error": "Invalid file type. Must be 'image', 'gltf', or 'glb'."}, 
+                          status=status.HTTP_400_BAD_REQUEST)
+
+        # Vérification de l'extension pour les modèles 3D
+        if file_type in ['gltf', 'glb']:
+            ext = filename.lower().split('.')[-1]
+            if ext not in ['gltf', 'glb']:
+                return Response({"error": f"Invalid file extension for {file_type}. Must be .{file_type}"}, 
+                              status=status.HTTP_400_BAD_REQUEST)
+
         token = os.environ.get('BLOB_READ_WRITE_TOKEN')
         if not token:
-            # In production, you'd want to log this error.
             print("CRITICAL: BLOB_READ_WRITE_TOKEN is not set.")
-            return Response({"error": "Server is not configured for file uploads."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": "Server is not configured for file uploads."}, 
+                          status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         headers = {
             'Authorization': f'Bearer {token}',
         }
         
-        # The Vercel Blob API endpoint for creating a new blob and getting a presigned URL
-        api_url = f'https://blob.vercel-storage.com?pathname={filename}'
+        # Organisation des fichiers par type dans Vercel Blob
+        folder = 'models' if file_type in ['gltf', 'glb'] else 'images'
+        pathname = f'{folder}/{filename}'
+        api_url = f'https://blob.vercel-storage.com?pathname={pathname}'
 
         try:
             response = requests.post(api_url, headers=headers, json={})
-            response.raise_for_status()  # Raises an HTTPError for bad responses (4xx or 5xx)
+            response.raise_for_status()
             
             blob_data = response.json()
+            # Ajout du type de fichier dans la réponse pour le frontend
+            blob_data['file_type'] = file_type
             return Response(blob_data)
 
         except requests.exceptions.RequestException as e:
             print(f"Error communicating with Vercel Blob API: {e}")
-            # Optionally, inspect response if available: print(e.response.text)
-            return Response({"error": "Failed to communicate with the blob storage service."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": "Failed to communicate with the blob storage service."}, 
+                          status=status.HTTP_500_INTERNAL_SERVER_ERROR)

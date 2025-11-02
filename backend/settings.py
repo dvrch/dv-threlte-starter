@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "whitenoise.runserver_nostatic",  # Ajouté pour Whitenoise
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
@@ -90,7 +89,6 @@ ADMIN_INDEX_TITLE = "Gestion des Films et Géométries"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # Ajouté pour Whitenoise
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -127,12 +125,13 @@ WSGI_APPLICATION = "wsgi.application"
 # Configuration pour utiliser SQLite en local et PostgreSQL en production via une URL.
 # Vous devrez définir DATABASE_URL dans les variables d'environnement de Vercel.
 
-# Configuration pour utiliser SQLite en local et PostgreSQL en production via une URL.
-# Vous devrez définir DATABASE_URL dans les variables d'environnement de Vercel.
+# Configuration de la base de données avec Neon
+DATABASE_URL = os.environ.get(
+    "DATABASE_URL",
+    "postgresql://neondb_owner:npg_zKtQE5JVDU0R@ep-lucky-truth-agdq4088-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require"
+)
 DATABASES = {
-    "default": dj_database_url.parse(
-        "postgresql://neondb_owner:npg_zKtQE5JVDU0R@ep-lucky-truth-agdq4088-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require"
-    )
+    "default": dj_database_url.parse(DATABASE_URL)
 }
 
 # Password validation
@@ -166,13 +165,8 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
-
-STATIC_URL = "static/"
-# Point static root to a directory within the SvelteKit build output
-STATIC_ROOT = BASE_DIR.parent.parent / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# Static files are served through Vercel Blob
+STATIC_URL = os.environ.get('VERCEL_BLOB_URL', '/static/')
 
 
 # Default primary key field type
@@ -180,8 +174,9 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-MEDIA_ROOT = BASE_DIR / "media"
-MEDIA_URL = "/media/"
+# Configuration Vercel Blob
+BLOB_READ_WRITE_TOKEN = os.environ.get("BLOB_READ_WRITE_TOKEN")
+VERCEL_BLOB_STORE_ID = os.environ.get("BLOB_STORE_ID")
 
 # Vercel définit automatiquement cette variable d'environnement
 VERCEL_URL = os.environ.get("VERCEL_URL")
