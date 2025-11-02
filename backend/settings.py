@@ -49,6 +49,45 @@ INSTALLED_APPS = [
     "taggit",
 ]
 
+# Configuration de l'API REST
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'DEFAULT_FILTER_BACKENDS': [
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    # Personnalisation de l'interface navigable
+    'DEFAULT_METADATA_CLASS': 'rest_framework.metadata.SimpleMetadata',
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.AcceptHeaderVersioning',
+    'DEFAULT_AUTHENTICATION_CLASSES': [],
+    # Documentation de l'API
+    'DEFAULT_TITLE': 'API Films et Géométries',
+    'DEFAULT_DESCRIPTION': '''
+    API de gestion des films et des géométries.
+    
+    Endpoints disponibles:
+    - /api/films/ : Gestion des films
+    - /api/geometries/ : Gestion des géométries
+    - /api/types/ : Liste des types disponibles
+    - /api/upload/ : Gestion des uploads
+    ''',
+    'SERVE_INCLUDE_SCHEMA': True,
+}
+
+# Personnalisation de l'interface d'administration
+ADMIN_SITE_HEADER = "Administration du Film Service"
+ADMIN_SITE_TITLE = "Film Service Admin"
+ADMIN_INDEX_TITLE = "Gestion des Films et Géométries"
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",  # Ajouté pour Whitenoise

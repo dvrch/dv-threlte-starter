@@ -1,1 +1,1 @@
-type_py = 'vague'
+type_py = 'nissan'
