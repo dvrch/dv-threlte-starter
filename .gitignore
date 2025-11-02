@@ -14,7 +14,7 @@ vite.config.ts.timestamp-*
 6f1f447f-bd65-4f1b-93a2-e69b80428ee4.zip
 
 # Django backend specific
-backend/venv-backend/
+backend/venv/
 backend/films_backend/db.sqlite3
 backend/films_backend/media/
 **/*.pyc
