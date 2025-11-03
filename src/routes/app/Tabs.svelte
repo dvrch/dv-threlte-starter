@@ -13,6 +13,7 @@
 <div class="tabs">
   <button class:active={activeTab === 'scene'} on:click={() => setTab('scene')}>Scene</button>
   <button class:active={activeTab === 'add'} on:click={() => setTab('add')}>Add Geometry</button>
+  <button class:active={activeTab === 'upload'} on:click={() => setTab('upload')}>Upload 3D</button>
 </div>
 
 <style>

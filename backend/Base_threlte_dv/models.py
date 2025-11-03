@@ -49,3 +49,6 @@ class Geometry(models.Model):
 
     def format_rotation(self, x, y, z):
         self.rotation = {"x": x, "y": y, "z": z}
+
+    class Meta:
+        ordering = ['-id']  # Orden par défaut pour éviter les warnings de pagination

@@ -3,6 +3,8 @@
     import { Grid, OrbitControls, ContactShadows } from '@threlte/extras'
     import Bloom from '$lib/components/bloom.svelte';
     export let data;
+    // params n'est pas utilisé, mais requis par SvelteKit pour la compatibilité
+    export let params = {};
 </script>
 
 <div style="position: relative; width: 100%; height: 100vh;">

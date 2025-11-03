@@ -9,9 +9,10 @@
     import { notification } from '$lib/stores/notification';
     import type { PageData } from './$types';
 
-    export let data: PageData;
+    // data n'est pas utilisé pour le moment, mais peut être utilisé pour des données de page
+    export let data: PageData = {} as PageData;
 
-    let geometries = [];
+    let geometries: any[] = [];
 
     const loadGeometries = async () => {
         try {
@@ -29,8 +30,6 @@
         }
     };
 
-    onMount(loadGeometries);
-
     let activeTab = 'scene';
 
     function handleTabChange(event: CustomEvent) {
@@ -38,6 +37,8 @@
     }
 
     onMount(() => {
+        loadGeometries();
+        
         window.onerror = (msg, url, lineNo, columnNo, error) => {
             notification.show(error?.message || String(msg), 'error');
             return false;
@@ -54,33 +55,47 @@
     });
 </script>
 
-{#each geometries as geometry (geometry.id)}
-    <Float floatIntensity={1} floatingRange={[0, 1]}>
-        {#if geometry.type === 'box'}
-            <T.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
-            rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} scale={0.5}>
-                <T.BoxGeometry />
-                <T.MeshStandardMaterial color={geometry.color} />
-            </T.Mesh>
-        {:else if geometry.type === 'torus'}
-            <T.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
-            rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} scale={0.5}>
-                <T.TorusKnotGeometry args={[0.5, 0.15, 100, 12, 2, 3]} />
-                <T.MeshStandardMaterial color={geometry.color} />
-            </T.Mesh>
-        {:else if geometry.type === 'icosahedron'}
-            <T.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
-            rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} scale={0.5}>
-                <T.IcosahedronGeometry />
-                <T.MeshStandardMaterial color={geometry.color} />
-            </T.Mesh>
-        {/if}
-        <!-- Add other geometry types here -->
-    </Float>
-{/each}
+{#if activeTab === 'scene'}
+    {#each geometries as geometry (geometry.id)}
+        <Float floatIntensity={1} floatingRange={[0, 1]}>
+            {#if geometry.type === 'box'}
+                <T.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
+                rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} scale={0.5}>
+                    <T.BoxGeometry />
+                    <T.MeshStandardMaterial color={geometry.color} />
+                </T.Mesh>
+            {:else if geometry.type === 'torus'}
+                <T.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
+                rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} scale={0.5}>
+                    <T.TorusKnotGeometry args={[0.5, 0.15, 100, 12, 2, 3]} />
+                    <T.MeshStandardMaterial color={geometry.color} />
+                </T.Mesh>
+            {:else if geometry.type === 'icosahedron'}
+                <T.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
+                rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} scale={0.5}>
+                    <T.IcosahedronGeometry />
+                    <T.MeshStandardMaterial color={geometry.color} />
+                </T.Mesh>
+            {/if}
+            <!-- Add other geometry types here -->
+        </Float>
+    {/each}
+{/if}
 
 <div class="ui-overlay">
-    <h1>TEST UI OVERLAY</h1>
+    <Tabs on:tabChange={handleTabChange} />
+    
+    {#if activeTab === 'scene'}
+        <div class="upload-form-container">
+            <ModelUploadForm on:modelAdded={loadGeometries} />
+        </div>
+    {:else if activeTab === 'add'}
+        <AddGeometry on:geometryChanged={loadGeometries} />
+    {:else if activeTab === 'upload'}
+        <div class="upload-form-container">
+            <ModelUploadForm on:modelAdded={loadGeometries} />
+        </div>
+    {/if}
 </div>
 
 <style>

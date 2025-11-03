@@ -140,18 +140,31 @@ DATABASE_URL = os.environ.get(
 db_config = dj_database_url.parse(DATABASE_URL)
 
 # Ajout des paramètres SSL spécifiques pour Neon
-db_config.update({
-    'OPTIONS': {
-        'sslmode': 'require',
-        'sslcert': None,
-        'sslkey': None,
-        'sslrootcert': None,
-    }
+# Neon requiert SSL pour toutes les connexions
+db_config.setdefault('OPTIONS', {})
+db_config['OPTIONS'].update({
+    'sslmode': 'require',
+    'connect_timeout': 10,
 })
+
+# Pour les connexions poolées, s'assurer que SSL est bien configuré
+if 'sslmode' not in db_config.get('OPTIONS', {}):
+    db_config['OPTIONS']['sslmode'] = 'require'
 
 DATABASES = {
     "default": db_config
 }
+
+# Configuration des connexions pour la performance
+if DATABASE_URL and 'neon' in DATABASE_URL:
+    # Configuration spécifique pour Neon DB avec pooling
+    DATABASES['default'].update({
+        'CONN_MAX_AGE': 600,  # Réutiliser les connexions pendant 10 minutes
+        'OPTIONS': {
+            **DATABASES['default'].get('OPTIONS', {}),
+            'connect_timeout': 10,
+        }
+    })
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -184,18 +197,28 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files are served through Vercel Blob
-# Static files (CSS, JavaScript, Images)
+# Static files configuration
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
-STATIC_URL = "static/"
+# Media files configuration
+# Les fichiers média sont stockés localement en développement
+# En production, utilisez Vercel Blob Storage
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
-# Vercel Blob Storage Configuration
-VERCEL_BLOB_READ_WRITE_TOKEN = os.environ.get('BLOB_READ_WRITE_TOKEN')
+# Configuration Vercel Blob Storage
+BLOB_READ_WRITE_TOKEN = os.environ.get("BLOB_READ_WRITE_TOKEN")
+VERCEL_BLOB_STORE_ID = os.environ.get("STORE_ID", "your-store-id")
+
+# Correction du warning Django URLField (Django 6.0)
+FORMS_URLFIELD_ASSUME_HTTPS = True
 
 # CORS Configuration
 CORS_ALLOW_ALL_ORIGINS = True  # Only for development
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = []  # Initialisation de la liste
 
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -206,20 +229,12 @@ CORS_ALLOW_METHODS = [
     'PUT',
 ]
 
-# Vercel Blob configuration
-VERCEL_BLOB_STORE_ID = os.environ.get('STORE_ID', 'your-store-id')
-
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# Configuration Vercel Blob
-BLOB_READ_WRITE_TOKEN = os.environ.get("BLOB_READ_WRITE_TOKEN")
-
 # Vercel définit automatiquement cette variable d'environnement
 VERCEL_URL = os.environ.get("VERCEL_URL")
 
 if VERCEL_URL:
     CORS_ALLOWED_ORIGINS.append(f"https://{VERCEL_URL}")
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

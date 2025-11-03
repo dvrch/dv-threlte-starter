@@ -11,3 +11,6 @@ class Film(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        ordering = ['-id']  # Orden par défaut pour éviter les warnings de pagination

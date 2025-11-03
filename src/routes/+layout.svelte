@@ -4,6 +4,8 @@
 	import './../app.css';
 	import Toast from '$lib/components/Toast.svelte';
 	export let data;
+	// params n'est pas utilisé, mais requis par SvelteKit pour la compatibilité
+	export let params = {};
 </script>
 
 <div class="app">
