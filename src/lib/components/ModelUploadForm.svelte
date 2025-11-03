@@ -58,14 +58,32 @@
             const modelType = file.name.split('.').pop()?.toLowerCase();
 
             notification.show('Model uploaded successfully!', 'success');
-            file = null;
 
-            // 2) Émettre un événement global pour que le formulaire AddGeometry pré-remplisse model_url/model_type
+            // Émettre un événement global pour pré-remplir le formulaire AddGeometry
             window.dispatchEvent(new CustomEvent('modelUploaded', {
                 detail: { url: data.url, filename: data.filename ?? file.name, model_type: modelType }
             }));
-            // 3) Demander au layout de basculer sur l'onglet Add
+            // Demander au layout de basculer sur l'onglet Add
             window.dispatchEvent(new CustomEvent('app:switchTab', { detail: 'add' }));
+
+            // Optionnel: créer directement une entrée Geometry avec model_url (décommenter si souhaité)
+            // await fetch('http://localhost:8000/api/geometries/', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({
+            //         name: data.filename ?? file.name,
+            //         type: 'box',
+            //         color: '#cccccc',
+            //         position: { x: 0, y: 0, z: 0 },
+            //         rotation: { x: 0, y: 0, z: 0 },
+            //         model_url: data.url,
+            //         model_type: modelType
+            //     })
+            // });
+
+            // Notifier la scène d'une mise à jour possible
+            window.dispatchEvent(new Event('modelAdded'));
+            file = null;
         } catch (error) {
             console.error('Upload error:', error);
             notification.show(

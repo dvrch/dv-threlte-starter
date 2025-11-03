@@ -7,10 +7,21 @@
     import ModelUploadForm from '$lib/components/ModelUploadForm.svelte'
     // aucune donnée de layout utilisée ici
 
+    export let data;
+
     let activeTab: 'scene' | 'add' | 'upload' = 'scene'
     function handleTabChange(event: CustomEvent) {
         activeTab = event.detail
     }
+
+    import { onMount } from 'svelte'
+    onMount(() => {
+        const handleSwitch = (e: CustomEvent) => {
+            activeTab = (e.detail ?? 'scene') as any
+        }
+        window.addEventListener('app:switchTab', handleSwitch as EventListener)
+        return () => window.removeEventListener('app:switchTab', handleSwitch as EventListener)
+    })
 
     if (typeof window !== 'undefined') {
         window.addEventListener('app:switchTab', (e: any) => {

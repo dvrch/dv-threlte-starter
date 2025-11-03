@@ -7,7 +7,9 @@
     import Tabs from './Tabs.svelte';
     import Notification from '$lib/components/Notification.svelte';
     import { notification } from '$lib/stores/notification';
-    // aucune donnée de page utilisée ici
+    import type { PageData } from './$types';
+
+    export let data: PageData;
 
     let geometries: any[] = [];
 

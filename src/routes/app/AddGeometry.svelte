@@ -55,19 +55,23 @@
     selectedGeometryId = '';
   };
 
-  onMount(async () => {
-    await loadTypes();
-    await loadGeometries();
-    resetForm();
-    if (typeof window !== 'undefined') {
-      window.addEventListener('modelUploaded', (e: any) => {
-        if (e?.detail?.url) {
-          model_url = e.detail.url;
-          model_type = e.detail.model_type || '';
-          name = e.detail.filename || name;
-        }
-      })
-    }
+  onMount(() => {
+    (async () => {
+      await loadTypes();
+      await loadGeometries();
+      resetForm();
+    })();
+    const handleUploaded = (e: any) => {
+      if (e?.detail?.url) {
+        model_url = e.detail.url;
+        model_type = e.detail.model_type || '';
+        name = e.detail.filename || name;
+      }
+    };
+    window.addEventListener('modelUploaded', handleUploaded as EventListener);
+    return () => {
+      window.removeEventListener('modelUploaded', handleUploaded as EventListener);
+    };
   });
 
   const loadGeometries = async () => {
@@ -102,6 +106,7 @@
       console.log('Updated geometry:', result);
       
       dispatch('geometryChanged');
+      window.dispatchEvent(new Event('geometryChanged'));
       addToast('Geometry updated successfully!', 'success');
       
       // Ne pas réinitialiser le formulaire après la mise à jour
@@ -132,6 +137,7 @@
       
       resetForm();
       dispatch('geometryChanged');
+      window.dispatchEvent(new Event('geometryChanged'));
       addToast('Geometry added successfully!', 'success');
       // notifier globalement pour rafraîchir la scène
       window.dispatchEvent(new CustomEvent('modelAdded'))
