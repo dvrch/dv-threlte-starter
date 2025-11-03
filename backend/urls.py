@@ -7,7 +7,7 @@ from django.conf.urls.static import static
 
 from rest_framework.routers import DefaultRouter
 from films.views import FilmViewSet
-from Base_threlte_dv.views import GeometryViewSet, TypeView, HandleBlobUploadView
+from Base_threlte_dv.views import GeometryViewSet, TypeView
 
 # Création d'un routeur principal pour toutes les APIs
 router = DefaultRouter()
@@ -23,7 +23,7 @@ urlpatterns = [
     # URLs de l'API
     path('api/', include(router.urls)),  # Toutes les APIs REST sous /api/
     path('api/types/', TypeView.as_view(), name='types'),
-    path('api/upload-blob/', HandleBlobUploadView.as_view(), name='handle-upload'),
+    
     
     # Interface d'administration
     path('admin/', admin.site.urls),

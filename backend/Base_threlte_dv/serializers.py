@@ -3,6 +3,7 @@ from .models import Geometry
 
 class GeometrySerializer(serializers.ModelSerializer):
     color_picker = serializers.CharField(required=False)  # Champ pour le color picker
+    model_file = serializers.FileField(write_only=True, required=False)
 
     class Meta:
         model = Geometry
