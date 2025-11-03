@@ -5,13 +5,17 @@
     import Tabs from './Tabs.svelte'
     import AddGeometry from './AddGeometry.svelte'
     import ModelUploadForm from '$lib/components/ModelUploadForm.svelte'
-    export let data;
-    // params n'est pas utilisé, mais requis par SvelteKit pour la compatibilité
-    export let params = {};
+    // aucune donnée de layout utilisée ici
 
     let activeTab: 'scene' | 'add' | 'upload' = 'scene'
     function handleTabChange(event: CustomEvent) {
         activeTab = event.detail
+    }
+
+    if (typeof window !== 'undefined') {
+        window.addEventListener('app:switchTab', (e: any) => {
+            if (e?.detail) activeTab = e.detail
+        })
     }
 </script>
 

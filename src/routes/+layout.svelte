@@ -3,9 +3,7 @@
 	import Header from './Header.svelte';
 	import './../app.css';
 	import Toast from '$lib/components/Toast.svelte';
-	export let data;
-	// params n'est pas utilisé, mais requis par SvelteKit pour la compatibilité
-	export let params = {};
+	// aucune donnée de layout utilisée ici
 </script>
 
 <div class="app">

@@ -7,10 +7,7 @@
     import Tabs from './Tabs.svelte';
     import Notification from '$lib/components/Notification.svelte';
     import { notification } from '$lib/stores/notification';
-    import type { PageData } from './$types';
-
-    // data n'est pas utilisé pour le moment, mais peut être utilisé pour des données de page
-    export let data: PageData = {} as PageData;
+    // aucune donnée de page utilisée ici
 
     let geometries: any[] = [];
 
@@ -44,13 +41,15 @@
             return false;
         };
 
-        const handleModelAdded = () => {
-            loadGeometries();
-        };
-        window.addEventListener('modelAdded', handleModelAdded);
+        const refresh = () => loadGeometries();
+        window.addEventListener('modelAdded', refresh);
+        window.addEventListener('geometryChanged', refresh);
+        window.addEventListener('modelUploaded', refresh);
 
         return () => {
-            window.removeEventListener('modelAdded', handleModelAdded);
+            window.removeEventListener('modelAdded', refresh);
+            window.removeEventListener('geometryChanged', refresh);
+            window.removeEventListener('modelUploaded', refresh);
         };
     });
 </script>

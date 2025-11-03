@@ -2,9 +2,7 @@
 	import Counter from './Counter.svelte';
 	import welcome from '$lib/images/svelte-welcome.webp';
 	import welcome_fallback from '$lib/images/svelte-welcome.png';
-	export let data;
-	// params n'est pas utilisé, mais requis par SvelteKit pour la compatibilité
-	export let params = {};
+	// aucune donnée de page utilisée ici
 </script>
 
 <section>

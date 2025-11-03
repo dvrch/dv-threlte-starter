@@ -6,6 +6,11 @@
     let isUploading = false;
     let dragOver = false;
 
+    function onFileChange(e: Event) {
+        const input = e.target as HTMLInputElement;
+        file = input.files?.[0] || null;
+    }
+
     function handleDragOver(e: DragEvent) {
         e.preventDefault();
         dragOver = true;
@@ -38,7 +43,7 @@
         formData.append('file', file);
 
         try {
-            // Première étape : Upload vers Vercel Blob
+            // 1) Upload vers Vercel Blob / stockage local (backend gère le fallback)
             const response = await fetch('http://localhost:8000/api/upload-blob/', {
                 method: 'POST',
                 body: formData,
@@ -50,36 +55,17 @@
             }
 
             const data = await response.json();
-            
-            if (data.url) {
-                // Deuxième étape : Sauvegarder dans la base de données
-                const modelData = {
-                    name: file.name,
-                    model_url: data.url,
-                    model_type: file.name.split('.').pop()?.toLowerCase(),
-                };
+            const modelType = file.name.split('.').pop()?.toLowerCase();
 
-                const dbResponse = await fetch('http://localhost:8000/api/models/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(modelData),
-                });
+            notification.show('Model uploaded successfully!', 'success');
+            file = null;
 
-                if (!dbResponse.ok) {
-                    throw new Error('Failed to save model information');
-                }
-
-                notification.show('Model uploaded and saved successfully!', 'success');
-                file = null;
-                
-                // Dispatch un événement pour informer la scène qu'un nouveau modèle est disponible
-                const modelAddedEvent = new CustomEvent('modelAdded', { 
-                    detail: await dbResponse.json()
-                });
-                window.dispatchEvent(modelAddedEvent);
-            }
+            // 2) Émettre un événement global pour que le formulaire AddGeometry pré-remplisse model_url/model_type
+            window.dispatchEvent(new CustomEvent('modelUploaded', {
+                detail: { url: data.url, filename: data.filename ?? file.name, model_type: modelType }
+            }));
+            // 3) Demander au layout de basculer sur l'onglet Add
+            window.dispatchEvent(new CustomEvent('app:switchTab', { detail: 'add' }));
         } catch (error) {
             console.error('Upload error:', error);
             notification.show(
@@ -94,6 +80,7 @@
 
 <div 
     class="model-upload-container"
+    role="region"
     class:drag-over={dragOver}
     on:dragover={handleDragOver}
     on:dragleave={handleDragLeave}
@@ -119,7 +106,7 @@
                         <input 
                             type="file" 
                             accept=".glb,.gltf"
-                            on:change={(e) => file = e.target.files?.[0] || null}
+                            on:change={onFileChange}
                         />
                         <span>Drop GLB/GLTF here<br>or click to browse</span>
                     </label>

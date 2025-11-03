@@ -18,6 +18,9 @@
   let color = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`; 
   let position = { x: 0, y: 0, z: 0 }; 
   let rotation = { x: Number(getRandomValue(0, 360)), y: Number(getRandomValue(0, 360)), z: Number(getRandomValue(0, 360)) };
+  // champs optionnels pour les modèles uploadés
+  let model_url: string = '';
+  let model_type: string = '';
   let geometries = [];
   let selectedGeometryId = '';
   let isEditing = false;
@@ -56,6 +59,15 @@
     await loadTypes();
     await loadGeometries();
     resetForm();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('modelUploaded', (e: any) => {
+        if (e?.detail?.url) {
+          model_url = e.detail.url;
+          model_type = e.detail.model_type || '';
+          name = e.detail.filename || name;
+        }
+      })
+    }
   });
 
   const loadGeometries = async () => {
@@ -73,7 +85,7 @@
 
   const updateGeometry = async () => {
     try {
-      const geometry = { name, type, color, position, rotation };
+      const geometry = { name, type, color, position, rotation, model_url, model_type };
       const response = await fetch(`http://localhost:8000/api/geometries/${selectedGeometryId}/`, {
         method: 'PUT',
         headers: {
@@ -102,7 +114,7 @@
 
   const addGeometry = async () => {
     try {
-      const geometry = { name, type, color, position, rotation };
+      const geometry = { name, type, color, position, rotation, model_url, model_type };
       const response = await fetch('http://localhost:8000/api/geometries/', {
         method: 'POST',
         headers: {
@@ -121,6 +133,8 @@
       resetForm();
       dispatch('geometryChanged');
       addToast('Geometry added successfully!', 'success');
+      // notifier globalement pour rafraîchir la scène
+      window.dispatchEvent(new CustomEvent('modelAdded'))
     } catch (error) {
       console.error('Error adding geometry:', error);
       addToast('Failed to add geometry. Please try again.', 'error');
@@ -195,6 +209,7 @@
       }
 
       addToast('Geometry deleted successfully!', 'success');
+      window.dispatchEvent(new CustomEvent('modelAdded'))
       resetForm();
       dispatch('geometryChanged');
       await loadGeometries();
