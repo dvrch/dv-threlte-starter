@@ -115,7 +115,7 @@ class HandleBlobUploadView(APIView):
             clean_filename = re.sub(r'_+', '_', clean_filename)
             
             folder = 'models' if file_type in ['gltf', 'glb'] else 'images'
-            pathname = f'{folder}/{filename}'
+            pathname = f'{folder}/{clean_filename}'
             api_url = f'https://blob.vercel-storage.com/{pathname}'
 
             print(f"Attempting to upload to Vercel Blob. API URL: {api_url}, Filename: {filename}, File type: {file_type}")

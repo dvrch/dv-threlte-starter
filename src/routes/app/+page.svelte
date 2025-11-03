@@ -77,34 +77,14 @@
                     <T.MeshStandardMaterial color={geometry.color} />
                 </T.Mesh>
             {/if}
-            <!-- Add other geometry types here -->
         </Float>
     {/each}
 {/if}
 
-<div class="ui-overlay">
-    <Tabs on:tabChange={handleTabChange} />
-    
-    {#if activeTab === 'scene'}
-        <div class="upload-form-container">
-            <ModelUploadForm on:modelAdded={loadGeometries} />
-        </div>
-    {:else if activeTab === 'add'}
-        <AddGeometry on:geometryChanged={loadGeometries} />
-    {:else if activeTab === 'upload'}
-        <div class="upload-form-container">
-            <ModelUploadForm on:modelAdded={loadGeometries} />
-        </div>
-    {/if}
-</div>
+<!-- UI déplacée dans +layout.svelte pour flotter au-dessus du Canvas -->
 
 <style>
-    .ui-overlay {
-        position: absolute;
-        top: 60px;
-        right: 20px;
-        z-index: 100;
-    }
+    .ui-overlay { display: flex; flex-direction: column; gap: 12px; }
 
     .controls-container {
         display: flex;
