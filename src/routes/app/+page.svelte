@@ -5,6 +5,9 @@
     import type { PageData } from './$types';
     import Nissangame from './nissangame.svelte';
     import Bibigame from './bibigame.svelte';
+    import Vague from '../vague/vague.svelte';
+    import Tissus from '../bibi/tissus-simulat.svelte';
+    import Garden from './models/garden.svelte';
 
     export let data: PageData;
 
