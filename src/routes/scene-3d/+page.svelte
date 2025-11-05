@@ -8,6 +8,7 @@
 	export let data;
 </script>
 
+
 <div>
 	<Canvas>
 		<InteractivitySetup />

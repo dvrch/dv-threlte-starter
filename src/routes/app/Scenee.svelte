@@ -136,10 +136,10 @@
       <T is={ghost.scene} position={[0, 0, 0]} scale={0.4} />
       {/await}
     {:else if geometry.type === 'nissan'}
-      <Garden />
-      {#await useGltf('/assets/nissan.glb') then ghost}
-      <T is={ghost.scene} position={[0, 0, 0]} scale={0.4} />
-      {/await}
+      <Nissan 
+        position={[geometry.position.x, geometry.position.y, geometry.position.z]}
+        rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]}
+      />
     {:else if geometry.type === 'bibi'}
       <Bibanime 
         position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
@@ -165,11 +165,11 @@
         scale={5}
       />
     {:else if geometry.type === 'sphere'}
-      <Spaceship 
-        position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
-        rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]}
-        scale={5}
-      />
+      <T.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
+        rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} scale={0.5}>
+        <T.SphereGeometry />
+        <T.MeshStandardMaterial color={geometry.color} />
+      </T.Mesh>
     {:else if geometry.type === 'bibigame'}
       <Bibigame />
     {/if}

@@ -31,7 +31,7 @@ SECRET_KEY = os.environ.get(
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG sera 'False' sur Vercel par défaut
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 # L'URL de production sera ajoutée automatiquement par Vercel.
 ALLOWED_HOSTS = ["127.0.0.1", ".vercel.app", "localhost"]

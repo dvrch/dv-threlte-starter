@@ -3,6 +3,8 @@
     import { Float } from '@threlte/extras';
     import GltfModel from '$lib/components/GltfModel.svelte';
     import type { PageData } from './$types';
+    import Nissangame from './nissangame.svelte';
+    import Bibigame from './bibigame.svelte';
 
     export let data: PageData;
 
@@ -36,6 +38,19 @@
                 rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} scale={0.5}>
                     <T.IcosahedronGeometry />
                     <T.MeshStandardMaterial color={geometry.color} />
+                </T.Mesh>
+            {:else if geometry.type === 'nissan' || geometry.type === 'nissangame'}
+                <Nissangame position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
+                rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} />
+            {:else if geometry.type === 'bibi' || geometry.type === 'bibigame'}
+                <Bibigame position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
+                rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} />
+            {:else}
+                <!-- Fallback for unhandled types -->
+                <T.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
+                rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} scale={0.5}>
+                    <T.BoxGeometry />
+                    <T.MeshStandardMaterial color="purple" />
                 </T.Mesh>
             {/if}
         </Float>
