@@ -48,6 +48,21 @@
             {:else if geometry.type === 'bibi' || geometry.type === 'bibigame'}
                 <Bibigame position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
                 rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} />
+            {:else if geometry.type === 'sphere'}
+                <T.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
+                rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} scale={0.5}>
+                    <T.SphereGeometry />
+                    <T.MeshStandardMaterial color={geometry.color} />
+                </T.Mesh>
+            {:else if geometry.type === 'desk'}
+                <GltfModel url={'/assets/Desk-bati.glb'} position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
+                rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} />
+            {:else if geometry.type === 'vague'}
+                <Vague />
+            {:else if geometry.type === 'tissus'}
+                <Tissus />
+            {:else if geometry.type === 'garden'}
+                <Garden />
             {:else}
                 <!-- Fallback for unhandled types -->
                 <T.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
