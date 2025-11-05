@@ -7,6 +7,7 @@
     // aucune donnée de layout utilisée ici
 
     export let data;
+    export let params = {};
 
     let activeTab: 'scene' | 'add' | 'upload' = 'scene'
     function handleTabChange(event: CustomEvent) {

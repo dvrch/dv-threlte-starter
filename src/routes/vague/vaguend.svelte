@@ -54,7 +54,9 @@
 
 	onDestroy(() => {
 		// Nettoyage si nécessaire
-		renderer.dispose(); // Libération des ressources du renderer
+		if (renderer) {
+			renderer.dispose(); // Libération des ressources du renderer
+		}
 	});
 
 	function computeGeometry(): THREE.BufferGeometry {

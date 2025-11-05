@@ -4,6 +4,8 @@
 	import './../app.css';
 	import Toast from '$lib/components/Toast.svelte';
 	// aucune donnée de layout utilisée ici
+	export let data;
+	export let params = {};
 </script>
 
 <div class="app">

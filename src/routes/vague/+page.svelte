@@ -4,9 +4,9 @@
 	import Vaguend from './vaguend.svelte';
 	import About from '../stores/About.svelte';
 
-	export let position: [number, number, number] = [7, 4, 6];
+	export let position: [number, number, number] = [0, 0, 0];
 	export let rotation: [number, number, number] = [0, 0, 0];
-	export let scale: number | [number, number, number] = 3;
+	export let scale: number | [number, number, number] = 0.8;
 </script>
 
 <Canvas>
