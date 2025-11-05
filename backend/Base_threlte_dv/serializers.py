@@ -19,6 +19,8 @@ class GeometrySerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
+        # Retirer model_file qui n'est pas un champ du modèle Geometry
+        validated_data.pop('model_file', None)
         # Si 'color_picker' est fourni, utilisez-le pour définir la couleur
         if 'color_picker' in validated_data:
             validated_data['color'] = validated_data.pop('color_picker')

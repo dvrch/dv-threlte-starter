@@ -1,18 +1,18 @@
 <script lang="ts">
 	import Bibigame from './bibigame.svelte';
-  import { onMount } from 'svelte';
-  import { writable } from 'svelte/store'; // Correction de l'import
+  import { onMount, onDestroy } from 'svelte';
+  import { writable } from 'svelte/store';
   import Nissangame from './nissangame.svelte';
   import Garden from './models/garden.svelte'; 
   import { T } from '@threlte/core';
   import { ContactShadows, Float, Grid, OrbitControls } from '@threlte/extras';
-  // import { page } from '$app/stores';
   import Bloom from './models/bloom.svelte';
   import { useGltf } from '@threlte/extras';
   import Nissan from './models/Nissan.svelte';
-  import AddGeometry from './AddGeometry.svelte'; // Importation du composant
+  import AddGeometry from './AddGeometry.svelte';
   import { addToast } from '$lib/stores/toasts';
-  
+  import GltfModel from '$lib/components/GltfModel.svelte'; // Importer le nouveau composant
+
   import Tissus from '../bibi/tissus-simulat.svelte';
   import Bibanime from '../bibi/bibanime.svelte';
   import Vague from '../vague/+page.svelte';
@@ -32,28 +32,15 @@
     type: string;
     color: string;
     name: string;
+    model_url?: string; // Rendre model_url optionnel
   };
-
-  // Mise à jour des props de Bibanime
-  interface BibanimeProps {
-    position: [number, number, number];
-    scale: number;
-  }
 
   let geometries: Geometry[] = [];
 
-  // Créer un store pour la géométrie sélectionnée
   const selectedGeometry = writable<Geometry | null>(null);
 
   const handleGeometryClick = (geometry: Geometry) => {
-    $selectedGeometry = geometry; // Mettre à jour le store
-  };
-
-  const handleDelete = () => {
-    if ($selectedGeometry) {
-      deleteGeometry($selectedGeometry.id);
-      $selectedGeometry = null; // Réinitialiser la sélection
-    }
+    $selectedGeometry = geometry;
   };
 
   const deleteGeometry = async (id: string) => {
@@ -61,17 +48,8 @@
       const response = await fetch(`/api/geometries/${id}/`, {
         method: 'DELETE',
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete geometry');
-      }
-
+      if (!response.ok) throw new Error('Failed to delete geometry');
       loadGeometries();
-
-      
-
-      // Mettre à jour la liste des géométries après la suppression
-      geometries = geometries.filter(geometry => geometry.id !== id);
       addToast('Geometry deleted successfully!', 'success');
     } catch (error) {
       console.error('Error deleting geometry:', error);
@@ -82,32 +60,31 @@
   const loadGeometries = async () => {
     try {
       const response = await fetch('http://localhost:8000/api/geometries/');
-      if (!response.ok) {
-        throw new Error('Failed to fetch geometries');
-      }
-      geometries = await response.json();
+      if (!response.ok) throw new Error('Failed to fetch geometries');
+      const data = await response.json();
+      geometries = data.results || [];
       console.log('Loaded geometries:', geometries);
     } catch (error) {
       console.error('Error loading geometries:', error);
     }
   };
 
-  // Charger les géométries au montage
   onMount(() => {
     loadGeometries();
+    window.addEventListener('modelAdded', loadGeometries);
   });
 
-  // Fonction pour gérer les changements de géométrie
+  onDestroy(() => {
+    window.removeEventListener('modelAdded', loadGeometries);
+  });
+
   const handleGeometryChange = () => {
     loadGeometries();
-    $selectedGeometry = null; // Réinitialiser la sélection après une modification
+    $selectedGeometry = null;
   };
 </script>  
 
-
-
 <T.PerspectiveCamera makeDefault position={[-10, 10, 10]} fov={70} aspect={window.innerWidth * 0.3 / window.innerHeight * 0.3}>
-  <!-- AVEC ZOOM et max/min distance -->
   <OrbitControls autoRotate enableZoom={true} minDistance={0} maxDistance={80} target={[0, 1.5, 0]} />
 </T.PerspectiveCamera>
 
@@ -131,8 +108,9 @@
     floatingRange={[0, 1]} 
     on:click={() => handleGeometryClick(geometry)}
   >
-    
-    {#if geometry.type === 'box'}
+    {#if geometry.model_url}
+      <GltfModel url={geometry.model_url} position={geometry.position} rotation={geometry.rotation} />
+    {:else if geometry.type === 'box'}
       <T.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
       rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} scale={0.5}>
         <T.BoxGeometry />
@@ -157,7 +135,7 @@
       {#await useGltf('/assets/garden.glb') then ghost}
       <T is={ghost.scene} position={[0, 0, 0]} scale={0.4} />
       {/await}
-      {:else if geometry.type === 'nissan'}
+    {:else if geometry.type === 'nissan'}
       <Garden />
       {#await useGltf('/assets/nissan.glb') then ghost}
       <T is={ghost.scene} position={[0, 0, 0]} scale={0.4} />
@@ -179,7 +157,7 @@
         rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]}
         scale={5}
       />
-      {:else if geometry.type === 'desk'}
+    {:else if geometry.type === 'desk'}
       {console.log('Desk position:', [geometry.position.x, geometry.position.y, geometry.position.z])}
       <Desk 
         position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
@@ -192,11 +170,10 @@
         rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]}
         scale={5}
       />
-      {:else if geometry.type === 'bibigame'}
+    {:else if geometry.type === 'bibigame'}
       <Bibigame />
     {/if}
   </Float>
-  
 {/each}
 
  

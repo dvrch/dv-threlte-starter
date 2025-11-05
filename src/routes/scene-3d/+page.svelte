@@ -1,41 +1,39 @@
 <script>
 	import { Canvas, T } from '@threlte/core';
-	import { OrbitControls } from '@threlte/extras'; // Réactivé
+	import { OrbitControls, Grid } from '@threlte/extras';
 	import { degToRad } from 'three/src/math/MathUtils';
-	import { tweened } from 'svelte/motion';
 	import InteractivitySetup from '$lib/InteractivitySetup.svelte';
+	import GltfModel from '$lib/components/GltfModel.svelte';
 
-	const zoom = tweened(1, { duration: 250 });
+	export let data;
 </script>
 
 <div>
 	<Canvas>
 		<InteractivitySetup />
-		<T.PerspectiveCamera makeDefault position={[10, 10, 10]} fov={24} zoom={$zoom}>
-			<OrbitControls maxPolarAngle={degToRad(80)} enableZoom={false} target={{ y: 0.5 }} />
+		<T.PerspectiveCamera makeDefault position={[10, 10, 10]} fov={24}>
+			<OrbitControls maxPolarAngle={degToRad(80)} target={{ y: 0.5 }} />
 		</T.PerspectiveCamera>
 
-		<T.DirectionalLight castShadow position={[3, 10, 10]} />
-		<T.DirectionalLight position={[-3, 10, -10]} intensity={0.2} />
-		<T.AmbientLight intensity={0.2} />
+		<T.DirectionalLight castShadow position={[3, 10, 10]} intensity={1.5} />
+		<T.AmbientLight intensity={0.5} />
 
-		<!-- Cube -->
-		<T.Group>
-			<T.Mesh
-				position.y={0.5}
-				castShadow
-				on:pointerenter={() => zoom.set(1.5)}
-				on:pointerleave={() => zoom.set(1)}
-			>
-				<T.BoxGeometry />
-				<T.MeshStandardMaterial color="#333333" />
-			</T.Mesh>
-		</T.Group>
+		{#if data.error}
+			<p>{data.error}</p>
+		{:else}
+			{#each data.geometries as geometry (geometry.id)}
+				{#if geometry.model_url}
+					<GltfModel 
+						url={geometry.model_url} 
+						position={geometry.position}
+						rotation={geometry.rotation}
+					/>
+				{/if}
+			{/each}
+		{/if}
 
-		<!-- Floor -->
-		<T.Mesh receiveShadow rotation.x={degToRad(-90)}>
-			<T.CircleGeometry args={[3, 72]} />
-			<T.MeshStandardMaterial color="white" />		</T.Mesh>
+		<Grid />
+
 	</Canvas>
 </div>
 

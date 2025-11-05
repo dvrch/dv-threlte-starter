@@ -1,0 +1,19 @@
+feat: Refonte complète du processus de création et d'affichage des géométries
+
+Cette mise à jour majeure corrige l'ensemble du pipeline de création, d'upload et de rendu des objets 3D.
+
+Corrections du Backend :
+- Correction de multiples erreurs (500, 400) qui empêchaient la sauvegarde des uploads en base de données.
+- Correction de la validation du Serializer pour gérer correctement les champs temporaires.
+- Ajout du type `gltf_model` à la liste des choix valides pour le modèle `Geometry`.
+
+Corrections et améliorations du Frontend :
+- Correction du rendu de la scène qui ne traitait pas correctement la réponse paginée de l'API (en utilisant `.results`).
+- Implémentation d'un écouteur d'événement (`modelAdded`) pour que la scène se rafraîchisse automatiquement après un ajout ou un upload.
+- Ajout de la logique de rendu pour les modèles chargés depuis une URL (`model_url`).
+
+Refactoring et expérience utilisateur :
+- Création d'un composant réutilisable `<GltfModel />` pour un affichage propre des modèles 3D.
+- Fusion des deux formulaires (`AddGeometry` et `ModelUploadForm`) en un seul formulaire unifié, comme suggéré.
+- Le formulaire unifié utilise maintenant son état (y compris les valeurs aléatoires) pour les uploads de fichiers.
+- Garantie de l'unicité du nom pour tous les nouveaux objets en ajoutant un identifiant aléatoire.

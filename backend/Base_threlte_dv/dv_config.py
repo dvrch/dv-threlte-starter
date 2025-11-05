@@ -15,6 +15,7 @@ TYPE_CHOICES = [
     ('nissan', 'Nissan'),
     ('tissus', 'Tissus'),
     ('desk', 'Desk'),
+    ('gltf_model', 'GLTF Model'),
 ]
 
 
