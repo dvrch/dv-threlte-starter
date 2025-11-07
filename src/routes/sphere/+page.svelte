@@ -68,12 +68,15 @@
 </script>
 
 <Canvas>
+	<T.PerspectiveCamera makeDefault position={[0, 5, 10]} fov={75}>
+		<OrbitControls />
+	</T.PerspectiveCamera>
+
 	<ambientLight intensity={0.5}></ambientLight>
 	<directionalLight position={[5, 5, 5]} intensity={1}></directionalLight>
 	{#if model}
 	  <primitive object={model}></primitive>
 	{/if}
-	<OrbitControls></OrbitControls>
 </Canvas>
 
 <div class="controls">

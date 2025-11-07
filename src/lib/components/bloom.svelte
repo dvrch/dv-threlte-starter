@@ -10,6 +10,10 @@
 	} from 'postprocessing'
 	import { useRender, useThrelte } from '@threlte/core'
 
+	export let height: number = 512;
+	export let width: number = 512;
+	export let mipmapBlur: boolean = true;
+
 	const { scene, renderer, camera } = useThrelte()
 	const composer = new EffectComposer(renderer)
 
@@ -22,10 +26,10 @@
 				new BloomEffect({
 					intensity: 0.8,
 					luminanceThreshold: 0,
-					height: 512,
-					width: 512,
+					height,
+					width,
 					luminanceSmoothing: 0,
-					mipmapBlur: true,
+					mipmapBlur,
 					kernelSize: KernelSize.MEDIUM,
 				})
 			)

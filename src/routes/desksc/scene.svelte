@@ -34,11 +34,6 @@
 
 <Bloom /> 
 
-<T.OrthographicCamera position={[10, 10, 10]} zoom={40} makeDefault>
-
-	<OrbitControls enableDamping />
-</T.OrthographicCamera>
-
 <T.AmbientLight color="#ffffff" intensity={10} />
 <T.PointLight intensity={10} position={[1, 2, -4]} color="#76aac8" />
 

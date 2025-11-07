@@ -16,9 +16,10 @@
   // import App11 from '../svelte-demo-2N8/svelte-demo-main/src11/App.svelte';
 
   let block;
-  onMount(() => {
+  onMount(async () => {
+    await Rapier.init(); // Initialize Rapier
     const mesh = new Mesh(); // Remplacer par une instance réelle de Mesh
-    const physic = new Rapier.World(); // Remplacer par une instance réelle de Rapier World
+    const physic = new Rapier.World({ x: 0.0, y: -9.81, z: 0.0 }); // Pass gravity vector
     block = new Block(mesh, physic);
   });
 </script>

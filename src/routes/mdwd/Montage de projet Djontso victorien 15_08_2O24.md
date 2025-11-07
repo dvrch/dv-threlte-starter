@@ -146,7 +146,7 @@ séquences :
 
         -   ![Une image contenant texte, capture d'écran, diagramme,
             logiciel Description générée
-            automatiquement](media/media/image1.png){width="2.2222222222222223in"
+            automatiquement](/media/image){width="2.2222222222222223in"
             height="2.2847222222222223in"}Quartier
 
 -   Code postal 5020

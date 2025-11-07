@@ -31,7 +31,7 @@
 </script>
 
 <div style="position: relative; width: 100%; height: 100vh;">
-    <Canvas>
+    <Canvas style="pointer-events: none;">
         <T.PerspectiveCamera makeDefault position={[-10, 10, 10]} fov={70}>
             <OrbitControls autoRotate enableZoom={true} minDistance={0} maxDistance={80} target={[0, 1.5, 0]} />
         </T.PerspectiveCamera>
@@ -45,7 +45,7 @@
 
         <slot />
     </Canvas>
-    <div class="ui-overlay-root" style="position:absolute; top: 60px; right: 20px; z-index: 2000; display:flex; flex-direction:column; gap:12px;">
+    <div class="ui-overlay-root" style="position:absolute; top: 60px; right: 20px; z-index: 2000; display:flex; flex-direction:column; gap:12px; pointer-events: auto;">
         <Tabs on:tabChange={handleTabChange} />
         {#if activeTab === 'add'}
             <AddGeometry />

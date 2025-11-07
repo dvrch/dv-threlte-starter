@@ -70,12 +70,7 @@
 </script>
 
 <div class="scene-container">
-	<Canvas>
-		<T.PerspectiveCamera makeDefault position={[0, 5, 10]} fov={75}>
-			<OrbitControls />
-		</T.PerspectiveCamera>
-
-		<T.Scene>
+	<T.Scene>
 
 			<Bibanime 
 				position={[bibanimePosition.x, bibanimePosition.y, bibanimePosition.z]} 
@@ -86,7 +81,6 @@
 			</Bibanime>
 		
 		</T.Scene>
-	</Canvas>
 
 </div>
 

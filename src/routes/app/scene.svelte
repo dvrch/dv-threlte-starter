@@ -87,68 +87,62 @@
 </script>
 
 <div class="scene-container">
-	<Canvas>
-		<T.PerspectiveCamera makeDefault position={[0, 5, 10]} fov={75}>
-			<OrbitControls />
-		</T.PerspectiveCamera>
+	<T.Scene>
+		<!-- Grid -->
+		<Grid cellColor="gray" sectionSize={0} />
 
-		<T.Scene>
-			<!-- Grid -->
-			<Grid cellColor="gray" sectionSize={0} />
+		<!-- Nissan -->
+		<Nissan position={[...nissanPosition]} rotation={[...nissanRotation]} let:ref castShadow>
+			<TransformControls object={ref} />
+		</Nissan>
 
-			<!-- Nissan -->
-			<Nissan position={[...nissanPosition]} rotation={[...nissanRotation]} let:ref castShadow>
-				<TransformControls object={ref} />
-			</Nissan>
-
-			<Bibanime 
-				position={[bibanimePosition.x, bibanimePosition.y, bibanimePosition.z]} 
-				rotation={[bibanimeRotation.x, bibanimeRotation.y, bibanimeRotation.z]}>
-				{#if bibiScene}
-					<T is={bibiScene} />
-				{/if}
-			</Bibanime>
-
-
-
-			<!-- Curve visualization -->
-			 
-			   <T.Points position.y={0.5}>
-                <T.BufferGeometry>
-                    {#if curve}
-                        <T.Float32BufferAttribute attach="attributes-position" 
-                        args={[curve.getPoints(50).flatMap(v => [v.x, v.y, v.z]), 3]} />
-                    {/if}
-                </T.BufferGeometry>
-                <T.PointsMaterial size={0.03} color="#00ff00" />
-            </T.Points>
-
-            <!-- <T.Line position.y={0.5}>
-                <T.BufferGeometry>
-                    {#if curve}
-                        <T.Float32BufferAttribute attach="attributes-position" 
-                        args={[curve.getPoints(50).flatMap(v => [v.x, v.y, v.z]), 3]} />
-                    {/if}
-                </T.BufferGeometry>
-                <T.LineBasicMaterial color="#ff0000" linewidth={3} />
-            </T.Line> -->
-			
-			<T.Mesh position.y={0.5}>
-				{#if curve}
-					<T.TubeGeometry args={[curve, 50, 0.02, 8, false]} />
-					<T.MeshStandardMaterial color="red" />
-				{/if}
-			</T.Mesh>
-
-			<!-- {#if vagueMesh}
-				<T is={vagueMesh} />
-			{/if} -->
-
-			<!-- {#if bibiScene}
+		<Bibanime 
+			position={[bibanimePosition.x, bibanimePosition.y, bibanimePosition.z]} 
+			rotation={[bibanimeRotation.x, bibanimeRotation.y, bibanimeRotation.z]}>
+			{#if bibiScene}
 				<T is={bibiScene} />
-			{/if} -->
-		</T.Scene>
-	</Canvas>
+			{/if}
+		</Bibanime>
+
+
+
+		<!-- Curve visualization -->
+		 
+		   <T.Points position.y={0.5}>
+            <T.BufferGeometry>
+                {#if curve}
+                    <T.Float32BufferAttribute attach="attributes-position" 
+                    args={[curve.getPoints(50).flatMap(v => [v.x, v.y, v.z]), 3]} />
+                {/if}
+            </T.BufferGeometry>
+            <T.PointsMaterial size={0.03} color="#00ff00" />
+        </T.Points>
+
+        <!-- <T.Line position.y={0.5}>
+            <T.BufferGeometry>
+                {#if curve}
+                    <T.Float32BufferAttribute attach="attributes-position" 
+                    args={[curve.getPoints(50).flatMap(v => [v.x, v.y, v.z]), 3]} />
+                {/if}
+            </T.BufferGeometry>
+            <T.LineBasicMaterial color="#ff0000" linewidth={3} />
+        </T.Line> -->
+		
+		<T.Mesh position.y={0.5}>
+			{#if curve}
+				<T.TubeGeometry args={[curve, 50, 0.02, 8, false]} />
+				<T.MeshStandardMaterial color="red" />
+			{/if}
+		</T.Mesh>
+
+		<!-- {#if vagueMesh}
+			<T is={vagueMesh} />
+		{/if} -->
+
+		<!-- {#if bibiScene}
+			<T is={bibiScene} />
+		{/if} -->
+	</T.Scene>
 
 	 <!-- <div class="vague-container">
 		<Vague width={window.innerWidth} height={window.innerHeight} on:render={handleVagueRender} />

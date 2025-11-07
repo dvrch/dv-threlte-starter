@@ -3,31 +3,52 @@
     import GltfModel from '$lib/components/GltfModel.svelte';
     import { onMount, onDestroy } from 'svelte';
 
+    // Import all known Svelte components
+    import SpherePage from '../../routes/sphere/+page.svelte';
+    import VaguePage from '../../routes/vague/+page.svelte';
+    import TissusSimulat from '../../routes/bibi/tissus-simulat.svelte';
+    import DeskPage from '../../routes/desksc/+page.svelte';
+    import NissanComponent from '../../routes/Spaceship/Nissan.svelte';
+    import Bibianime from '../../routes/bibi/bibanime.svelte';
+    import GardenComponent from '../../routes/app/models/garden.svelte';
+    import NissangameComponent from '../../routes/app/nissangame.svelte';
+    import BibigameComponent from '../../routes/app/bibigame.svelte';
+
     export let geometry: any;
+
+    // Map geometry types to their respective Svelte components
+    const componentMap: { [key: string]: any } = {
+        'sphere': SpherePage,
+        'vague': VaguePage,
+        'tissus': TissusSimulat,
+        'desk': DeskPage,
+        'nissan': NissanComponent,
+        'bibi': Bibianime,
+        'garden': GardenComponent,
+        'nissangame': NissangameComponent,
+        'bibigame': BibigameComponent,
+    };
 
     let DynamicComponent: any = null;
 
-    $: if (geometry && geometry.model_type === 'from_file' && geometry.model_url) {
-        // Dynamically import the Svelte component
-        import(/* @vite-ignore */ geometry.model_url)
-            .then(module => {
-                DynamicComponent = module.default;
-            })
-            .catch(error => {
-                console.error(`Failed to load dynamic component from ${geometry.model_url}:`, error);
-                DynamicComponent = null; // Reset on error
-            });
-    } else {
-        DynamicComponent = null; // Reset if not from_file or no url
+    $: {
+        if (geometry && geometry.model_type === 'from_file' && geometry.type) {
+            DynamicComponent = componentMap[geometry.type];
+            if (!DynamicComponent) {
+                console.error(`No component found for type: ${geometry.type}`);
+            }
+        } else {
+            DynamicComponent = null;
+        }
     }
 
     // Handle component lifecycle
     onMount(() => {
-        // No specific action needed here as componentInstance is managed by {#if DynamicComponent}
+        // No specific action needed here
     });
 
     onDestroy(() => {
-        // No specific action needed here as componentInstance is managed by {#if DynamicComponent}
+        // No specific action needed here
     });
 </script>
 

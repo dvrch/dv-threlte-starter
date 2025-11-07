@@ -10,16 +10,21 @@
 
   const gltf = useGltf('/models/spaceship.glb');
 
-  const texture = useTexture('/static/textures/energy-beam-opacity.png');
+  const texture = useTexture('/textures/energy-beam-opacity.png');
 
   gltf.then((gltf) => {
-    gltf.nodes.Cube.material.blending = CustomBlending;
-    gltf.nodes.Cube.material.blendEquation = AddEquation;
-    gltf.nodes.Cube.material.blendSrc = OneFactor;
-    gltf.nodes.Cube.material.blendDst = OneFactor;
-    gltf.nodes.Cube.material.depthWrite = false;
-    gltf.nodes.Cube.material.depthTest = false;
-    gltf.nodes.Cube.material.map = texture;
+    const cubeNode = gltf.nodes.Cube;
+    if (cubeNode && cubeNode.material) {
+      cubeNode.material.blending = CustomBlending;
+      cubeNode.material.blendEquation = AddEquation;
+      cubeNode.material.blendSrc = OneFactor;
+      cubeNode.material.blendDst = OneFactor;
+      cubeNode.material.depthWrite = false;
+      cubeNode.material.depthTest = false;
+      cubeNode.material.map = texture;
+    } else {
+      console.warn("gltf.nodes.Cube or its material is undefined in spaceship.svelte");
+    }
   });
 
   
