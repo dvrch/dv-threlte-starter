@@ -5,7 +5,10 @@
     import type { PageData } from './$types';
 
     export let data: PageData;
-
+    export let params = {};
+    export let position;
+    export let rotation;
+    export let scale;
 </script>
 
 {#if data.error}

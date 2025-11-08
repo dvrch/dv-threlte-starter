@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Canvas, useTask } from '@threlte/core';
+	import { Canvas, useTask, T } from '@threlte/core'; // Added T
 	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 	import { TextureLoader, MeshStandardMaterial } from 'three';
 	import { OrbitControls } from '@threlte/extras';
@@ -67,7 +67,6 @@
 	});
 </script>
 
-<Canvas>
 	<T.PerspectiveCamera makeDefault position={[0, 5, 10]} fov={75}>
 		<OrbitControls />
 	</T.PerspectiveCamera>
@@ -77,7 +76,6 @@
 	{#if model}
 	  <primitive object={model}></primitive>
 	{/if}
-</Canvas>
 
 <div class="controls">
 	<button on:click={nextTexture}>Change Texture</button>

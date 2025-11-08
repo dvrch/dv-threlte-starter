@@ -20,10 +20,8 @@
 </script>
 
 
-<Canvas>
 	<Scene />
 	<!-- <Bloom/> -->
-</Canvas>
 
 
 

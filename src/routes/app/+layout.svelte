@@ -31,20 +31,22 @@
 </script>
 
 <div style="position: relative; width: 100%; height: 100vh;">
-    <Canvas style="pointer-events: none;">
-        <T.PerspectiveCamera makeDefault position={[-10, 10, 10]} fov={70}>
-            <OrbitControls autoRotate enableZoom={true} minDistance={0} maxDistance={80} target={[0, 1.5, 0]} />
-        </T.PerspectiveCamera>
+    <div style="pointer-events: none;">
+        <Canvas>
+            <T.PerspectiveCamera makeDefault position={[-10, 10, 10]} fov={70}>
+                <OrbitControls autoRotate enableZoom={true} minDistance={0} maxDistance={80} target={[0, 1.5, 0]} />
+            </T.PerspectiveCamera>
 
-        <T.DirectionalLight intensity={0.8} position={[5, 10, 0]} />
-        <T.AmbientLight intensity={0.2} />
+            <T.DirectionalLight intensity={0.8} position={[5, 10, 0]} />
+            <T.AmbientLight intensity={0.2} />
 
-        <Grid position={[0, -0.001, 0]} cellColor="#ffffff" sectionColor="#ffffff" sectionThickness={0} fadeDistance={25} cellSize={2} />
-        <ContactShadows scale={10} blur={2} far={2.5} opacity={0.5} />
-        <Bloom />
+            <Grid position={[0, -0.001, 0]} cellColor="#ffffff" sectionColor="#ffffff" sectionThickness={0} fadeDistance={25} cellSize={2} />
+            <ContactShadows scale={10} blur={2} far={2.5} opacity={0.5} />
+            <Bloom />
 
-        <slot />
-    </Canvas>
+            <slot />
+        </Canvas>
+    </div>
     <div class="ui-overlay-root" style="position:absolute; top: 60px; right: 20px; z-index: 2000; display:flex; flex-direction:column; gap:12px; pointer-events: auto;">
         <Tabs on:tabChange={handleTabChange} />
         {#if activeTab === 'add'}

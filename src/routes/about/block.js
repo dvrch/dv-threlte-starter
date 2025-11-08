@@ -13,8 +13,8 @@ export default class Block extends Mesh {
   constructor(mesh, physic) {
     super();
     if (typeof window !== 'undefined') {
-      Block.soundPush = new Audio("./sound/push.wav");
-      Block.soundDrop = new Audio("./sound/drop.wav");
+      Block.soundPush = new Audio("/sound/push.wav");
+      Block.soundDrop = new Audio("/sound/drop.wav");
     }
     this.initVisual(mesh);
     this.initPhysic(physic);

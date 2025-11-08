@@ -25,14 +25,14 @@
     });
 
     // Optional: Apply a texture if needed, assuming the model has a mesh
-    const textureLoader = new THREE.TextureLoader();
-    textureLoader.load('/public/zaki.png', (texture) => {
-      $gltf.scene.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.material = new THREE.MeshPhongMaterial({ map: texture, shininess: 10 });
-        }
-      });
-    });
+    // const textureLoader = new THREE.TextureLoader();
+    // textureLoader.load('/public/zaki.png', (texture) => {
+    //   $gltf.scene.traverse((child) => {
+    //     if (child instanceof THREE.Mesh) {
+    //       child.material = new THREE.MeshPhongMaterial({ map: texture, shininess: 10 });
+    //     }
+    //   });
+    // });
   }
 </script>
 

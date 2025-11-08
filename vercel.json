@@ -13,6 +13,9 @@
     }
   ],
   "rewrites": [
+    { "source": "/models/:path*", "destination": "https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com/models/:path*" },
+    { "source": "/textures/:path*", "destination": "https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com/textures/:path*" },
+    { "source": "/assets/:path*", "destination": "https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com/assets/:path*" },
     { "source": "/api/(.*)", "destination": "/backend/films_backend/films_backend/wsgi.py" },
     { "source": "/dashboard", "destination": "/backend/films_backend/films_backend/wsgi.py" },
     { "source": "/dashboard/(.*)", "destination": "/backend/films_backend/films_backend/wsgi.py" },
