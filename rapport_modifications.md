@@ -1,21 +1,19 @@
-refactor(3d-rendering): Unification de la gestion des modèles 3D et optimisation du Canvas
+refactor(3d-rendering): Affinements de l'architecture 3D et gestion des assets
 
-Ce commit apporte une refonte majeure de l'architecture de rendu 3D, centralisant la gestion des modèles et optimisant l'utilisation du composant `<Canvas>`. L'objectif est d'améliorer la flexibilité, la performance et la maintenabilité du système de rendu.
+Ce commit poursuit l'optimisation de l'architecture de rendu 3D et améliore la gestion des assets et des interactions utilisateur.
 
 Modifications détaillées :
-- **Architecture de rendu 3D unifiée :**
-  - Le composant `Dynamic3DModel.svelte` a été étendu pour gérer dynamiquement le rendu de divers types de modèles (GLTF, primitives, composants Svelte spécifiques) via une `componentMap`.
-  - De nombreux composants de scène (`bibigame.svelte`, `nissangame.svelte`, `scene.svelte`, `vague/+page.svelte`, `desksc/+page.svelte`) ont été modifiés pour ne plus inclure leur propre `<Canvas>`, s'intégrant désormais dans un `<Canvas>` parent unique.
+- **Gestion du Canvas et des interactions :**
+  - Le composant `<Canvas>` dans `src/routes/app/+layout.svelte` est désormais encapsulé dans un `div` pour une gestion plus fine des `pointer-events`, séparant les interactions 3D de l'interface utilisateur.
+  - Les composants `desksc/+page.svelte` et `sphere/+page.svelte` ont été adaptés pour s'intégrer dans un `<Canvas>` parent, supprimant leur propre wrapper `<Canvas>`.
 
-- **Gestion du Canvas et UI :**
-  - Le `<Canvas>` principal dans `src/routes/app/+layout.svelte` a été configuré avec `pointer-events: none;` et l'overlay UI avec `pointer-events: auto;` pour une meilleure interaction utilisateur.
-  - Le composant `bloom.svelte` expose désormais des props (`height`, `width`, `mipmapBlur`) pour une configuration externe de l'effet Bloom.
+- **Refactorisation des modèles dynamiques :**
+  - Dans `src/lib/components/Dynamic3DModel.svelte`, les composants Threlte sont maintenant référencés avec le préfixe `ThrelteT` (ex: `<ThrelteT.Mesh>`), et la logique de chargement dynamique a été ajustée.
+  - Le chargement de texture dynamique dans `src/routes/bibi/tissus-simulat.svelte` a été temporairement désactivé (mis en commentaire).
 
-- **Améliorations des composants spécifiques :**
-  - `spaceship.svelte` : Ajout de vérifications de nullité pour `gltf.nodes.Cube.material` et ajustement du chemin de texture.
-  - `about/+page.svelte` : Initialisation de Rapier et définition explicite de la gravité pour le monde physique.
-  - `sphere/+page.svelte` : Intégration de la caméra et des contrôles Orbit directement dans le `<Canvas>`.
-  - `bibi/+page.svelte`, `desksc/+page.svelte`, `vague/+page.svelte` : Ajout des exports `data` et `params` pour la compatibilité avec les layouts SvelteKit.
+- **Gestion des assets et chemins :**
+  - Les chemins des fichiers audio dans `src/routes/about/block.js` ont été corrigés pour utiliser des chemins absolus (`/sound/`).
+  - Ajout de `rapport_modifications.md` et `.___.md` au `.gitignore` pour exclure les fichiers de rapport et temporaires.
 
-- **Documentation :**
-  - Mise à jour d'un chemin d'image dans `src/routes/mdwd/Montage de projet Djontso victorien 15_08_2O24.md`.
+- **Passage de données :**
+  - Ajout des exports `params`, `position`, `rotation`, `scale` dans `src/routes/app/+page.svelte` pour une flexibilité accrue dans le passage de données.
