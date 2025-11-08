@@ -3,6 +3,10 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
+# 0. Upload static assets to Vercel Blob
+echo "---> Uploading static assets to Vercel Blob..."
+bash scripts/upload_assets.sh
+
 # 1. Build SvelteKit frontend
 echo "---> Building SvelteKit frontend..."
 pnpm run build
