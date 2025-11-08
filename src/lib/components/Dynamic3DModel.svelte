@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { T } from '@threlte/core'; // Use T directly
+    import * as T from '@threlte/core';
     import GltfModel from '$lib/components/GltfModel.svelte';
     import { onMount, onDestroy } from 'svelte';
 
@@ -54,13 +54,13 @@
 
 {#if geometry.model_type === 'from_file' && DynamicComponent}
     <!-- Render the dynamically loaded Svelte component -->
-    <ThrelteT.Group
+    <T.Group
         position={[geometry.position.x, geometry.position.y, geometry.position.z]}
         rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]}
         scale={geometry.scale || 1}
     >
         <svelte:component this={DynamicComponent} />
-    </ThrelteT.Group>
+    </T.Group>
 {:else if geometry.model_url}
     <!-- Render a GLTF model if model_url is present and not from_file -->
     <GltfModel
@@ -69,34 +69,34 @@
         rotation={geometry.rotation}
     />
 {:else if geometry.type === 'box'}
-    <ThrelteT.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]}
+    <T.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]}
             rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} scale={0.5}>
-        <ThrelteT.BoxGeometry />
-        <ThrelteT.MeshStandardMaterial color={geometry.color} />
-    </ThrelteT.Mesh>
+        <T.BoxGeometry />
+        <T.MeshStandardMaterial color={geometry.color} />
+    </T.Mesh>
 {:else if geometry.type === 'torus'}
-    <ThrelteT.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]}
+    <T.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]}
             rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} scale={0.5}>
-        <ThrelteT.TorusKnotGeometry args={[0.5, 0.15, 100, 12, 2, 3]} />
-        <ThrelteT.MeshStandardMaterial color={geometry.color} />
-    </ThrelteT.Mesh>
+        <T.TorusKnotGeometry args={[0.5, 0.15, 100, 12, 2, 3]} />
+        <T.MeshStandardMaterial color={geometry.color} />
+    </T.Mesh>
 {:else if geometry.type === 'icosahedron'}
-    <ThrelteT.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]}
+    <T.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]}
             rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} scale={0.5}>
-        <ThrelteT.IcosahedronGeometry />
-        <ThrelteT.MeshStandardMaterial color={geometry.color} />
-    </ThrelteT.Mesh>
+        <T.IcosahedronGeometry />
+        <T.MeshStandardMaterial color={geometry.color} />
+    </T.Mesh>
 {:else if geometry.type === 'sphere'}
-    <ThrelteT.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]}
+    <T.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]}
             rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} scale={0.5}>
-        <ThrelteT.SphereGeometry />
-        <ThrelteT.MeshStandardMaterial color={geometry.color} />
-    </ThrelteT.Mesh>
+        <T.SphereGeometry />
+        <T.MeshStandardMaterial color={geometry.color} />
+    </T.Mesh>
 {:else}
     <!-- Fallback for unhandled types -->
-    <ThrelteT.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]}
+    <T.Mesh position={[geometry.position.x, geometry.position.y, geometry.position.z]}
             rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]} scale={0.5}>
-        <ThrelteT.BoxGeometry />
-        <ThrelteT.MeshStandardMaterial color="purple" />
-    </ThrelteT.Mesh>
+        <T.BoxGeometry />
+        <T.MeshStandardMaterial color="purple" />
+    </T.Mesh>
 {/if}
