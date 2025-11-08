@@ -31,7 +31,7 @@
 </script>
 
 <div style="position: relative; width: 100%; height: 100vh;">
-    <div style="pointer-events: none;">
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
         <Canvas>
             <T.PerspectiveCamera makeDefault position={[-10, 10, 10]} fov={70}>
                 <OrbitControls autoRotate enableZoom={true} minDistance={0} maxDistance={80} target={[0, 1.5, 0]} />

@@ -59,7 +59,9 @@
         rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]}
         scale={geometry.scale || 1}
     >
-        <svelte:component this={DynamicComponent} />
+        {#if DynamicComponent}
+            <svelte:component this={DynamicComponent} />
+        {/if}
     </T.Group>
 {:else if geometry.model_url}
     <!-- Render a GLTF model if model_url is present and not from_file -->
