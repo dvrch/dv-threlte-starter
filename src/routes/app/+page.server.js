@@ -12,8 +12,20 @@ export async function load({ fetch }) {
     const data = await response.json();
 
     // La pagination de DRF renvoie un objet avec `results`
+    // On filtre pour ne garder que les géométries valides
+    const validDynamicTypes = ['sphere', 'vague', 'tissus', 'desk', 'nissan', 'bibi', 'garden', 'nissangame', 'bibigame'];
+    
+    const geometries = (data.results || []).filter(geom => {
+      if (geom.model_type === 'from_file') {
+        // Si c'est un composant dynamique, son type doit être dans la liste blanche
+        return geom.type && validDynamicTypes.includes(geom.type);
+      }
+      // Pour les autres types (gltf, primitives...), on les laisse passer
+      return true;
+    });
+
     return {
-      geometries: data.results || [],
+      geometries,
     };
 
   } catch (error) {
