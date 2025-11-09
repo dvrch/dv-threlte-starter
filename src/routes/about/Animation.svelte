@@ -61,7 +61,7 @@
       gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
 
       const loader = new FontLoader();
-      font = await loader.loadAsync('src/types/fonts/font.json');
+      font = await loader.loadAsync('/fonts/font.json');
 
       if (font) {
         model.set(gltf.scene);

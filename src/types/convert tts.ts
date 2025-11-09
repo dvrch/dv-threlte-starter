@@ -5,7 +5,7 @@ import * as THREE from "three";
 const scene = new THREE.Scene(); // Add this line to define the scene
 
 const loader = new FontLoader();
-loader.load("./HK.ttf", (font) => {
+loader.load("/fonts/HK.ttf", (font) => {
   const geometry = new TextGeometry("Sample Text", {
     font: font,
     size: 1,

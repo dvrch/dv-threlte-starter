@@ -31,7 +31,7 @@
 
       // Charger la police
       const loader = new FontLoader();
-      font = await loader.loadAsync('src/types/fonts/font.json');
+      font = await loader.loadAsync('/fonts/font.json');
 
       // Vérifiez si la police est chargée avant de créer le maillage de texte
       if (font) {
