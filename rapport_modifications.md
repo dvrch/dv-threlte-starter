@@ -1,19 +1,15 @@
-refactor(3d-rendering): Affinements de l'architecture 3D et gestion des assets
+feat(assets): Ajout de ressources statiques et affinements du rendu 3D
 
-Ce commit poursuit l'optimisation de l'architecture de rendu 3D et améliore la gestion des assets et des interactions utilisateur.
+Ce commit intègre de nombreuses nouvelles ressources statiques et poursuit l'optimisation de l'architecture de rendu 3D, améliorant la gestion des assets et des interactions utilisateur.
 
-Modifications détaillées :
-- **Gestion du Canvas et des interactions :**
-  - Le composant `<Canvas>` dans `src/routes/app/+layout.svelte` est désormais encapsulé dans un `div` pour une gestion plus fine des `pointer-events`, séparant les interactions 3D de l'interface utilisateur.
-  - Les composants `desksc/+page.svelte` et `sphere/+page.svelte` ont été adaptés pour s'intégrer dans un `<Canvas>` parent, supprimant leur propre wrapper `<Canvas>`.
+Modifications principales :
+- **Ajout de ressources statiques :**
+  - Intégration d'une collection d'images (JPG, PNG, WEBP), d'un fichier de police (`font.json`), d'un fichier de licence (`license_bibi.txt`) et du fichier `robots.txt` dans `static/public/`.
 
-- **Refactorisation des modèles dynamiques :**
-  - Dans `src/lib/components/Dynamic3DModel.svelte`, les composants Threlte sont maintenant référencés avec le préfixe `ThrelteT` (ex: `<ThrelteT.Mesh>`), et la logique de chargement dynamique a été ajustée.
-  - Le chargement de texture dynamique dans `src/routes/bibi/tissus-simulat.svelte` a été temporairement désactivé (mis en commentaire).
+- **Affinements de l'architecture de rendu 3D :**
+  - Poursuite des ajustements dans `Dynamic3DModel.svelte` et les layouts (`src/routes/app/+layout.svelte`, `src/routes/app/+page.svelte`) pour une gestion plus flexible du `<Canvas>` et des modèles 3D.
+  - Corrections de chemins d'accès aux assets audio dans `src/routes/about/block.js`.
+  - Ajustements dans des composants spécifiques comme `tissus-simulat.svelte`, `desksc/+page.svelte`, `sphere/+page.svelte` pour s'aligner avec la nouvelle architecture de rendu.
 
-- **Gestion des assets et chemins :**
-  - Les chemins des fichiers audio dans `src/routes/about/block.js` ont été corrigés pour utiliser des chemins absolus (`/sound/`).
-  - Ajout de `rapport_modifications.md` et `.___.md` au `.gitignore` pour exclure les fichiers de rapport et temporaires.
-
-- **Passage de données :**
-  - Ajout des exports `params`, `position`, `rotation`, `scale` dans `src/routes/app/+page.svelte` pour une flexibilité accrue dans le passage de données.
+- **Configuration du projet :**
+  - Mise à jour du `.gitignore` pour inclure `rapport_modifications.md` et `.___.md`.

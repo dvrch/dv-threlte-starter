@@ -35,10 +35,10 @@ function initMaterial(mesh, name) {
 }
 
 export default async function loadAssets() {
-  const meshPlayer = await loadObject('./glb/character.glb')
-  const meshMob1 = await loadObject('./glb/mob1.glb')
-  const meshMob2 = await loadObject('./glb/mob2.glb')
-  const meshes = await loadObject('./glb/world.glb')
+  const meshPlayer = await loadObject('/fkisios/glb/character.glb')
+  const meshMob1 = await loadObject('/fkisios/glb/mob1.glb')
+  const meshMob2 = await loadObject('/fkisios/glb/mob2.glb')
+  const meshes = await loadObject('/fkisios/glb/world.glb')
 
   const meshesGrass = []
   const meshesRubis = []
