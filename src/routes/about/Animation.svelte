@@ -35,6 +35,7 @@
   import { navigate } from 'svelte-routing';
   import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
   import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader.js';
+  import { getAssetUrl } from '$lib/asset-helper';
   import { SvelteComponentTyped } from 'svelte';
   import Animation from './Animation.svelte';
   // Define ThreltePointerEvent type manually
@@ -61,7 +62,7 @@
       gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
 
       const loader = new FontLoader();
-      font = await loader.loadAsync('/fonts/font.json');
+      font = await loader.loadAsync(getAssetUrl('/fonts/font.json'));
 
       if (font) {
         model.set(gltf.scene);
