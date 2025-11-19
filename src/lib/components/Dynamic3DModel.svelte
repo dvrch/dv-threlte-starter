@@ -31,15 +31,18 @@
 	
 	let DynamicComponent: any = null;
 	
+	// Determine dynamic component from geometry.type when available.
+	// Some geometries in the DB may not set `model_type`, so prefer matching by `type`.
 	$: {
-	if (geometry && geometry.model_type === 'from_file' && geometry.type) {
-	DynamicComponent = componentMap[geometry.type];
-	if (!DynamicComponent) {
-	console.error(`No component found for type: ${geometry.type}`);
-	}
-	} else {
-	DynamicComponent = null;
-	}
+		if (geometry && geometry.type) {
+			DynamicComponent = componentMap[geometry.type];
+			if (!DynamicComponent) {
+				// not fatal, we fallback to primitives below — helpful debug log
+				console.debug(`Dynamic3DModel: no mapped component for type='${geometry.type}'`);
+			}
+		} else {
+			DynamicComponent = null;
+		}
 	}
 
 	// reactive safe position/rotation arrays
@@ -62,17 +65,9 @@
 			{#if geometry.model_url}
 				<!-- 1. Render a GLTF model if model_url is present -->
 				<GltfModel url={geometry.model_url} />
-			{:else if geometry.model_type === 'from_file'}
-				<!-- 2. Render the dynamically loaded Svelte component -->
-				{#if DynamicComponent}
-					<svelte:component this={DynamicComponent} />
-				{:else}
-					<!-- Error fallback: component was expected but not found in map -->
-					<T.Mesh>
-						<T.BoxGeometry />
-						<T.MeshStandardMaterial color="red" />
-					</T.Mesh>
-				{/if}
+			{:else if DynamicComponent}
+				<!-- 2. Render the dynamically loaded Svelte component when available -->
+				<svelte:component this={DynamicComponent} />
 			{:else if geometry.type === 'box'}
 				<!-- 3. Render primitive shapes -->
 				<T.Mesh>

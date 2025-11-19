@@ -31,7 +31,8 @@
 </script>
 
 <div style="position: relative; width: 100%; height: 100vh;">
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+    <!-- enable pointer events so OrbitControls and mouse interaction work -->
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: auto;">
         <Canvas>
             <T.PerspectiveCamera makeDefault position={[-10, 10, 10]} fov={70}>
                 <OrbitControls autoRotate enableZoom={true} minDistance={0} maxDistance={80} target={[0, 1.5, 0]} />
