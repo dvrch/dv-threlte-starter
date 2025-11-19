@@ -12,9 +12,19 @@ class Geometry(models.Model):
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, 
                           default='box')
     name = models.CharField(max_length=45, blank=True)
-    # URL du modèle 3D stocké sur Vercel Blob
+    
+    # Champ pour gérer le téléversement de fichiers locaux
+    model_file = models.FileField(
+        upload_to='models/', 
+        blank=True, 
+        null=True, 
+        help_text="Fichier 3D local (.glb, .gltf)"
+    )
+    
+    # URL du modèle 3D (sera rempli automatiquement)
     model_url = models.URLField(max_length=1024, blank=True, 
-                              help_text="URL du fichier 3D (glTF/GLB) sur Vercel Blob")
+                              help_text="URL du fichier 3D (rempli automatiquement depuis model_file)")
+    
     # Type de fichier 3D
     model_type = models.CharField(max_length=10, choices=[
         ('gltf', 'glTF'),
@@ -27,6 +37,12 @@ class Geometry(models.Model):
     def get_random_color():
         return Geometry.color
     
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.model_file and self.model_url != self.model_file.url:
+            self.model_url = self.model_file.url
+            super().save(update_fields=['model_url'])
+
     def clean(self):
         if hasattr(self, 'color') and self.color and not self.color.startswith('#'):
             self.color = '#' + self.color    

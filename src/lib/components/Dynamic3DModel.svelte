@@ -2,51 +2,13 @@
 	import *as T from '@threlte/core';
 	import GltfModel from '$lib/components/GltfModel.svelte';
 
-	// Import all known Svelte components
-	import SpherePage from '../../routes/sphere/+page.svelte';
-	import VaguePage from '../../routes/vague/+page.svelte';
-	import TissusSimulat from '../../routes/bibi/tissus-simulat.svelte';
-	import DeskPage from '../../routes/desksc/+page.svelte';
-	import NissanComponent from '../../routes/Spaceship/Nissan.svelte';
-	import Bibianime from '../../routes/bibi/bibanime.svelte';
-	import GardenComponent from '../../routes/app/models/garden.svelte';
-	import NissangameComponent from '../../routes/app/nissangame.svelte';
-	import BibigameComponent from '../../routes/app/bibigame.svelte';
-
 	export let geometry: any;
-
-	// Map geometry types to their respective Svelte components
-	const componentMap: { [key: string]: any } = {
-		sphere: SpherePage,
-		vague: VaguePage,
-		tissus: TissusSimulat,
-		desk: DeskPage,
-		nissan: NissanComponent,
-		bibi: Bibianime,
-		garden: GardenComponent,
-		nissangame: NissangameComponent,
-		bibigame: BibigameComponent
-	};
-
-	let DynamicComponent: any = null;
-
-	$: {
-		if (geometry && geometry.model_type === 'from_file' && geometry.type) {
-			DynamicComponent = componentMap[geometry.type];
-			if (!DynamicComponent) {
-				console.error(`No component found for type: ${geometry.type}`);
-			}
-		} else {
-			DynamicComponent = null;
-		}
-	}
 </script>
 
 <!-- 
-  New rendering logic with strict precedence:
-  1. GLTF models via `model_url`.
-  2. Dynamic Svelte components via `model_type === 'from_file'`.
-  3. Basic primitive shapes via `type`.
+  Logique de rendu simplifiée et corrigée :
+  1. Priorité aux modèles GLTF via `model_url`.
+  2. Sinon, rendu des formes primitives de base via `type`.
 -->
 
 <T.Group
@@ -55,42 +17,36 @@
 	scale={geometry.scale || 1}
 >
 	{#if geometry.model_url}
-		<!-- 1. Render a GLTF model if model_url is present -->
+		<!-- 1. Affiche un modèle GLTF si model_url est présent -->
 		<GltfModel url={geometry.model_url} />
-	{:else if geometry.model_type === 'from_file'}
-		<!-- 2. Render the dynamically loaded Svelte component -->
-		{#if DynamicComponent}
-			<svelte:component this={DynamicComponent} />
-		{:else}
-			<!-- Error fallback: component was expected but not found in map -->
-			<T.Mesh>
-				<T.BoxGeometry />
-				<T.MeshStandardMaterial color="red" />
-			</T.Mesh>
-		{/if}
+
 	{:else if geometry.type === 'box'}
-		<!-- 3. Render primitive shapes -->
+		<!-- 2. Affiche les formes primitives -->
 		<T.Mesh>
 			<T.BoxGeometry />
 			<T.MeshStandardMaterial color={geometry.color} />
 		</T.Mesh>
+
 	{:else if geometry.type === 'torus'}
 		<T.Mesh>
 			<T.TorusKnotGeometry args={[0.5, 0.15, 100, 12, 2, 3]} />
 			<T.MeshStandardMaterial color={geometry.color} />
 		</T.Mesh>
+
 	{:else if geometry.type === 'icosahedron'}
 		<T.Mesh>
 			<T.IcosahedronGeometry />
 			<T.MeshStandardMaterial color={geometry.color} />
 		</T.Mesh>
+
 	{:else if geometry.type === 'sphere'}
 		<T.Mesh>
 			<T.SphereGeometry />
 			<T.MeshStandardMaterial color={geometry.color} />
 		</T.Mesh>
+
 	{:else}
-		<!-- Fallback for completely unhandled types -->
+		<!-- Fallback pour les types inconnus : affiche une boîte violette -->
 		<T.Mesh>
 			<T.BoxGeometry />
 			<T.MeshStandardMaterial color="purple" />
