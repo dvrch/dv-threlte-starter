@@ -41,68 +41,68 @@
 	DynamicComponent = null;
 	}
 	}
+
+	// reactive safe position/rotation arrays
+	$: posArray = [geometry?.position?.x ?? 0, geometry?.position?.y ?? 0, geometry?.position?.z ?? 0];
+	$: rotArray = [geometry?.rotation?.x ?? 0, geometry?.rotation?.y ?? 0, geometry?.rotation?.z ?? 0];
 	</script>
 	
 	<!-- 
-	  New rendering logic with strict precedence:
-	  1. GLTF models via `model_url`.
-	  2. Dynamic Svelte components via `model_type === 'from_file'`.
-	  3. Basic primitive shapes via `type`.
+		New rendering logic with strict precedence:
+		1. GLTF models via `model_url`.
+		2. Dynamic Svelte components via `model_type === 'from_file'`.
+		3. Basic primitive shapes via `type`.
 	-->
-	
-	<T.Group
-	position={[geometry.position.x, geometry.position.y, geometry.position.z]}
-	rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]}
-	scale={geometry.scale || 1}
-	>
-	{#if geometry.model_url}
-		<!-- 1. Render a GLTF model if model_url is present -->
-		<GltfModel url={geometry.model_url} />
-	{:else if geometry.model_type === 'from_file'}
-		<!-- 2. Render the dynamically loaded Svelte component -->
-		{#if DynamicComponent}
-			<svelte:component this={DynamicComponent} />
-		{:else}
-			<!-- Error fallback: component was expected but not found in map -->
-			<T.Mesh>
-				<T.BoxGeometry />
-				<T.MeshStandardMaterial color="red" />
-			</T.Mesh>
-		{/if}
-	{:else if geometry.type === 'box'}
-		<!-- 3. Render primitive shapes -->
-		<T.Mesh>
-			<T.BoxGeometry />
-			<T.MeshStandardMaterial color={geometry.color} />
-		</T.Mesh>
-	{:else if geometry.type === 'torus'}
-		<T.Mesh>
-			<T.TorusKnotGeometry args={[0.5, 0.15, 100, 12, 2, 3]} />
-			<T.MeshStandardMaterial color={geometry.color} />
-		</T.Mesh>
-	{:else if geometry.type === 'icosahedron'}
-		<T.Mesh>
-			<T.IcosahedronGeometry />
-			<T.MeshStandardMaterial color={geometry.color} />
-		</T.Mesh>
-	{:else if geometry.type === 'sphere'}
-		<T.Mesh>
-			<T.SphereGeometry />
-			<T.MeshStandardMaterial color={geometry.color} />
-		</T.Mesh>
-	{:else}
-		<!-- Fallback for completely unhandled types -->
-		<T.Mesh>
-			<T.BoxGeometry />
-			<T.MeshStandardMaterial color="purple" />
-		</T.Mesh>
-	{/if}
-	<!-- Defensive access to avoid runtime errors when geometry fields are missing -->
+
+	<!-- compute safe position/rotation arrays to avoid runtime exceptions -->
+
 	{#if geometry}
-		{#let pos = geometry.position ?? { x: 0, y: 0, z: 0 }}
-		{#let rot = geometry.rotation ?? { x: 0, y: 0, z: 0 }}
-		<T.Group
-			position={[pos.x ?? 0, pos.y ?? 0, pos.z ?? 0]}
-			rotation={[rot.x ?? 0, rot.y ?? 0, rot.z ?? 0]}
-			scale={geometry.scale ?? 1}
-		>
+
+		<T.Group position={posArray} rotation={rotArray} scale={geometry.scale ?? 1}>
+			{#if geometry.model_url}
+				<!-- 1. Render a GLTF model if model_url is present -->
+				<GltfModel url={geometry.model_url} />
+			{:else if geometry.model_type === 'from_file'}
+				<!-- 2. Render the dynamically loaded Svelte component -->
+				{#if DynamicComponent}
+					<svelte:component this={DynamicComponent} />
+				{:else}
+					<!-- Error fallback: component was expected but not found in map -->
+					<T.Mesh>
+						<T.BoxGeometry />
+						<T.MeshStandardMaterial color="red" />
+					</T.Mesh>
+				{/if}
+			{:else if geometry.type === 'box'}
+				<!-- 3. Render primitive shapes -->
+				<T.Mesh>
+					<T.BoxGeometry />
+					<T.MeshStandardMaterial color={geometry.color} />
+				</T.Mesh>
+			{:else if geometry.type === 'torus'}
+				<T.Mesh>
+					<T.TorusKnotGeometry args={[0.5, 0.15, 100, 12, 2, 3]} />
+					<T.MeshStandardMaterial color={geometry.color} />
+				</T.Mesh>
+			{:else if geometry.type === 'icosahedron'}
+				<T.Mesh>
+					<T.IcosahedronGeometry />
+					<T.MeshStandardMaterial color={geometry.color} />
+				</T.Mesh>
+			{:else if geometry.type === 'sphere'}
+				<T.Mesh>
+					<T.SphereGeometry />
+					<T.MeshStandardMaterial color={geometry.color} />
+				</T.Mesh>
+			{:else}
+				<!-- Fallback for completely unhandled types -->
+				<T.Mesh>
+					<T.BoxGeometry />
+					<T.MeshStandardMaterial color="purple" />
+				</T.Mesh>
+			{/if}
+		</T.Group>
+	{:else}
+		<!-- If geometry missing, render nothing (or a tiny marker) -->
+		<T.Group />
+	{/if}
