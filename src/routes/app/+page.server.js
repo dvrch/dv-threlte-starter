@@ -30,7 +30,8 @@ export async function load({ fetch }) {
     // Préfixer les model_url avec l'URL du Blob si elle est définie
     if (PUBLIC_STATIC_URL) {
       geometries = geometries.map(geom => {
-        if (geom.model_url) {
+        // Vérifie si model_url existe et n'est pas déjà une URL complète
+        if (geom.model_url && !geom.model_url.startsWith('http')) {
           // Construit l'URL complète vers le Vercel Blob
           // geom.model_url est le chemin relatif du fichier, ex: 'models/my_model.glb'
           return { ...geom, model_url: `${PUBLIC_STATIC_URL}/${geom.model_url}` };
