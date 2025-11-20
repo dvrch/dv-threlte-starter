@@ -15,9 +15,10 @@ Title: Japanese Bridge Garden
   import { T } from '@threlte/core'
   import { useGltf } from '@threlte/extras'
  
+  export let url;
   export const ref = new Group()
 
-  const gltf = useGltf('/models/garden.glb')
+  const gltf = useGltf(url)
 
 
 </script>

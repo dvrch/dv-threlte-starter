@@ -52,8 +52,8 @@
 	
 	<!-- 
 		New rendering logic with strict precedence:
-		1. GLTF models via `model_url`.
-		2. Dynamic Svelte components via `model_type === 'from_file'`.
+		1. Dynamic Svelte components via `type` mapping.
+		2. GLTF models via `model_url` (for types without a specific component).
 		3. Basic primitive shapes via `type`.
 	-->
 
@@ -62,12 +62,12 @@
 	{#if geometry}
 
 		<T.Group position={posArray} rotation={rotArray} scale={geometry.scale ?? 1}>
-			{#if geometry.model_url}
-				<!-- 1. Render a GLTF model if model_url is present -->
+			{#if DynamicComponent}
+				<!-- 1. Render the dynamically loaded Svelte component when available -->
+				<svelte:component this={DynamicComponent} {...geometry} url={geometry.model_url} />
+			{:else if geometry.model_url}
+				<!-- 2. Render a generic GLTF model if model_url is present -->
 				<GltfModel url={geometry.model_url} />
-			{:else if DynamicComponent}
-				<!-- 2. Render the dynamically loaded Svelte component when available -->
-				<svelte:component this={DynamicComponent} />
 			{:else if geometry.type === 'box'}
 				<!-- 3. Render primitive shapes -->
 				<T.Mesh>

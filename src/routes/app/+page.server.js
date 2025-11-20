@@ -27,6 +27,13 @@ export async function load({ fetch }) {
       return true;
     });
 
+    // Ensure 'garden' type has a default model_url if it's missing
+    geometries.forEach(geom => {
+      if (geom.type === 'garden' && !geom.model_url) {
+        geom.model_url = '/models/garden.glb';
+      }
+    });
+
     // Préfixer les model_url avec l'URL du Blob si elle est définie
     if (PUBLIC_STATIC_URL) {
       geometries = geometries.map(geom => {
