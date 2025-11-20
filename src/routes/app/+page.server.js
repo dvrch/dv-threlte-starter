@@ -30,7 +30,7 @@ export async function load({ fetch }) {
     // Ensure 'garden' type has a default model_url if it's missing
     geometries.forEach(geom => {
       if (geom.type === 'garden' && !geom.model_url) {
-        geom.model_url = '/models/garden.glb';
+        geom.model_url = 'models/garden.glb';
       }
     });
 

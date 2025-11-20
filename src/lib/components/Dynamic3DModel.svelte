@@ -64,7 +64,11 @@
 		<T.Group position={posArray} rotation={rotArray} scale={geometry.scale ?? 1}>
 			{#if DynamicComponent}
 				<!-- 1. Render the dynamically loaded Svelte component when available -->
-				<svelte:component this={DynamicComponent} {...geometry} url={geometry.model_url} />
+				{#if geometry.type === 'garden'}
+					<svelte:component this={DynamicComponent} url={geometry.model_url} />
+				{:else}
+					<svelte:component this={DynamicComponent} />
+				{/if}
 			{:else if geometry.model_url}
 				<!-- 2. Render a generic GLTF model if model_url is present -->
 				<GltfModel url={geometry.model_url} />
