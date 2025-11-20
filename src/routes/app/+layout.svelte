@@ -1,6 +1,4 @@
 <script lang="ts">
-    export const ssr = false;
-
     import { Canvas, T } from '@threlte/core'
     import { Grid, OrbitControls, ContactShadows } from '@threlte/extras'
     import Bloom from '$lib/components/bloom.svelte';
