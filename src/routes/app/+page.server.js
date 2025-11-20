@@ -1,5 +1,7 @@
 // src/routes/app/+page.server.js
 
+import { PUBLIC_STATIC_URL } from '$env/static/public';
+
 export async function load({ fetch }) {
   try {
     // L'URL de l'API est appelée côté serveur, il faut donc être explicite.
@@ -15,7 +17,7 @@ export async function load({ fetch }) {
     // On filtre pour ne garder que les géométries valides
     const validDynamicTypes = ['sphere', 'vague', 'tissus', 'desk', 'nissan', 'bibi', 'garden', 'nissangame', 'bibigame'];
     
-    const geometries = (data.results || []).filter(geom => {
+    let geometries = (data.results || []).filter(geom => {
       if (geom.model_type === 'from_file') {
         // Si c'est un composant dynamique, son type doit être dans la liste blanche
         return geom.type && validDynamicTypes.includes(geom.type);
@@ -23,6 +25,18 @@ export async function load({ fetch }) {
       // Pour les autres types (gltf, primitives...), on les laisse passer
       return true;
     });
+
+    // Préfixer les model_url avec l'URL du Blob si elle est définie
+    if (PUBLIC_STATIC_URL) {
+      geometries = geometries.map(geom => {
+        if (geom.model_url) {
+          // Construit l'URL complète vers le Vercel Blob
+          // geom.model_url est le chemin relatif du fichier, ex: 'models/my_model.glb'
+          return { ...geom, model_url: `${PUBLIC_STATIC_URL}/${geom.model_url}` };
+        }
+        return geom;
+      });
+    }
 
     return {
       geometries,
