@@ -98,11 +98,7 @@
 
 		<Bibanime 
 			position={[bibanimePosition.x, bibanimePosition.y, bibanimePosition.z]} 
-			rotation={[bibanimeRotation.x, bibanimeRotation.y, bibanimeRotation.z]}>
-			{#if bibiScene}
-				<T is={bibiScene} />
-			{/if}
-		</Bibanime>
+			rotation={[bibanimeRotation.x, bibanimeRotation.y, bibanimeRotation.z]} />
 
 
 
