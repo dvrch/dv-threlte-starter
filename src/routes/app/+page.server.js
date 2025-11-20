@@ -1,8 +1,9 @@
 // src/routes/app/+page.server.js
 
-import { PUBLIC_STATIC_URL } from '$env/static/public';
+import * as publicEnv from '$env/static/public';
 
 export async function load({ fetch }) {
+  const PUBLIC_STATIC_URL = publicEnv.PUBLIC_STATIC_URL || '';
   try {
     // L'URL de l'API est appelée côté serveur, il faut donc être explicite.
     const response = await fetch('http://127.0.0.1:8000/api/geometries/');
