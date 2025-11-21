@@ -4,7 +4,7 @@
 	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 	import { TextureLoader, MeshStandardMaterial } from 'three';
 	import { OrbitControls } from '@threlte/extras';
-	import { writable } => 'svelte/store';
+	import { writable } from 'svelte/store';
 	import * as THREE from 'three';
 	import './styles.css';
 	import { browser } from '$app/environment';

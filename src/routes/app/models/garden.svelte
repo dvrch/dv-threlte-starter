@@ -16,8 +16,10 @@ Title: Japanese Bridge Garden
   import { useGltf } from '@threlte/extras'
   import { browser } from '$app/environment';
  
-  export let url: string = '/models/garden.glb'; // Default to local path
+  export let url: string; // The URL from the backend
   export const ref = new Group()
+
+  url = url || '/models/garden.glb'; // Default to local path if not provided
 
   let currentModelUrl = url; // Start with the provided URL
 
