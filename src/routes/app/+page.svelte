@@ -4,8 +4,8 @@
     import Dynamic3DModel from '$lib/components/Dynamic3DModel.svelte';
     import type { PageData } from './$types';
 
-    export let data: PageData;
-    export let params = {};
+    const { data } = $props();
+    const { params = {} } = $props();
 </script>
 
 {#if data.error}

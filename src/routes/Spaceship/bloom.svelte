@@ -50,10 +50,7 @@
 		composer.render(delta)
 	})
 
-	export let intensity = 1.5;
-	export let luminanceThreshold = 0.9;
-	export let luminanceSmoothing = 0.9;
-	export let bloomStrength = 1.5;
+	const { intensity = 1.5, luminanceThreshold = 0.9, luminanceSmoothing = 0.9, bloomStrength = 1.5 } = $props();
 
 	onMount(() => {
 		const bloomPass = new UnrealBloomPass(

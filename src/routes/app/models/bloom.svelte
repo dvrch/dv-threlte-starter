@@ -11,12 +11,7 @@
 	import { useThrelte, useTask } from '@threlte/core'
 	import * as THREE from 'three'; // Ajout de l'importation de THREE
 
-	export let intensity = 0.8;
-	export let luminanceThreshold = 0;
-	export let height = 512;
-	export let width = 512;
-	export let luminanceSmoothing = 0;
-	export let mipmapBlur = true;
+	const { intensity = 0.8, luminanceThreshold = 0, height = 512, width = 512, luminanceSmoothing = 0, mipmapBlur = true } = $props();
 
 	const { scene, renderer, camera } = useThrelte()
 	const composer = new EffectComposer(renderer)

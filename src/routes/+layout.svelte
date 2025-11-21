@@ -14,7 +14,7 @@
 
 	<main>
 		{#key $page.url.pathname}
-			<slot />
+			{@render children()}
 		{/key}
 	</main>
 

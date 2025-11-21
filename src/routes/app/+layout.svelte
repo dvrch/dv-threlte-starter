@@ -9,7 +9,7 @@
     export const data = undefined;
     export const params = {};
 
-    let activeTab: 'scene' | 'add' | 'upload' = 'scene'
+    let activeTab: 'scene' | 'add' | 'upload' = $state('scene')
     function handleTabChange(event: CustomEvent) {
         activeTab = event.detail
     }
@@ -45,7 +45,7 @@
             <ContactShadows scale={10} blur={2} far={2.5} opacity={0.5} />
             <Bloom />
 
-            <slot />
+            {@render children()}
         </Canvas>
     </div>
     <div class="ui-overlay-root" style="position:absolute; top: 60px; right: 20px; z-index: 2000; display:flex; flex-direction:column; gap:12px; pointer-events: auto;">

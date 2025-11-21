@@ -10,9 +10,7 @@
 	} from 'postprocessing'
 	import { useThrelte, useTask } from '@threlte/core'
 
-	export let height: number = 512;
-	export let width: number = 512;
-	export let mipmapBlur: boolean = true;
+	const { height = 512, width = 512, mipmapBlur = true } = $props();
 
 	const { scene, renderer, camera } = useThrelte()
 	const composer = new EffectComposer(renderer)

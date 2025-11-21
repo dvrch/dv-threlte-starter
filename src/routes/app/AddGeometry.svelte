@@ -4,9 +4,11 @@
 
   const { selectedGeometry = null } = $props();
 
-  $: if (selectedGeometry && selectedGeometry.id !== selectedGeometryId) {
-    loadGeometryDetails(selectedGeometry.id);
-  }
+  $effect(() => {
+    if (selectedGeometry && selectedGeometry.id !== selectedGeometryId) {
+      loadGeometryDetails(selectedGeometry.id);
+    }
+  });
 
   const getRandomValue = (min: number, max: number) => Number(Math.random() * (max - min) + min).toFixed(2);
 
