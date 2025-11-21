@@ -1,6 +1,6 @@
 <script lang="ts">
-  export let data;
-  export let params = {};
+  export const data = undefined;
+  export const params = {};
 
   import { Canvas } from '@threlte/core'
   import Scene from './Markdown.svelte'

@@ -6,8 +6,8 @@
     import AddGeometry from './AddGeometry.svelte'
     // aucune donnée de layout utilisée ici
 
-    export let data;
-    export let params = {};
+    export const data = undefined;
+    export const params = {};
 
     let activeTab: 'scene' | 'add' | 'upload' = 'scene'
     function handleTabChange(event: CustomEvent) {

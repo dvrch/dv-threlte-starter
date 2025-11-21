@@ -8,8 +8,7 @@
 		SMAAEffect,
 		SMAAPreset,
 	} from 'postprocessing'
-	import { useThrelte } from '@threlte/core'
-	import { useFrame } from '@threlte/extras'
+	import { useThrelte, useTask } from '@threlte/core'
 	import { onMount } from 'svelte';
 	import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 	import { Vector2 } from 'three';
@@ -46,7 +45,8 @@
 
 	$: setupEffectComposer($camera)
 
-	useFrame((_, delta) => {
+	useTask(({ delta }) => {
+		if (!composer || !camera.current || !scene.current) return;
 		composer.render(delta)
 	})
 

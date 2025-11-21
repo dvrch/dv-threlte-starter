@@ -8,7 +8,7 @@
 		SMAAEffect,
 		SMAAPreset,
 	} from 'postprocessing'
-	import { useThrelte, useTick } from '@threlte/core'
+	import { useThrelte, useTask } from '@threlte/core'
 
 	export let height: number = 512;
 	export let width: number = 512;
@@ -46,7 +46,8 @@
 
 	$: setupEffectComposer($camera)
 
-	useTick((_, delta) => {
+	useTask(({ delta }) => {
+		if (!composer || !camera.current || !scene.current) return;
 		composer.render(delta)
 	})
 </script>

@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte'
 	import * as THREE from 'three'
 
-	export let data;
+	export const data = undefined;
 </script>
 
 <Canvas>
