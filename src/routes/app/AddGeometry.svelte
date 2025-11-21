@@ -2,7 +2,7 @@
   import { onMount, createEventDispatcher } from 'svelte';
   import { addToast } from '$lib/stores/toasts';
 
-  export let selectedGeometry: any = null;
+  const { selectedGeometry = null } = $props();
 
   $: if (selectedGeometry && selectedGeometry.id !== selectedGeometryId) {
     loadGeometryDetails(selectedGeometry.id);
