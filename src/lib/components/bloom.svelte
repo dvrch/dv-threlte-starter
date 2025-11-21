@@ -8,8 +8,7 @@
 		SMAAEffect,
 		SMAAPreset,
 	} from 'postprocessing'
-	import { useFrame } from '@threlte/extras'
-	import { useThrelte } from '@threlte/core'
+	import { useFrame, useThrelte } from '@threlte/core'
 
 	export let height: number = 512;
 	export let width: number = 512;

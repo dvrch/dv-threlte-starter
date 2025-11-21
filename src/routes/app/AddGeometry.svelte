@@ -208,16 +208,16 @@
     
     <div class="position-rotation">
       <div>
-        <label>Position (X,Y,Z)</label>
-        <input type="number" bind:value={position.x} placeholder="X" step="0.01" />
-        <input type="number" bind:value={position.y} placeholder="Y" step="0.01" />
-        <input type="number" bind:value={position.z} placeholder="Z" step="0.01" />
+        <label for="position-x">Position (X,Y,Z)</label>
+        <input id="position-x" type="number" bind:value={position.x} placeholder="X" step="0.01" />
+        <input id="position-y" type="number" bind:value={position.y} placeholder="Y" step="0.01" />
+        <input id="position-z" type="number" bind:value={position.z} placeholder="Z" step="0.01" />
       </div>
       <div>
-        <label>Rotation (X,Y,Z)</label>
-        <input type="number" bind:value={rotation.x} placeholder="X" step="0.01" />
-        <input type="number" bind:value={rotation.y} placeholder="Y" step="0.01" />
-        <input type="number" bind:value={rotation.z} placeholder="Z" step="0.01" />
+        <label for="rotation-x">Rotation (X,Y,Z)</label>
+        <input id="rotation-x" type="number" bind:value={rotation.x} placeholder="X" step="0.01" />
+        <input id="rotation-y" type="number" bind:value={rotation.y} placeholder="Y" step="0.01" />
+        <input id="rotation-z" type="number" bind:value={rotation.z} placeholder="Z" step="0.01" />
       </div>
     </div>
 

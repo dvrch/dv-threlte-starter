@@ -7,7 +7,7 @@ const config = {
 	},
 	plugins: [sveltekit()],
 	ssr: {
-		noExternal: ['three', 'troika-three-text']
+		noExternal: ['three', 'troika-three-text', '@threlte/core', '@threlte/extras']
 	},
 	server: {
 		proxy: {

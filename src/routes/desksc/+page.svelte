@@ -8,15 +8,8 @@
 
 
 <script>
-	export let position = [0, 0, 0];
-	export let rotation = [0, 0, 0];
-	export let scale = 1;
-	export let data;
-	export let params = {};
-
 	import { Canvas } from '@threlte/core'
 	import Scene from './scene.svelte';
-
 </script>
 
 
