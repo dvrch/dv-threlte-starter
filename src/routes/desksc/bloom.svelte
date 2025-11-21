@@ -8,7 +8,8 @@
 		SMAAEffect,
 		SMAAPreset,
 	} from 'postprocessing'
-	import { useTask, useThrelte } from '@threlte/core'
+	import { useThrelte } from '@threlte/core'
+	import { useFrame } from '@threlte/extras'
 
 	const { scene, renderer, camera } = useThrelte()
 	const composer = new EffectComposer(renderer)
@@ -42,7 +43,7 @@
 
 	$: setupEffectComposer($camera)
 
-	useTask((_, delta) => {
+	useFrame((_, delta) => {
 		composer.render(delta)
 	})
 </script>

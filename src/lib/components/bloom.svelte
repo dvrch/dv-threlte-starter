@@ -8,7 +8,8 @@
 		SMAAEffect,
 		SMAAPreset,
 	} from 'postprocessing'
-	import { useRender, useThrelte } from '@threlte/core'
+	import { useFrame } from '@threlte/extras'
+	import { useThrelte } from '@threlte/core'
 
 	export let height: number = 512;
 	export let width: number = 512;
@@ -46,7 +47,7 @@
 
 	$: setupEffectComposer($camera)
 
-	useRender((_, delta) => {
+	useFrame((_, delta) => {
 		composer.render(delta)
 	})
 </script>
