@@ -8,7 +8,8 @@
 		SMAAEffect,
 		SMAAPreset,
 	} from 'postprocessing'
-	import { useThrelte, useFrame } from '@threlte/core'
+	import { useThrelte } from '@threlte/core'
+	import { useFrame } from '@threlte/extras'
 	import * as THREE from 'three'; // Ajout de l'importation de THREE
 
 	export let intensity = 0.8;

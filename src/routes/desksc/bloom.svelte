@@ -8,7 +8,8 @@
 		SMAAEffect,
 		SMAAPreset,
 	} from 'postprocessing'
-	import { useThrelte, useFrame } from '@threlte/core'
+	import { useThrelte } from '@threlte/core'
+	import { useFrame } from '@threlte/extras'
 
 	const { scene, renderer, camera } = useThrelte()
 	const composer = new EffectComposer(renderer)
