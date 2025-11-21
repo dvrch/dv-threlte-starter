@@ -53,6 +53,7 @@ export async function load({ fetch }) {
 
   } catch (error) {
     console.error("Could not fetch geometries:", error);
+    console.error("Error details:", error.message, error.stack);
     return {
       geometries: [],
       error: "Impossible de charger les modèles 3D."
