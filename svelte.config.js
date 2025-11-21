@@ -26,10 +26,10 @@ const config = {
 				}
 				throw new Error(message);
 			}
-		},
-		compilerOptions: {
-			runes: true
 		}
+	},
+	compilerOptions: {
+		runes: true
 	}
 };
 
