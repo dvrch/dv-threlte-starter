@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Canvas, useTask, T } from '@threlte/core'; // Added T
+	import { useTask, T } from '@threlte/core'; // Added T
 	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 	import { TextureLoader, MeshStandardMaterial } from 'three';
 	import { OrbitControls } from '@threlte/extras';
-	import { writable } from 'svelte/store';
+	import { writable } => 'svelte/store';
 	import * as THREE from 'three';
 	import './styles.css';
+	import { browser } from '$app/environment';
+
+	let Canvas; // Declare Canvas here
 
 	// Store to manage texture state
 	let currentTexture = writable(null);
@@ -53,9 +56,13 @@
 	};
   
 	// Start loading the model when the component mounts
-	onMount(() => {
-	  loadModel();
-	  changeTexture();
+	onMount(async () => {
+		if (browser) {
+			const threlte = await import('@threlte/core');
+			Canvas = threlte.Canvas;
+			loadModel();
+			changeTexture();
+		}
 	});
   
 	// Animate the model every frame
@@ -67,15 +74,19 @@
 	});
 </script>
 
-	<T.PerspectiveCamera makeDefault position={[0, 5, 10]} fov={75}>
-		<OrbitControls />
-	</T.PerspectiveCamera>
+{#if browser && Canvas}
+	<Canvas>
+		<T.PerspectiveCamera makeDefault position={[0, 5, 10]} fov={75}>
+			<OrbitControls />
+		</T.PerspectiveCamera>
 
-	<ambientLight intensity={0.5}></ambientLight>
-	<directionalLight position={[5, 5, 5]} intensity={1}></directionalLight>
-	{#if model}
-	  <primitive object={model}></primitive>
-	{/if}
+		<ambientLight intensity={0.5}></ambientLight>
+		<directionalLight position={[5, 5, 5]} intensity={1}></directionalLight>
+		{#if model}
+			<primitive object={model}></primitive>
+		{/if}
+	</Canvas>
+{/if}
 
 <div class="controls">
 	<button on:click={nextTexture}>Change Texture</button>

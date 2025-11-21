@@ -8,13 +8,28 @@
 
 
 <script>
-	import { Canvas } from '@threlte/core'
-	import Scene from './scene.svelte';
+	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
+	
+	let Canvas;
+	let Scene;
+	
+	onMount(async () => {
+		if (browser) {
+			const module = await import('./scene.svelte');
+			Scene = module.default;
+			
+			const threlte = await import('@threlte/core');
+			Canvas = threlte.Canvas;
+		}
+	});
 </script>
 
-
-	<Scene />
-	<!-- <Bloom/> -->
+{#if browser && Canvas && Scene}
+	<Canvas>
+		<Scene />
+	</Canvas>
+{/if}
 
 
 

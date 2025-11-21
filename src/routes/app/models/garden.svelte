@@ -14,13 +14,31 @@ Title: Japanese Bridge Garden
   import { Group } from 'three'
   import { T } from '@threlte/core'
   import { useGltf } from '@threlte/extras'
+  import { browser } from '$app/environment';
  
-  export let url;
+  export let url: string = '/models/garden.glb'; // Default to local path
   export const ref = new Group()
 
-  const gltf = useGltf(url)
+  let currentModelUrl = url; // Start with the provided URL
 
+  // Reactive statement to handle fallback if the initial URL fails
+  $: if (url && browser) {
+    // Attempt to load the model from the provided URL
+    // If it fails, fall back to a default local path
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch model from provided URL');
+        }
+        currentModelUrl = url; // Use the provided URL
+      })
+      .catch(() => {
+        console.warn(`Failed to load model from ${url}, falling back to /models/garden.glb`);
+        currentModelUrl = '/models/garden.glb'; // Fallback to local path
+      });
+  }
 
+  const gltf = useGltf(currentModelUrl)
 </script>
 
 
