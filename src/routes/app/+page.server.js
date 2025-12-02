@@ -4,9 +4,20 @@ import * as publicEnv from '$env/static/public';
 
 export async function load({ fetch }) {
   const PUBLIC_STATIC_URL = publicEnv.PUBLIC_STATIC_URL || '';
+  const PUBLIC_API_URL = publicEnv.PUBLIC_API_URL || '';
+  
   try {
-    // L'URL de l'API est appelée côté serveur, il faut donc être explicite.
-    const response = await fetch('http://127.0.0.1:8000/api/geometries/');
+    // Si pas d'API_URL configurée, retourner un tableau vide au lieu de faire une requête
+    // Cela évite les erreurs de connexion à localhost:8000 pendant le build
+    if (!PUBLIC_API_URL) {
+      console.warn('PUBLIC_API_URL not configured, returning empty geometries list');
+      return {
+        geometries: [],
+        error: null
+      };
+    }
+    
+    const response = await fetch(`${PUBLIC_API_URL}/api/geometries/`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -60,8 +71,8 @@ export async function load({ fetch }) {
     };
 
   } catch (error) {
-    console.error("Could not fetch geometries:", error);
-    console.error("Error details:", error.message, error.stack);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error("Could not fetch geometries:", errorMessage);
     return {
       geometries: [],
       error: "Impossible de charger les modèles 3D."
