@@ -4,7 +4,7 @@
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 
-	export let url: string;
+	let { url, ...$$restProps }: { url: string } = $props();
 
 	let gltf: any; // Declare gltf as a mutable variable
 
@@ -16,7 +16,7 @@
 </script>
 
 {#if browser && gltf}
-	<T is={gltf.scene} {...$restProps} />
+	<T is={gltf.scene} {...$$restProps} />
 {:else}
 	<!-- Fallback for SSR, maybe a placeholder or nothing -->	<T.Group />
 {/if}

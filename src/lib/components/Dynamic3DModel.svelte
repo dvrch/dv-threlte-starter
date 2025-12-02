@@ -20,7 +20,7 @@
 	};
 
 	const DynamicComponentLoader = $derived(componentMap[geometry?.type] ?? null);
-	let LoadedDynamicComponent: any = null; // To store the dynamically loaded component
+	let LoadedDynamicComponent: any = $state(null); // To store the dynamically loaded component
 
 	// Load the component dynamically only on the client
 	$effect(() => {
@@ -47,9 +47,11 @@
 		{#if LoadedDynamicComponent}
 			<!-- 1. Render the dynamically loaded Svelte component when available -->
 			{#if geometry.type === 'garden'}
-				<svelte:component this={LoadedDynamicComponent} url={geometry.model_url} />
+				{@const Component = LoadedDynamicComponent}
+				<Component url={geometry.model_url} />
 			{:else}
-				<svelte:component this={LoadedDynamicComponent} />
+				{@const Component = LoadedDynamicComponent}
+				<Component />
 			{/if}
 		{:else if geometry.model_url}
 			<!-- 2. Render a generic GLTF model if model_url is present -->

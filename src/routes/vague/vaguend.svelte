@@ -6,7 +6,7 @@
 	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
 
 	let canvas: HTMLCanvasElement;
-	let vagueMesh: THREE.Points;
+	let vagueMesh: THREE.Points = $state(null);
 	let scene: THREE.Scene;
 	let camera: THREE.PerspectiveCamera;
 	let renderer: THREE.WebGLRenderer;

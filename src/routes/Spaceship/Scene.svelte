@@ -15,12 +15,12 @@
 	const { scene, camera, renderer } = useThrelte();
 
 	/** @type {import('three').Object3D} */
-	let spaceShipRef;
-	let intersectionPoint;
-	let translY = 0;
-	let translAccelleration = 0;
-	let angleZ = 0;
-	let angleAccelleration = 0;
+	let spaceShipRef = $state(null);
+	let intersectionPoint = $state(null);
+	let translY = $state(0);
+	let translAccelleration = $state(0);
+	let angleZ = $state(0);
+	let angleAccelleration = $state(0);
 	let pmrem = new PMREMGenerator(renderer);
 	let envMapRT;
 
