@@ -7,49 +7,48 @@
 	let { data, form }: { data: PageData, form: ActionData } = $props();
 
 	/** Whether or not the user has won */
-	$: won = data.answers.at(-1) === 'xxxxx';
+	let won = $derived(data.answers.at(-1) === 'xxxxx');
 
 	/** The index of the current guess */
-	$: i = won ? -1 : data.answers.length;
+	let i = $derived(won ? -1 : data.answers.length);
 
-	/** The current guess */
-	$: currentGuess = data.guesses[i] || '';
+	/** The current guess (modifiable par l'utilisateur) */
+	let currentGuess = $state('');
+
+	/** Met à jour currentGuess quand l'index de tentative change */
+	$effect(() => {
+		currentGuess = data.guesses[i] || '';
+	});
 
 	/** Whether the current guess can be submitted */
-	$: submittable = currentGuess.length === 5;
+	let submittable = $derived(currentGuess.length === 5);
 
 	/**
-	 * A map of classnames for all letters that have been guessed,
-	 * used for styling the keyboard
+	 * A map of classnames & descriptions for all letters that have been guessed
 	 */
-	let classnames: Record<string, 'exact' | 'close' | 'missing'>;
-
-	/**
-	 * A map of descriptions for all letters that have been guessed,
-	 * used for adding text for assistive technology (e.g. screen readers)
-	 */
-	let description: Record<string, string>;
-
-	$: {
-		classnames = {};
-		description = {};
+	let keyboard = $derived(() => {
+		const classnames: Record<string, 'exact' | 'close' | 'missing'> = {};
+		const description: Record<string, string> = {};
 
 		data.answers.forEach((answer, i) => {
 			const guess = data.guesses[i];
+			if (!guess) return;
 
-			for (let i = 0; i < 5; i += 1) {
-				const letter = guess[i];
+			for (let j = 0; j < 5; j += 1) {
+				const letter = guess[j];
 
-				if (answer[i] === 'x') {
+				if (answer[j] === 'x') {
 					classnames[letter] = 'exact';
 					description[letter] = 'correct';
 				} else if (!classnames[letter]) {
-					classnames[letter] = answer[i] === 'c' ? 'close' : 'missing';
-					description[letter] = answer[i] === 'c' ? 'present' : 'absent';
+					classnames[letter] = answer[j] === 'c' ? 'close' : 'missing';
+					description[letter] = answer[j] === 'c' ? 'present' : 'absent';
 				}
 			}
 		});
-	}
+
+		return { classnames, description };
+	});
 
 	/**
 	 * Modify the game state without making a trip to the server,
@@ -150,7 +149,7 @@
 				<button data-key="enter" class:selected={submittable} disabled={!submittable}>enter</button>
 
 				<button
-					on:click|preventDefault={update}
+					onclick={(event) => { event.preventDefault(); update(event); }}
 					data-key="backspace"
 					formaction="?/update"
 					name="key"
@@ -163,7 +162,7 @@
 					<div class="row">
 						{#each row as letter}
 							<button
-								on:click|preventDefault={update}
+								onclick={(event) => { event.preventDefault(); update(event); }}
 								data-key={letter}
 								class={keyboard.classnames[letter]}
 								disabled={submittable}

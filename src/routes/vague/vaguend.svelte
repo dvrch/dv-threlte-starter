@@ -12,14 +12,25 @@
 	let renderer: THREE.WebGLRenderer;
 	const dispatch = createEventDispatcher();
 
-	export let position: [number, number, number];
-	export let rotation: [number, number, number];
-	export let scale: number | [number, number, number];
+	// Props en mode runes
+	let {
+		position = [0, 0, 0],
+		rotation = [0, 0, 0],
+		scale = 1,
+		width = 100,
+		height = 100
+	}: {
+		position?: [number, number, number];
+		rotation?: [number, number, number];
+		scale?: number | [number, number, number];
+		width?: number;
+		height?: number;
+	} = $props();
 
 	// Assurons-nous que scaleArray est toujours un tuple de 3 éléments
-	$: scaleArray = Array.isArray(scale) ? scale : [scale, scale, scale] as [number, number, number];
-	export let width = 100;
-	export let height = 100;
+	let scaleArray = $derived(
+		Array.isArray(scale) ? (scale as [number, number, number]) : [scale, scale, scale]
+	);
 
 	onMount(() => {
 		scene = new THREE.Scene();
