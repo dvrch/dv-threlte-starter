@@ -4,7 +4,7 @@
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 
-	let { url, ...$$restProps }: { url: string } = $props();
+	let { url }: { url: string } = $props();
 
 	let gltf: any; // Declare gltf as a mutable variable
 

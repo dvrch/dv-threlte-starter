@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
     import { marked } from 'marked';
     
-    let content = '';
+    let content = $state('');
 
     onMount(async () => {
         const response = await fetch('/src/routes/mdwd/Montage de projet Djontso victorien 15_08_2O24.md');

@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
     import mammoth from 'mammoth';
 
-    let content = '';
+    let content = $state('');
 
     onMount(async () => {
         const response = await fetch('/src/routes/mdwd/Montage de projet Djontso victorien 15_08_2O24.docx');
