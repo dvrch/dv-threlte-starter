@@ -2,55 +2,54 @@
 	import { T } from '@threlte/core';
 	import GltfModel from '$lib/components/GltfModel.svelte';
 	import { browser } from '$app/environment';
-
-	// Import all known Svelte components
-	import SpherePage from '../../routes/sphere/+page.svelte';
-	import VaguePage from '../../routes/vague/+page.svelte';
-	import TissusSimulat from '../../routes/bibi/tissus-simulat.svelte';
-	import DeskPage from '../../routes/desksc/+page.svelte';
-	import NissanComponent from '../../routes/Spaceship/Nissan.svelte';
-	import Bibianime from '../../routes/bibi/bibanime.svelte';
-	import GardenComponent from '../../routes/app/models/garden.svelte';
-	import NissangameComponent from '../../routes/app/nissangame.svelte';
-	import BibigameComponent from '../../routes/app/bibigame.svelte';
+	import { onMount } from 'svelte'; // Need onMount for dynamic imports
 
 	let { geometry }: { geometry: any } = $props();
 
-	// Map geometry types to their respective Svelte components
-	const componentMap: { [key: string]: any } = {
-		sphere: SpherePage,
-		vague: VaguePage,
-		tissus: TissusSimulat,
-		desk: DeskPage,
-		nissan: NissanComponent,
-		bibi: Bibianime,
-		garden: GardenComponent,
-		nissangame: NissangameComponent,
-		bibigame: BibigameComponent
+	// Map geometry types to their respective Svelte components using dynamic imports
+	const componentMap: { [key: string]: () => Promise<any> } = {
+		sphere: () => import('../../routes/sphere/+page.svelte'),
+		vague: () => import('../../routes/vague/+page.svelte'),
+		tissus: () => import('../../routes/bibi/tissus-simulat.svelte'),
+		desk: () => import('../../routes/desksc/+page.svelte'),
+		nissan: () => import('../../routes/Spaceship/Nissan.svelte'),
+		bibi: () => import('../../routes/bibi/bibanime.svelte'),
+		garden: () => import('../../routes/app/models/garden.svelte'),
+		nissangame: () => import('../../routes/app/nissangame.svelte'),
+		bibigame: () => import('../../routes/app/bibigame.svelte')
 	};
 
-	const DynamicComponent = $derived(componentMap[geometry?.type] ?? null);
+	const DynamicComponentLoader = $derived(componentMap[geometry?.type] ?? null);
+	let LoadedDynamicComponent: any = null; // To store the dynamically loaded component
+
+	// Load the component dynamically only on the client
+	$effect(() => {
+		if (browser && DynamicComponentLoader) {
+			LoadedDynamicComponent = null; // Reset before loading new component
+			DynamicComponentLoader().then(module => {
+				LoadedDynamicComponent = module.default;
+			}).catch(error => {
+				console.error(`Failed to load dynamic component for type '${geometry.type}':`, error);
+				LoadedDynamicComponent = null;
+			});
+		} else {
+			LoadedDynamicComponent = null;
+		}
+	});
 
 	// reactive safe position/rotation arrays
 	const posArray = $derived([geometry?.position?.x ?? 0, geometry?.position?.y ?? 0, geometry?.position?.z ?? 0]);
 	const rotArray = $derived([geometry?.rotation?.x ?? 0, geometry?.rotation?.y ?? 0, geometry?.rotation?.z ?? 0]);
 </script>
 
-<!-- 
-	New rendering logic with strict precedence:
-	1. Dynamic Svelte components via `type` mapping.
-	2. GLTF models via `model_url` (for types without a specific component).
-	3. Basic primitive shapes via `type`.
--->
-
 {#if browser && geometry}
 	<T.Group position={posArray} rotation={rotArray} scale={geometry.scale ?? 1}>
-		{#if DynamicComponent}
+		{#if LoadedDynamicComponent}
 			<!-- 1. Render the dynamically loaded Svelte component when available -->
 			{#if geometry.type === 'garden'}
-				<svelte:component this={DynamicComponent} url={geometry.model_url} />
+				<svelte:component this={LoadedDynamicComponent} url={geometry.model_url} />
 			{:else}
-				<svelte:component this={DynamicComponent} />
+				<svelte:component this={LoadedDynamicComponent} />
 			{/if}
 		{:else if geometry.model_url}
 			<!-- 2. Render a generic GLTF model if model_url is present -->

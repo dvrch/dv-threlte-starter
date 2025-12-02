@@ -9,43 +9,54 @@
 		SMAAPreset,
 	} from 'postprocessing'
 	import { useThrelte, useTask } from '@threlte/core'
+	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
 
 	const { height = 512, width = 512, mipmapBlur = true } = $props();
 
-	const { scene, renderer, camera } = useThrelte()
-	const composer = new EffectComposer(renderer)
+	let composer: EffectComposer | undefined;
 
-	const setupEffectComposer = (camera: THREE.Camera) => {
-		composer.removeAllPasses()
-		composer.addPass(new RenderPass(scene, camera))
-		composer.addPass(
-			new EffectPass(
-				camera,
-				new BloomEffect({
-					intensity: 0.8,
-					luminanceThreshold: 0,
-					height,
-					width,
-					luminanceSmoothing: 0,
-					mipmapBlur,
-					kernelSize: KernelSize.MEDIUM,
-				})
-			)
-		)
-		composer.addPass(
-			new EffectPass(
-				camera,
-				new SMAAEffect({
-					preset: SMAAPreset.LOW,
-				})
-			)
-		)
-	}
+	// useThrelte and useTask must be called at the top level
+	const { scene, renderer, camera } = useThrelte();
 
-	$: setupEffectComposer($camera)
+	onMount(() => {
+		if (browser) {
+			composer = new EffectComposer(renderer);
+		}
+	});
+
+	$effect(() => {
+		if (browser && composer && camera) {
+			composer.removeAllPasses();
+			composer.addPass(new RenderPass(scene, camera));
+			composer.addPass(
+				new EffectPass(
+					camera,
+					new BloomEffect({
+						intensity: 0.8,
+						luminanceThreshold: 0,
+						height,
+						width,
+						luminanceSmoothing: 0,
+						mipmapBlur,
+						kernelSize: KernelSize.MEDIUM,
+					})
+				)
+			);
+			composer.addPass(
+				new EffectPass(
+					camera,
+					new SMAAEffect({
+						preset: SMAAPreset.LOW,
+					})
+				)
+			);
+		}
+	});
 
 	useTask(({ delta }) => {
-		if (!composer || !camera.current || !scene.current) return;
-		composer.render(delta)
-	})
+		if (browser && composer) {
+			composer.render(delta);
+		}
+	});
 </script>
