@@ -4,31 +4,33 @@
 	import { degToRad } from 'three/src/math/MathUtils';
 	import InteractivitySetup from '$lib/InteractivitySetup.svelte';
 	import GltfModel from '$lib/components/GltfModel.svelte';
-	import { browser } from '$app/environment';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 </script>
 
-		<T.DirectionalLight castShadow position={[3, 10, 10]} intensity={1.5} />
-		<T.AmbientLight intensity={0.5} />
+<div>
+	<Canvas>
+		<InteractivitySetup>
+			<T.DirectionalLight castShadow position={[3, 10, 10]} intensity={1.5} />
+			<T.AmbientLight intensity={0.5} />
 
-		{#if data.error}
-			<p>{data.error}</p>
-		{:else}
-			{#each data.geometries as geometry (geometry.id)}
-				{#if geometry.model_url}
-					<GltfModel 
-						url={geometry.model_url} 
-						position={geometry.position}
-						rotation={geometry.rotation}
-					/>
-				{/if}
-			{/each}
-		{/if}
+			{#if data.error}
+				<p>{data.error}</p>
+			{:else}
+				{#each data.geometries as geometry (geometry.id)}
+					{#if geometry.model_url}
+						<GltfModel
+							url={geometry.model_url}
+							position={geometry.position}
+							rotation={geometry.rotation}
+						/>
+					{/if}
+				{/each}
+			{/if}
 
-		<Grid />
-
+			<Grid />
+		</InteractivitySetup>
 	</Canvas>
 </div>
 
@@ -36,7 +38,5 @@
 	div {
 		height: 100vh;
 		width: 100vw;
-	}
-</style>100vw;
 	}
 </style>

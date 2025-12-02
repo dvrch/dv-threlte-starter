@@ -6,7 +6,7 @@
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 
-	let Canvas;
+	let Canvas = $state(null);
 
 	let {
 		position = [0, 0, 0],

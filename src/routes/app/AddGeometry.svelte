@@ -12,19 +12,19 @@
 
   const getRandomValue = (min: number, max: number) => Number(Math.random() * (max - min) + min).toFixed(2);
 
-  // State for the form
-  let name = ''; 
-  let type = 'box'; 
-  let color = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`; 
-  let position = { x: 0, y: 0, z: 0 }; 
-  let rotation = { x: Number(getRandomValue(0, 360)), y: Number(getRandomValue(0, 360)), z: Number(getRandomValue(0, 360)) };
-  let file: File | null = null; // State for the uploaded file
+  // State for the form (runes)
+  let name = $state(''); 
+  let type = $state('box'); 
+  let color = $state(`#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`); 
+  let position = $state({ x: 0, y: 0, z: 0 }); 
+  let rotation = $state({ x: Number(getRandomValue(0, 360)), y: Number(getRandomValue(0, 360)), z: Number(getRandomValue(0, 360)) });
+  let file: File | null = $state(null); // State for the uploaded file
   
-  let geometries = [];
-  let selectedGeometryId = '';
-  let isEditing = false;
-  let types = [];
-  let isLoading = false;
+  let geometries = $state([]);
+  let selectedGeometryId = $state('');
+  let isEditing = $state(false);
+  let types = $state([]);
+  let isLoading = $state(false);
 
   const loadTypes = async () => {
     try {
@@ -185,11 +185,11 @@
   };
 </script>
 
-<div class="form-container">
-  <form on:submit|preventDefault={handleSubmit}>
+  <div class="form-container">
+  <form onsubmit={(event) => { event.preventDefault(); handleSubmit(); }}>
     <h3>{isEditing ? 'Update' : 'Add'} Geometry</h3>
     
-    <select bind:value={selectedGeometryId} on:change={handleGeometrySelect} class="geometry-select">
+    <select bind:value={selectedGeometryId} onchange={handleGeometrySelect} class="geometry-select">
       <option value="">-- Add New Geometry --</option>
       {#each geometries as geometry}
         <option value={geometry.id}>{geometry.name}</option>
@@ -225,7 +225,7 @@
 
     <div class="file-upload-section">
       <label for="file-upload">Or Upload a GLB/GLTF Model</label>
-      <input id="file-upload" type="file" accept=".glb,.gltf" on:change={(e) => file = e.target.files?.[0] || null} />
+      <input id="file-upload" type="file" accept=".glb,.gltf" onchange={(e) => file = e.target.files?.[0] || null} />
       {#if file}
         <p>Selected file: {file.name}</p>
       {/if}
@@ -235,12 +235,12 @@
       {isLoading ? 'Saving...' : (isEditing ? 'Update' : 'Add')}
     </button>
     {#if isEditing}
-      <button type="button" on:click={resetForm} class="cancel-button">Cancel</button>
+      <button type="button" onclick={resetForm} class="cancel-button">Cancel</button>
     {/if}
   </form>
 
   <div class="delete-section">
-    <button on:click={deleteGeometry} disabled={!selectedGeometryId} class="delete-button">
+    <button onclick={deleteGeometry} disabled={!selectedGeometryId} class="delete-button">
       Delete Selected
     </button>
   </div>

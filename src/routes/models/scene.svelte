@@ -3,8 +3,8 @@
 	import { OrbitControls, useGltf } from '@threlte/extras'
 	import { AmbientLight, PointLight } from 'three' // Importer les lumières de Three.js
 
-	let y = 2
-	let rotation = 0
+	let y = $state(2)
+	let rotation = $state(0)
 
 	function levitate() {
 		const time = Date.now() / 1000

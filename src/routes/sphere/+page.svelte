@@ -4,9 +4,9 @@
 	import type Scene from './Scene.svelte';
 	import './styles.css';
 
-	let Canvas;
-	let SceneComponent: typeof Scene;
-	let sceneInstance: Scene;
+	let Canvas = $state(null);
+	let SceneComponent: typeof Scene = $state(null);
+	let sceneInstance: Scene = $state(null);
 
 	onMount(async () => {
 		if (browser) {
@@ -25,7 +25,7 @@
 {/if}
 
 <div class="controls">
-	<button on:click={() => sceneInstance?.nextTexture()}>Change Texture</button>
+	<button onclick={() => sceneInstance?.nextTexture()}>Change Texture</button>
 </div>
 
 <style>
