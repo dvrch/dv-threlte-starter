@@ -28,12 +28,12 @@
 	let bibiRenderer: Three.WebGLRenderer;
 
  let bibanimePosition = $derived(curve.getPoint(curvePosition));
- let bibanimeRotation = $derived(new Three.Euler().setFromQuaternion();
+ let bibanimeRotation = $derived(new Three.Euler().setFromQuaternion(
 		new Three.Quaternion().setFromUnitVectors(
 			new Three.Vector3(0, 0, 1),
 			curve.getTangent(curvePosition)
 		)
-	);
+	));
 
 	function handleKeyDown(event: KeyboardEvent) {
 		switch (event.key) {

@@ -31,21 +31,21 @@
 	let bibiCamera: Three.Camera;
 	let bibiRenderer: Three.WebGLRenderer;
 
- let nissanPosition = $derived(curve.getPoint(curvePosition));
- let nissanRotation = $derived(new Three.Euler().setFromQuaternion();
+  let nissanPosition = $derived(curve.getPoint(curvePosition));
+  let nissanRotation = $derived(new Three.Euler().setFromQuaternion(
 		new Three.Quaternion().setFromUnitVectors(
 			new Three.Vector3(0, 0, 1),
 			curve.getTangent(curvePosition)
 		)
-	);
+	));
 
  let bibanimePosition = $derived(curve.getPoint(curvePosition));
- let bibanimeRotation = $derived(new Three.Euler().setFromQuaternion();
+ let bibanimeRotation = $derived(new Three.Euler().setFromQuaternion(
 		new Three.Quaternion().setFromUnitVectors(
 			new Three.Vector3(0, 0, 1),
 			curve.getTangent(curvePosition)
 		)
-	);
+	));
 
 	// $: {
 	// 	console.log('Position Nissan:', nissanPosition);
