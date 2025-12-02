@@ -26,10 +26,7 @@
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "env": {
-    "DEBUG": "@debug_mode",
-    "SECRET_KEY": "@secret_key",
-    "DATABASE_URL": "@database_url",
-    "BLOB_READ_WRITE_TOKEN": "@blob_token",
-    "STORE_ID": "@store_id"
+    "DEBUG": "False",
+    "STORE_ID": "store_W0CB58Ft2bj7Sg0v"
   }
 }
