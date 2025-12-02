@@ -26,10 +26,9 @@
 	});
 </script>
 
-<Vaguend {position} {rotation} {scale} />
-
 {#if browser && Canvas}
 	<Canvas>
+		<Vaguend {position} {rotation} {scale} />
 		<About />
 	</Canvas>
 {/if}

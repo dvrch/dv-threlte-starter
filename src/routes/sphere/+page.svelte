@@ -1,95 +1,31 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { useTask, T } from '@threlte/core'; // Added T
-	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-	import { TextureLoader, MeshStandardMaterial } from 'three';
-	import { OrbitControls } from '@threlte/extras';
-	import { writable } from 'svelte/store';
-	import * as THREE from 'three';
-	import './styles.css';
 	import { browser } from '$app/environment';
+	import type Scene from './Scene.svelte';
+	import './styles.css';
 
-	let Canvas; // Declare Canvas here
+	let Canvas;
+	let SceneComponent: typeof Scene;
+	let sceneInstance: Scene;
 
-	// Store to manage texture state
-	let currentTexture = writable(null);
-  
-	// Path to your GLB model and textures
-	const glbPath = '/public/cloth_sim.glb';
-	const textures = ['/public/bibi.png'];
-	let activeTextureIndex = 0;
-  
-	let model = null; // To store the loaded 3D model
-	let mixer = null; // For animations
-	let clock = new THREE.Clock(); // To manage animation time
-  
-	// Load the GLB model
-	const loadModel = () => {
-	  const loader = new GLTFLoader();
-	  loader.load(glbPath, (gltf) => {
-		model = gltf.scene;
-		if (gltf.animations.length > 0) {
-		  mixer = new THREE.AnimationMixer(model);
-		  const action = mixer.clipAction(gltf.animations[0]);
-		  action.play();
-		}
-	  });
-	};
-  
-	// Function to load a texture and update the material of the model
-	const changeTexture = () => {
-	  const textureLoader = new TextureLoader();
-	  textureLoader.load(textures[activeTextureIndex], (texture) => {
-		currentTexture.set(texture);
-		model.traverse((child) => {
-		  if (child.isMesh) {
-			child.material = new MeshStandardMaterial({ map: texture });
-		  }
-		});
-	  });
-	};
-  
-	// Switch to the next texture
-	const nextTexture = () => {
-	  activeTextureIndex = (activeTextureIndex + 1) % textures.length;
-	  changeTexture();
-	};
-  
-	// Start loading the model when the component mounts
 	onMount(async () => {
 		if (browser) {
 			const threlte = await import('@threlte/core');
 			Canvas = threlte.Canvas;
-			loadModel();
-			changeTexture();
+			const module = await import('./Scene.svelte');
+			SceneComponent = module.default;
 		}
-	});
-  
-	// Animate the model every frame
-	useTask(() => {
-	  if (mixer) {
-		const delta = clock.getDelta();
-		mixer.update(delta);
-	  }
 	});
 </script>
 
-{#if browser && Canvas}
+{#if browser && Canvas && SceneComponent}
 	<Canvas>
-		<T.PerspectiveCamera makeDefault position={[0, 5, 10]} fov={75}>
-			<OrbitControls />
-		</T.PerspectiveCamera>
-
-		<ambientLight intensity={0.5}></ambientLight>
-		<directionalLight position={[5, 5, 5]} intensity={1}></directionalLight>
-		{#if model}
-			<primitive object={model}></primitive>
-		{/if}
+		<SceneComponent bind:this={sceneInstance} />
 	</Canvas>
 {/if}
 
 <div class="controls">
-	<button on:click={nextTexture}>Change Texture</button>
+	<button on:click={() => sceneInstance?.nextTexture()}>Change Texture</button>
 </div>
 
 <style>

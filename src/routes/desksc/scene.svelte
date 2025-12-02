@@ -3,6 +3,7 @@
 	import { OrbitControls, useGltf } from '@threlte/extras';
 	import Bloom from './bloom.svelte';
   import Vague from './vague.svelte';
+  import { browser } from '$app/environment';
 
 	// let y = 2;
 	// let rotation = 0;
@@ -31,8 +32,9 @@
 	// levitate();
 </script>
 
-
+{#if browser}
 <Bloom /> 
+{/if}
 
 <T.AmbientLight color="#ffffff" intensity={10} />
 <T.PointLight intensity={10} position={[1, 2, -4]} color="#76aac8" />
@@ -57,10 +59,11 @@
 {/await}
 
 
-
+{#if browser}
  <div class="div">
 	<Vague />
 </div>
+{/if}
 
 <style>
 	.div {position: absolute; 

@@ -1,7 +1,7 @@
 <script lang="ts">
 	let { position, rotation, scale, data, params } = $props();
 
-	import Bloom from './bloom.svelte';
+	import { browser } from '$app/environment';
  	import { Canvas } from '@threlte/core'
   	import Scene from './Scene.svelte'
 
@@ -16,8 +16,9 @@
 	
 		<!-- <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;"> -->
 			<Canvas>
-				<Scene />
-				<!-- <Bloom /> -->
+				{#if browser}
+					<Scene />
+				{/if}
 			</Canvas>
 		<!-- </div> -->
 		
