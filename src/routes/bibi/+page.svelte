@@ -2,8 +2,7 @@
   import { onMount } from 'svelte';
   import { initSn } from './demo_09.js';
   
-  export const data = undefined;
-  export const params = {};
+  let { data, params } = $props();
   let canvas: HTMLCanvasElement;
   let animationId: number;
   

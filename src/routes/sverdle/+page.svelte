@@ -4,9 +4,7 @@
 	import type { PageData, ActionData } from './$types';
 	import { reduced_motion } from './reduced-motion';
 
-	export let data: PageData;
-
-	export let form: ActionData;
+	let { data, form }: { data: PageData, form: ActionData } = $props();
 
 	/** Whether or not the user has won */
 	$: won = data.answers.at(-1) === 'xxxxx';
@@ -167,12 +165,12 @@
 							<button
 								on:click|preventDefault={update}
 								data-key={letter}
-								class={classnames[letter]}
+								class={keyboard.classnames[letter]}
 								disabled={submittable}
 								formaction="?/update"
 								name="key"
 								value={letter}
-								aria-label="{letter} {description[letter] || ''}"
+								aria-label="{letter} {keyboard.description[letter] || ''}"
 							>
 								{letter}
 							</button>

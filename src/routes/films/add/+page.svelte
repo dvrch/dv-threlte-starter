@@ -2,21 +2,21 @@
     import {FilmStore} from '../../../film-store'
     import {goto} from '$app/navigation';
     
-    let name = '';
-    let director = '';
-    let description = '';
-    let tags = '';
-    let files;
-    let showInvalidMessage = false;
-    let errorMessage = '';
-    let isLoading = false;
+    let name = $state('');
+    let director = $state('');
+    let description = $state('');
+    let tags = $state('');
+    let files = $state();
+    let showInvalidMessage = $state(false);
+    let errorMessage = $state('');
+    let isLoading = $state(false);
 
-    let validFields = () => {
+    const validFields = $derived(() => {
         return name.length >= 1 && director.length >= 1 && description.length >= 1 && files && files.length > 0;
-    }
+    });
 
     let handleSubmit = async () => {
-        if (!validFields()) {
+        if (!validFields) {
             errorMessage = "Veuillez remplir tous les champs et sélectionner un fichier.";
             showInvalidMessage = true;
             return;

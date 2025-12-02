@@ -1,22 +1,14 @@
-<script>
+<script lang="ts">
 	import { Canvas, T } from '@threlte/core';
 	import { OrbitControls, Grid } from '@threlte/extras';
 	import { degToRad } from 'three/src/math/MathUtils';
 	import InteractivitySetup from '$lib/InteractivitySetup.svelte';
 	import GltfModel from '$lib/components/GltfModel.svelte';
+	import { browser } from '$app/environment';
+	import type { PageData } from './$types';
 
-	export let data;
+	let { data }: { data: PageData } = $props();
 </script>
-
-
-<div>
-	<Canvas>
-		<InteractivitySetup />
-		<T.PerspectiveCamera makeDefault position={[10, 10, 10]} fov={24}>
-			{#if browser}
-				<OrbitControls maxPolarAngle={degToRad(80)} target={{ y: 0.5 }} />
-			{/if}
-		</T.PerspectiveCamera>
 
 		<T.DirectionalLight castShadow position={[3, 10, 10]} intensity={1.5} />
 		<T.AmbientLight intensity={0.5} />

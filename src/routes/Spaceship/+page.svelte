@@ -1,9 +1,5 @@
 <script lang="ts">
-	export const position = [0, 0, 0];
-	export const rotation = [0, 0, 0];
-	export const scale = 1;
-	export const data = undefined;
-	export const params = {};
+	let { position, rotation, scale, data, params } = $props();
 
 	import Bloom from './bloom.svelte';
  	import { Canvas } from '@threlte/core'

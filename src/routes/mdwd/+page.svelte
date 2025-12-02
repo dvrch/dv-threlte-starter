@@ -1,13 +1,12 @@
 <script lang="ts">
-  export const data = undefined;
-  export const params = {};
+  let { data, params } = $props();
 
   import { Canvas } from '@threlte/core'
   import Scene from './Markdown.svelte'
   import AddGeometry from './word.svelte'
   import Tabs from './Tabs.svelte'
 
-  let activeTab = 'scene';
+  let activeTab = $state('scene');
 
   function handleTabChange(event: CustomEvent) {
     activeTab = event.detail;

@@ -8,9 +8,15 @@
 
 	let Canvas;
 
-	export let position: [number, number, number] = [0, 0, 0];
-	export let rotation: [number, number, number] = [0, 0, 0];
-	export let scale: number | [number, number, number] = 0.8;
+	let { position, rotation, scale } = $props<{
+		position?: [number, number, number];
+		rotation?: [number, number, number];
+		scale?: number | [number, number, number];
+	}>({
+		position: [0, 0, 0],
+		rotation: [0, 0, 0],
+		scale: 0.8
+	});
 
 	onMount(async () => {
 		if (browser) {

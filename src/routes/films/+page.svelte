@@ -2,12 +2,12 @@
     import {FilmStore} from '../../film-store'
     import {onMount} from 'svelte'
 
-    let tags = []
-    let selectedTag = '';
+    let tags = $state([])
+    let selectedTag = $state('');
 
-    $: filteredFilms = Array.isArray($FilmStore) ? $FilmStore.filter(film => {
+    const filteredFilms = $derived(Array.isArray($FilmStore) ? $FilmStore.filter(film => {
         return selectedTag == '' || film.tags.includes(selectedTag);
-    }) : [];
+    }) : []);
 
     let setTags = () => {
         let tagSet = new Set();
