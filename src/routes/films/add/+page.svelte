@@ -89,7 +89,7 @@
     {/if }
 
     <div class="col-12 col-md-6">
-        <form on:submit|preventDefault={handleSubmit}>
+        <form onsubmit={(event) => { event.preventDefault(); handleSubmit(); }}>
             <div class="mb-3">
                 <input class="form-control" type="text" placeholder="name" bind:value={name}/>
             </div>

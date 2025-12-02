@@ -8,15 +8,15 @@
 
 	let Canvas;
 
-	let { position, rotation, scale } = $props<{
+	let {
+		position = [0, 0, 0],
+		rotation = [0, 0, 0],
+		scale = 0.8
+	}: {
 		position?: [number, number, number];
 		rotation?: [number, number, number];
 		scale?: number | [number, number, number];
-	}>({
-		position: [0, 0, 0],
-		rotation: [0, 0, 0],
-		scale: 0.8
-	});
+	} = $props();
 
 	onMount(async () => {
 		if (browser) {
