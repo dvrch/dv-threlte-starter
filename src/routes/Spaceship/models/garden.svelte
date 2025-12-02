@@ -14,7 +14,7 @@ Title: Japanese Bridge Garden
   import { browser } from '$app/environment';
 
   export const ref = new Group()
-  export let url: string = '/models/garden.glb'; // Default to local path
+  let { url = '/models/garden.glb' }: { url?: string } = $props(); // Default to local path
 
   let currentModelUrl = url; // Start with the provided URL
 

@@ -5,8 +5,8 @@
   import * as THREE from 'three';
 
 
-  export let width = 100;
-  export let height = 100;
+  let { width = 100 } = $props();
+  let { height = 100 } = $props();
 
   let canvas: HTMLCanvasElement;
   let animationId: number;
@@ -74,8 +74,8 @@
   import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
   import { OrbitControls as ThreeOrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
-  export let width = 100;
-  export let height = 100;
+  let { width = 100 } = $props();
+  let { height = 100 } = $props();
 
   let canvas: HTMLCanvasElement;
   let animationId: number;

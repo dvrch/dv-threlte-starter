@@ -3,10 +3,10 @@
   import { onMount } from 'svelte';
   import type { Object3D } from 'three';
 
-  export let mixer: THREE.AnimationMixer;
+  let { mixer = useThrelte() }: { mixer?: THREE.AnimationMixer;
   export let model: Object3D;
 
-  const { renderer, scene, camera } = useThrelte();
+  const { renderer, scene, camera } } = $props();
 
   function animate() {
     requestAnimationFrame(animate);

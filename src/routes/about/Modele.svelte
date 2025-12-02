@@ -9,8 +9,8 @@
 
   export const width = 100; // Utiliser const pour éviter l'avertissement d'exportation inutilisée
   export const height = 100; // Utiliser const pour éviter l'avertissement d'exportation inutilisée
-  export let position: [number, number, number] = [0, 0, 0];
-  export let rotation: [number, number, number] = [0, 0, 0];
+  let { position = [0, 0, 0] }: { position?: [number, number, number] } = $props();
+  let { rotation = [0, 0, 0] }: { rotation?: [number, number, number] } = $props();
 
   let clock = new THREE.Clock();
   let model: THREE.Object3D | null = null; // Déclarer le type pour éviter l'erreur implicite
@@ -73,10 +73,10 @@
   import * as THREE from 'three';
   import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
-  // export let width = 400;
-  // export let height = 300;
-  export let position: [number, number, number] = [0, 0, 0];
-  export let rotation: [number, number, number] = [0, 0, 0];
+  // let { width = 400 } = $props();
+  // let { height = 300 } = $props();
+  let { position = [0, 0, 0] }: { position?: [number, number, number] } = $props();
+  let { rotation = [0, 0, 0] }: { rotation?: [number, number, number] } = $props();
 
 
   let mixer: THREE.AnimationMixer;

@@ -4,8 +4,8 @@
   import { useThrelte } from '@threlte/core';
   import * as THREE from 'three';
 
-  export let mixer: THREE.AnimationMixer | null = null;
-  export let model: THREE.Object3D | null = null;
+  let { mixer = null }: { mixer?: THREE.AnimationMixer | null } = $props();
+  let { model = null }: { model?: THREE.Object3D | null } = $props();
 
   const { renderer, scene, camera } = useThrelte();
   const clock = new THREE.Clock();

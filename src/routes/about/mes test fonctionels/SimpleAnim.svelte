@@ -8,7 +8,10 @@
   import { navigate } from 'svelte-routing';
   import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 
-  const clock = new THREE.Clock();
+  
+
+  // Props en mode runes
+const clock = new THREE.Clock();
   const model = writable<THREE.Object3D | null>(null);
   let mixer: THREE.AnimationMixer;
 
@@ -182,8 +185,8 @@
   import { onMount } from 'svelte';
   export const width = 100;
   export const height = 100;
-  export let position: [number, number, number] = [0, 0, 0];
-  export let rotation: [number, number, number] = [0, 0, 0];
+  let { position = [0, 0, 0] }: { position?: [number, number, number] } = $props();
+  let { rotation = [0, 0, 0] }: { rotation?: [number, number, number] } = $props();
 
   let clock = new THREE.Clock();
   let model: THREE.Object3D | null = null;

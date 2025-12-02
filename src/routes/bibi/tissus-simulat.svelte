@@ -3,12 +3,19 @@
   import { useGltf } from '@threlte/extras';
   import * as THREE from 'three';
 
-  export let position: [number, number, number] = [0, 0, 0];
-  export let rotation: [number, number, number] = [0, 0, 0];
-  export let scale: number | [number, number, number] = 1;
+  let {
+    position = [0, 0, 0],
+    rotation = [0, 0, 0],
+    scale = 1
+  }: {
+    position?: [number, number, number];
+    rotation?: [number, number, number];
+    scale?: number | [number, number, number];
+  } = $props();
 
   // Use the useGltf hook to load the model
   const gltf = useGltf<THREE.Group>('/public/cloth_sim.glb');
+  let $gltf = $derived(gltf);
 
   // Animate the model using useTask
   let mixer: THREE.AnimationMixer | undefined;
@@ -18,11 +25,14 @@
   });
 
   // When the model is loaded, set up the animation mixer
-  $: if ($gltf) {
-    mixer = new THREE.AnimationMixer($gltf.scene);
-    $gltf.animations.forEach((clip) => {
-      mixer?.clipAction(clip).play();
-    });
+  $effect(() => {
+    if (gltf) {
+      mixer = new THREE.AnimationMixer(gltf.scene);
+      gltf.animations.forEach((clip) => {
+        mixer?.clipAction(clip).play();
+      });
+    }
+  });
 
     // Optional: Apply a texture if needed, assuming the model has a mesh
     // const textureLoader = new THREE.TextureLoader();

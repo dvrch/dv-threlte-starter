@@ -3,11 +3,11 @@
   import * as THREE from 'three';
   // import Bibi from './../bibi/+page.svelte';
 
-  export let width: 100;
+  let { width = createEventDispatcher() }: { width?: 100;
   export let height: 100;
 
   let canvas: HTMLCanvasElement;
-  const dispatch = createEventDispatcher();
+  const dispatch } = $props();
 
   onMount(() => {
     const scene = new THREE.Scene();

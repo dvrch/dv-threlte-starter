@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let data;
+	let { data } = $props();
 	import { T, Canvas } from '@threlte/core';
 	import { OrbitControls } from '@threlte/extras';
 	//import Bibanime from './bibanime.svelte';

@@ -2,10 +2,10 @@
   import * as THREE from 'three';
   import type { Scene, PerspectiveCamera } from 'three';
   
-  export let scene: Scene;
+  let { scene = new THREE.BoxGeometry(1, 1, 1) }: { scene?: Scene;
   export let camera: PerspectiveCamera;
   
-  const geometry = new THREE.BoxGeometry(1, 1, 1);
+  const geometry } = $props();
   const material = new THREE.MeshBasicMaterial({ color: 0x44ffff });
   const cube = new THREE.Mesh(geometry, material);
   

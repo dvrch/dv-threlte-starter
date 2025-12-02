@@ -1,8 +1,8 @@
 <script lang="ts">
   import { T } from '@threlte/core';
 
-  export let position: [number, number, number] = [0, 0, 0];
-  export let rotation: [number, number, number] = [0, 0, 0];
+  let { position = [0, 0, 0] }: { position?: [number, number, number] } = $props();
+  let { rotation = [0, 0, 0] }: { rotation?: [number, number, number] } = $props();
 </script>
 
 <T.Group {position} {rotation}>

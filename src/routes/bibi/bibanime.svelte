@@ -3,9 +3,9 @@
   import { useGltf } from '@threlte/extras';
   import * as THREE from 'three';
 
-  export let position: [number, number, number] = [0, 0, 0];
-  export let rotation: [number, number, number] = [0, 0, 0];
-  export let scale: number | [number, number, number] = 1;
+  let { position = [0, 0, 0] }: { position?: [number, number, number] } = $props();
+  let { rotation = [0, 0, 0] }: { rotation?: [number, number, number] } = $props();
+  let { scale = 1 }: { scale?: number | [number, number, number] } = $props();
 
   // Load the GLTF model
   const gltf = useGltf<THREE.Group>('/public/bibi.glb');
