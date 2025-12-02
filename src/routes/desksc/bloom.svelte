@@ -40,7 +40,11 @@
 		)
 	}
 
-	$: setupEffectComposer($camera)
+	$effect(() => {
+		if ($camera) {
+			setupEffectComposer($camera);
+		}
+	})
 
 	useTask(({ delta }) => {
 		if (!composer || !camera.current || !scene.current) return;

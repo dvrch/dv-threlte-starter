@@ -6,7 +6,7 @@
 
 	let { url, ...restProps }: { url: string } = $props();
 
-	let gltf: any; // Declare gltf as a mutable variable
+	let gltf: any = $state(null); // Declare gltf as a mutable variable
 
 	onMount(() => {
 		if (browser) {
