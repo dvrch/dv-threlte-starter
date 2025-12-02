@@ -16,7 +16,7 @@ Title: Nissan Skyline GTR r35
   import { browser } from '$app/environment';
 
   // Runes syntax pour les props, avec un ref par défaut et passage du reste des props
-  let { ref = new Group(), ...$$restProps } = $props();
+  let { ref = new Group(), ...restProps } = $props();
 
   let gltf;
 
@@ -48,7 +48,7 @@ Title: Nissan Skyline GTR r35
   <Bloom />
 {/if}
 
-<T is={ref} dispose={false} {...$$restProps}>
+<T is={ref} dispose={false} {...restProps}>
   {#await gltf}
     loading
   {:then gltf}

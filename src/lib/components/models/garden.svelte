@@ -40,7 +40,7 @@ Title: Japanese Bridge Garden
   const component = forwardEventHandlers()
 </script>
 
-<T is={ref} dispose={false} {...$$restProps} bind:this={$component}>
+<T is={ref} dispose={false} {...restProps} bind:this={$component}>
   {#await gltf}
     <slot name="fallback" />
   {:then gltf}

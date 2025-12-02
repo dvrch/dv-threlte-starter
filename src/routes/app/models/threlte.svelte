@@ -15,7 +15,7 @@ Command: npx @threlte/gltf@2.0.0 C:\Users\Utente\Desktop\Trasferimento-PC\Projec
   const component = forwardEventHandlers()
 </script>
 
-<T is={ref} dispose={false} {...$$restProps} bind:this={$component}>
+<T is={ref} dispose={false} {...restProps} bind:this={$component}>
   {#await gltf}
     <slot name="fallback" />
   {:then gltf}

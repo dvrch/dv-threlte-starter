@@ -6,7 +6,7 @@
   import { browser } from '$app/environment';
 
   // Runes syntax pour les props
-  let { ref = new Group(), ...$$restProps } = $props();
+  let { ref = new Group(), ...restProps } = $props();
 
   let gltf;
   let map;
@@ -23,7 +23,7 @@
   });
 </script>
 
-<T is={ref} dispose={false} {...$$restProps}>
+<T is={ref} dispose={false} {...restProps}>
   {#await gltf}
     loading
   {:then gltf}

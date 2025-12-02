@@ -44,7 +44,7 @@ Title: Nissan Skyline GTR r35
 
 </script>
 
-<T is={ref} dispose={false} {...$$restProps}>
+<T is={ref} dispose={false} {...restProps}>
   {#await gltf}
     <slot name="fallback" />
   {:then gltf}

@@ -44,7 +44,7 @@ Title: Nissan Skyline GTR r35
   const component = forwardEventHandlers()
 </script>
 
-<T is={ref} dispose={false} {...$$restProps} bind:this={$component}>
+<T is={ref} dispose={false} {...restProps} bind:this={$component}>
   {#await gltf}
     <slot name="fallback" />
   {:then gltf}

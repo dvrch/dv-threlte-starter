@@ -15,7 +15,7 @@ Command: npx @threlte/gltf@2.0.3 /home/ubt/DpDIST/Web_site_3D_anime_By_DV/static
   const component = forwardEventHandlers()
 </script>
 
-<T is={ref} dispose={false} {...$$restProps} bind:this={$component}>
+<T is={ref} dispose={false} {...restProps} bind:this={$component}>
   {#await gltf}
     <slot name="fallback" />
   {:then gltf}
