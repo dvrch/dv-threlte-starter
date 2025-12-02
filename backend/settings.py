@@ -216,9 +216,16 @@ VERCEL_BLOB_STORE_ID = os.environ.get("STORE_ID", "your-store-id")
 FORMS_URLFIELD_ASSUME_HTTPS = True
 
 # CORS Configuration
-CORS_ALLOW_ALL_ORIGINS = True  # Only for development
+# Configuration pour développement local et production Vercel
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = []  # Initialisation de la liste
+
+# Déterminer les origines autorisées selon l'environnement
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",      # Next.js dev
+    "http://localhost:5173",      # Vite/SvelteKit dev
+    "http://127.0.0.1:5173",      # Vite/SvelteKit dev (127.0.0.1)
+    "http://localhost:8000",      # Django dev
+]
 
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -229,11 +236,22 @@ CORS_ALLOW_METHODS = [
     'PUT',
 ]
 
-# Vercel définit automatiquement cette variable d'environnement
+# Ajouter les URLs de production Vercel automatiquement
 VERCEL_URL = os.environ.get("VERCEL_URL")
+VERCEL_FRONTEND_URL = os.environ.get("VERCEL_FRONTEND_URL")  # Si déployé dans un projet Vercel
 
 if VERCEL_URL:
     CORS_ALLOWED_ORIGINS.append(f"https://{VERCEL_URL}")
+
+if VERCEL_FRONTEND_URL:
+    CORS_ALLOWED_ORIGINS.append(VERCEL_FRONTEND_URL)
+
+# En développement uniquement, permettre tous les domaines
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    # En production, être strict avec les origines
+    CORS_ALLOW_ALL_ORIGINS = False
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
