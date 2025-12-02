@@ -6,8 +6,7 @@
     import AddGeometry from './AddGeometry.svelte'
     // aucune donnée de layout utilisée ici
 
-    export const data = undefined;
-    export const params = {};
+	let { children } = $props();
 
     let activeTab: 'scene' | 'add' | 'upload' = $state('scene')
     function handleTabChange(event: CustomEvent) {
@@ -43,7 +42,9 @@
 
             <Grid position={[0, -0.001, 0]} cellColor="#ffffff" sectionColor="#ffffff" sectionThickness={0} fadeDistance={25} cellSize={2} />
             <ContactShadows scale={10} blur={2} far={2.5} opacity={0.5} />
-            <Bloom />
+            {#if browser}
+                <Bloom />
+            {/if}
 
             {@render children()}
         </Canvas>

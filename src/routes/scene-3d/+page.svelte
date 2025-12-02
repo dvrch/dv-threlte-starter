@@ -13,7 +13,9 @@
 	<Canvas>
 		<InteractivitySetup />
 		<T.PerspectiveCamera makeDefault position={[10, 10, 10]} fov={24}>
-			<OrbitControls maxPolarAngle={degToRad(80)} target={{ y: 0.5 }} />
+			{#if browser}
+				<OrbitControls maxPolarAngle={degToRad(80)} target={{ y: 0.5 }} />
+			{/if}
 		</T.PerspectiveCamera>
 
 		<T.DirectionalLight castShadow position={[3, 10, 10]} intensity={1.5} />
@@ -42,5 +44,7 @@
 	div {
 		height: 100vh;
 		width: 100vw;
+	}
+</style>100vw;
 	}
 </style>

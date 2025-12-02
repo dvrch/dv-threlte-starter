@@ -10,7 +10,7 @@ Title: Japanese Bridge Garden
 
 
 
-<script>
+<script lang="ts">
   import { Group } from 'three'
   import { T } from '@threlte/core'
   import { useGltf } from '@threlte/extras'

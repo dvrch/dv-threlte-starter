@@ -34,6 +34,14 @@ export async function load({ fetch }) {
       }
     });
 
+    // Filter out geometries that are supposed to have a model_url but don't.
+    geometries = geometries.filter(geom => {
+      if (geom.model_type === 'gltf' || geom.model_type === 'from_file') {
+        return !!geom.model_url;
+      }
+      return true;
+    });
+
     // Préfixer les model_url avec l'URL du Blob si elle est définie
     if (PUBLIC_STATIC_URL) {
       geometries = geometries.map(geom => {

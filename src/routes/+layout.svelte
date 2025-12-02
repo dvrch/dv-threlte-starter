@@ -3,9 +3,8 @@
 	import Header from './Header.svelte';
 	import './../app.css';
 	import Toast from '$lib/components/Toast.svelte';
-	// aucune donnée de layout utilisée ici
-	export const data = undefined;
-	export const params = {};
+
+	let { children } = $props();
 </script>
 
 <div class="app">

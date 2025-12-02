@@ -7,7 +7,7 @@ Source: https://sketchfab.com/3d-models/japanese-bridge-garden-d122e17593eb40129
 Title: Japanese Bridge Garden
 -->
 
-<script>
+<script lang="ts">
   import { Group } from 'three'
   import { T, forwardEventHandlers } from '@threlte/core'
   import { useGltf } from '@threlte/extras'
