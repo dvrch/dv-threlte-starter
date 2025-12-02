@@ -19,7 +19,8 @@ Title: Japanese Bridge Garden
   let currentModelUrl = url; // Start with the provided URL
 
   // Reactive statement to handle fallback if the initial URL fails
-  $: if (url && browser) {
+  $effect(() => {
+    if (url && browser) {
     // Attempt to load the model from the provided URL
     // If it fails, fall back to a default local path
     fetch(url)
@@ -34,6 +35,7 @@ Title: Japanese Bridge Garden
         currentModelUrl = '/models/garden.glb'; // Fallback to local path
       });
   }
+  });
 
   const gltf = useGltf(currentModelUrl)
 

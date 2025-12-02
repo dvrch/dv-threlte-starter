@@ -27,8 +27,8 @@
 	let bibiCamera: Three.Camera;
 	let bibiRenderer: Three.WebGLRenderer;
 
-	$: bibanimePosition = curve.getPoint(curvePosition);
-	$: bibanimeRotation = new Three.Euler().setFromQuaternion(
+ let bibanimePosition = $derived(curve.getPoint(curvePosition));
+ let bibanimeRotation = $derived(new Three.Euler().setFromQuaternion();
 		new Three.Quaternion().setFromUnitVectors(
 			new Three.Vector3(0, 0, 1),
 			curve.getTangent(curvePosition)

@@ -31,16 +31,16 @@
 	let bibiCamera: Three.Camera;
 	let bibiRenderer: Three.WebGLRenderer;
 
-	$: nissanPosition = curve.getPoint(curvePosition);
-	$: nissanRotation = new Three.Euler().setFromQuaternion(
+ let nissanPosition = $derived(curve.getPoint(curvePosition));
+ let nissanRotation = $derived(new Three.Euler().setFromQuaternion();
 		new Three.Quaternion().setFromUnitVectors(
 			new Three.Vector3(0, 0, 1),
 			curve.getTangent(curvePosition)
 		)
 	);
 
-	$: bibanimePosition = curve.getPoint(curvePosition);
-	$: bibanimeRotation = new Three.Euler().setFromQuaternion(
+ let bibanimePosition = $derived(curve.getPoint(curvePosition));
+ let bibanimeRotation = $derived(new Three.Euler().setFromQuaternion();
 		new Three.Quaternion().setFromUnitVectors(
 			new Three.Vector3(0, 0, 1),
 			curve.getTangent(curvePosition)

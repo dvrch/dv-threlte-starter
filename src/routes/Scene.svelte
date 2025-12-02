@@ -33,7 +33,6 @@
     )
   }
 
-  $: if ($camera) setupEffectComposer($camera)
 
   useTask((_, delta) => {
     // Mettre à jour l'environnement et le rendu

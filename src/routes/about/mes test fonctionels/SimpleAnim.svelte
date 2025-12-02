@@ -279,9 +279,11 @@ const clock = new THREE.Clock();
   import { OrbitControls } from '@threlte/extras';
 
   const { actions, gltf } = useGltfAnimations();
-  $: if (gltf) {
+  $effect(() => {
+    if (gltf) {
 			Object.values($actions).forEach(action => action?.play());
 		}
+  });
 </script>
 
 <div class="scene-container">

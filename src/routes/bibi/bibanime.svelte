@@ -3,9 +3,15 @@
   import { useGltf } from '@threlte/extras';
   import * as THREE from 'three';
 
-  let { position = [0, 0, 0] }: { position?: [number, number, number] } = $props();
-  let { rotation = [0, 0, 0] }: { rotation?: [number, number, number] } = $props();
-  let { scale = 1 }: { scale?: number | [number, number, number] } = $props();
+  let {
+    position = [0, 0, 0],
+    rotation = [0, 0, 0],
+    scale = 1
+  }: {
+    position?: [number, number, number];
+    rotation?: [number, number, number];
+    scale?: number | [number, number, number];
+  } = $props();
 
   // Load the GLTF model
   const gltf = useGltf<THREE.Group>('/public/bibi.glb');
@@ -14,12 +20,14 @@
   let mixer: THREE.AnimationMixer | undefined;
 
   // Play animations
-  $: if ($gltf && $gltf.animations.length) {
-    mixer = new THREE.AnimationMixer($gltf.scene);
-    $gltf.animations.forEach(clip => {
-      mixer?.clipAction(clip).play();
-    });
-  }
+  $effect(() => {
+    if (gltf && gltf.animations.length) {
+      mixer = new THREE.AnimationMixer(gltf.scene);
+      gltf.animations.forEach(clip => {
+        mixer?.clipAction(clip).play();
+      });
+    }
+  });
 
   // Update the mixer on each frame
   useTask((_, delta) => {
@@ -28,8 +36,8 @@
 
 </script>
 
-{#if $gltf}
+{#if gltf}
   <T.Group {position} {rotation} {scale}>
-    <T is={$gltf.scene} />
+    <T is={gltf.scene} />
   </T.Group>
 {/if}

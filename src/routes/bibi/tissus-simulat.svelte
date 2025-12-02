@@ -15,7 +15,6 @@
 
   // Use the useGltf hook to load the model
   const gltf = useGltf<THREE.Group>('/public/cloth_sim.glb');
-  let $gltf = $derived(gltf);
 
   // Animate the model using useTask
   let mixer: THREE.AnimationMixer | undefined;
@@ -37,17 +36,16 @@
     // Optional: Apply a texture if needed, assuming the model has a mesh
     // const textureLoader = new THREE.TextureLoader();
     // textureLoader.load('/public/zaki.png', (texture) => {
-    //   $gltf.scene.traverse((child) => {
+    //   gltf.scene.traverse((child) => {
     //     if (child instanceof THREE.Mesh) {
     //       child.material = new THREE.MeshPhongMaterial({ map: texture, shininess: 10 });
     //     }
     //   });
     // });
-  }
 </script>
 
-{#if $gltf}
+{#if gltf}
   <T.Group {position} {rotation} {scale}>
-    <T is={$gltf.scene} />
+    <T is={gltf.scene} />
   </T.Group>
 {/if}

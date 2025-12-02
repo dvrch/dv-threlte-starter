@@ -21,8 +21,8 @@
 	let curvePosition = 0;
 	const speed = 0.005;
 
-	$: nissanPosition = curve.getPoint(curvePosition);
-	$: nissanRotation = new Three.Euler().setFromQuaternion(
+ let nissanPosition = $derived(curve.getPoint(curvePosition));
+ let nissanRotation = $derived(new Three.Euler().setFromQuaternion();
 		new Three.Quaternion().setFromUnitVectors(
 			new Three.Vector3(0, 0, 1),
 			curve.getTangent(curvePosition)

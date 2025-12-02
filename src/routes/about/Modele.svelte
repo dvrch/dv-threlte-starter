@@ -7,10 +7,13 @@
   // Remplacer useGltf et useGltfAnimations par GLTFLoader pour éviter l'erreur de module
   import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
-  export const width = 100; // Utiliser const pour éviter l'avertissement d'exportation inutilisée
-  export const height = 100; // Utiliser const pour éviter l'avertissement d'exportation inutilisée
-  let { position = [0, 0, 0] }: { position?: [number, number, number] } = $props();
-  let { rotation = [0, 0, 0] }: { rotation?: [number, number, number] } = $props();
+  let {
+    position = [0, 0, 0],
+    rotation = [0, 0, 0]
+  }: {
+    position?: [number, number, number];
+    rotation?: [number, number, number];
+  } = $props();
 
   let clock = new THREE.Clock();
   let model: THREE.Object3D | null = null; // Déclarer le type pour éviter l'erreur implicite
@@ -149,13 +152,15 @@
   const { actions, gltf } = useGltfAnimations();
 
   // Jouer toutes les animations une fois que le modèle est chargé et les actions sont disponibles
-  $: if (gltf && actions) {
+  $effect(() => {
+    if (gltf && actions) {
     Object.values(actions).forEach(action => {
       if (action && typeof action.play === 'function') {
         action.play();
       }
     });
   }
+  });
 </script>
 
 <GLTF bind:gltf={$gltf} url="/public/cloth_sim.glb" /> --> -->
