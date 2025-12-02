@@ -1,24 +1,26 @@
 <script>
-    import {FilmStore} from '../../../film-store'
-    import { onMount } from "svelte";
+    import { FilmStore } from '../../../film-store';
+    import { onMount } from 'svelte';
 
-    export let data;
-    let film;
+    // Mode runes : récupération des props via $props()
+    let { data } = $props();
 
-    onMount(async function() {
+    // État local réactif pour le film
+    let film = $state(null);
+
+    onMount(async () => {
         if ($FilmStore.length) {
-            film = $FilmStore.find(film => film.id == data.id)
+            film = $FilmStore.find((film) => film.id == data.id);
         } else {
-            const endpoint = `/api/films/${data.id}/`
-            let response = await fetch(endpoint)
-            if (response.status == 200) {
-                film = await response.json()
+            const endpoint = `/api/films/${data.id}/`;
+            let response = await fetch(endpoint);
+            if (response.status === 200) {
+                film = await response.json();
             } else {
                 film = null;
             }
         }
-    })
-
+    });
 </script>
 
 <div class="row mt-4">

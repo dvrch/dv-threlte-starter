@@ -3,30 +3,32 @@
     import { goto } from '$app/navigation';
     import { onMount } from 'svelte';
 
-    export let data; // Passed from +page.js
+    // Runes : récupération des props
+    let { data } = $props();
 
-    let film = {};
-    let name = '';
-    let director = '';
-    let description = '';
-    let files;
-    let showInvalidMessage = false;
-    let errorMessage = '';
-    let isLoading = false;
+    // États réactifs
+    let film = $state({});
+    let name = $state('');
+    let director = $state('');
+    let description = $state('');
+    let files = $state(null);
+    let showInvalidMessage = $state(false);
+    let errorMessage = $state('');
+    let isLoading = $state(false);
 
     onMount(async () => {
         const filmId = data.id;
-        const existingFilm = $FilmStore.find(f => f.id == filmId);
+        const existingFilm = $FilmStore.find((f) => f.id == filmId);
 
         if (existingFilm) {
             film = existingFilm;
         } else {
             try {
                 const response = await fetch(`/api/films/${filmId}/`);
-                if (!response.ok) throw new Error("Film not found");
+                if (!response.ok) throw new Error('Film not found');
                 film = await response.json();
             } catch (error) {
-                console.error("Failed to fetch film data:", error);
+                console.error('Failed to fetch film data:', error);
                 film = null;
             }
         }
@@ -44,7 +46,7 @@
 
     const handleSubmit = async () => {
         if (!validFields()) {
-            errorMessage = "Veuillez vérifier les champs du formulaire.";
+            errorMessage = 'Veuillez vérifier les champs du formulaire.';
             showInvalidMessage = true;
             return;
         }
@@ -66,7 +68,9 @@
 
                 if (!presignedUrlResponse.ok) {
                     const errorBody = await presignedUrlResponse.json();
-                    throw new Error(`Erreur du serveur pour obtenir l'URL pré-signée: ${errorBody.error || presignedUrlResponse.statusText}`);
+                    throw new Error(
+                        `Erreur du serveur pour obtenir l'URL pré-signée: ${errorBody.error || presignedUrlResponse.statusText}`
+                    );
                 }
                 const blobData = await presignedUrlResponse.json();
 
@@ -77,9 +81,9 @@
                 });
 
                 if (!uploadResponse.ok) {
-                    throw new Error('Échec du téléversement du fichier sur le stockage blob.');
+                    throw new Error("Échec du téléversement du fichier sur le stockage blob.");
                 }
-                
+
                 imageUrl = blobData.downloadUrl; // Update to the new URL
             }
 
@@ -101,10 +105,10 @@
             }
 
             const responseData = await filmResponse.json();
-            
+
             // Update the store
-            FilmStore.update(films => {
-                const index = films.findIndex(f => f.id === responseData.id);
+            FilmStore.update((films) => {
+                const index = films.findIndex((f) => f.id === responseData.id);
                 if (index !== -1) {
                     films[index] = responseData;
                 }
@@ -112,7 +116,6 @@
             });
 
             goto('/films/');
-
         } catch (error) {
             console.error('Une erreur est survenue durant le processus de mise à jour:', error);
             errorMessage = error.message;

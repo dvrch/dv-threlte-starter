@@ -11,8 +11,8 @@
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 	
-	let Canvas;
-	let Scene;
+	let Canvas = $state(null);
+	let Scene = $state(null);
 	
 	onMount(async () => {
 		if (browser) {

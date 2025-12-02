@@ -48,11 +48,19 @@
 
     <div class="my-4">
         {#each tags as tag}
-            <button class="btn btn-sm btn-warning me-2 mb-1"
-                on:click={() => selectedTag = tag}>{tag}</button>
+            <button
+                class="btn btn-sm btn-warning me-2 mb-1"
+                onclick={() => (selectedTag = tag)}
+            >
+                {tag}
+            </button>
         {/each }
-        <button class="btn btn-sm btn-warning me-2 mb-1"
-            on:click={() => selectedTag = ''}>ALL</button>
+        <button
+            class="btn btn-sm btn-warning me-2 mb-1"
+            onclick={() => (selectedTag = '')}
+        >
+            ALL
+        </button>
     </div>
     
     <div class="my-4 row">
@@ -71,7 +79,10 @@
                     <div>
                         <a href="/films/{film.id}" class="btn btn-primary">View</a>
 
-                        <button on:click={() => handleDelete(film.id)} class="btn btn-danger ml-2">
+                        <button
+                            class="btn btn-danger ml-2"
+                            onclick={() => handleDelete(film.id)}
+                        >
                             Delete 
                         </button>
                         <div class="mt-3">

@@ -5,7 +5,7 @@
 
 	
 
-	let isInView = false;
+	let isInView = $state(false);
 
 	onMount(() => {
 		const observer = new IntersectionObserver(

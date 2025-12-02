@@ -3,6 +3,7 @@
     import { Float } from '@threlte/extras';
     import Dynamic3DModel from '$lib/components/Dynamic3DModel.svelte';
     import type { PageData } from './$types';
+    import { browser } from '$app/environment';
 
     let { data, params } = $props();
 </script>
@@ -11,9 +12,14 @@
     <p class="error">{data.error}</p>
 {:else}
     {#each data.geometries as geometry (geometry.id)}
-        <Float floatIntensity={1} floatingRange={[0, 1]}>
+        {#if browser}
+            <Float floatIntensity={1} floatingRange={[0, 1]}>
+                <Dynamic3DModel geometry={geometry} />
+            </Float>
+        {:else}
+            <!-- Fallback for SSR -->
             <Dynamic3DModel geometry={geometry} />
-        </Float>
+        {/if}
     {/each}
 {/if}
 
