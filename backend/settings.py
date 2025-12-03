@@ -12,9 +12,13 @@ import os
 import dj_database_url
 from dotenv import load_dotenv
 
-# Chargement des variables d'environnement depuis .env
+# Chargement des variables d'environnement depuis .env (si le fichier existe)
 env_path = Path(__file__).resolve().parent.parent / '.env'
-load_dotenv(env_path)
+if env_path.exists():
+    load_dotenv(env_path)
+else:
+    # Sur Vercel, les variables viennent du Dashboard, pas de .env
+    load_dotenv()  # Charge depuis les variables d'environnement du système
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
