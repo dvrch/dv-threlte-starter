@@ -14,15 +14,17 @@
 	<p class="loading">Chargement des géométries...</p>
 {:else if geometries.length === 0}
 	<p class="empty">Aucune géométrie trouvée</p>
-{:else}
-	<Grid />
+{/if}
 
-	<!-- Sphère au centre -->
-	<T.Mesh position={[0, 0.5, 0]}>
-		<T.SphereGeometry args={[0.5, 32, 32]} />
-		<T.MeshStandardMaterial color="red" />
-	</T.Mesh>
+<Grid />
 
+<!-- Sphère au centre -->
+<T.Mesh position={[0, 0.5, 0]}>
+	<T.SphereGeometry args={[0.5, 32, 32]} />
+	<T.MeshStandardMaterial color="red" />
+</T.Mesh>
+
+{#if geometries}
 	{#each geometries as geometry (geometry.id)}
 		{#if browser}
 			<Float floatIntensity={1} floatingRange={[0, 1]}>
