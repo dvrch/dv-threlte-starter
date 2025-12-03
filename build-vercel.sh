@@ -8,9 +8,11 @@ set -e  # Sortir si une commande échoue
 
 echo "🔧 Configuration du déploiement Vercel..."
 
+# Aller au répertoire du backend (fonctionne en local ET sur Vercel)
+cd "$(dirname "$0")/backend"
+
 # 1. Collecte des fichiers statiques
 echo "📦 Collecte des fichiers statiques Django..."
-cd backend
 python manage.py collectstatic --noinput --clear
 
 # 2. Migration de la base de données
@@ -19,13 +21,12 @@ python manage.py migrate
 
 # 3. Créer le superuser s'il n'existe pas
 echo "👤 Configuration du superuser..."
-python manage.py shell << EOF
+python manage.py shell << 'PYEOF'
 from django.contrib.auth import get_user_model
 import os
 
 User = get_user_model()
 
-# Utiliser les variables d'environnement ou les valeurs par défaut
 ADMIN_USERNAME = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'kd')
 ADMIN_EMAIL = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'dvrchipro@gmail.com')
 ADMIN_PASSWORD = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'admin123')
@@ -35,7 +36,6 @@ if not User.objects.filter(username=ADMIN_USERNAME).exists():
     print(f"✅ Superuser '{ADMIN_USERNAME}' créé!")
 else:
     print(f"✅ Superuser '{ADMIN_USERNAME}' existe déjà")
-EOF
+PYEOF
 
-# 4. Afficher les logs pour le débogage
 echo "✅ Configuration Vercel terminée!"
