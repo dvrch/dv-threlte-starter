@@ -43,9 +43,9 @@
 
             <Grid position={[0, -0.001, 0]} cellColor="#ffffff" sectionColor="#ffffff" sectionThickness={0} fadeDistance={25} cellSize={2} />
             <ContactShadows scale={10} blur={2} far={2.5} opacity={0.5} />
-            
-            <Bloom />
-            
+            <!-- {#if browser}
+                <Bloom />
+            {/if} -->
 
             {@render children()}
         </Canvas>
