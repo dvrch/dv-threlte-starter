@@ -8,11 +8,20 @@ from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 from films.views import FilmViewSet
 try:
-    # Try relative import first (local dev)
+    # Try relative import first (works when Django starts from backend/ folder locally)
     from Base_threlte_dv.views import GeometryViewSet, TypeView
 except ImportError:
-    # Fall back to absolute import (Vercel)
-    from backend.Base_threlte_dv.views import GeometryViewSet, TypeView
+    try:
+        # Fall back to absolute import (works on Vercel when Django starts from project root)
+        from backend.Base_threlte_dv.views import GeometryViewSet, TypeView
+    except ImportError:
+        # Last resort - add backend to path and try again
+        import sys
+        from pathlib import Path
+        backend_path = Path(__file__).resolve().parent
+        if str(backend_path) not in sys.path:
+            sys.path.insert(0, str(backend_path))
+        from Base_threlte_dv.views import GeometryViewSet, TypeView
 
 # Création d'un routeur principal pour toutes les APIs
 router = DefaultRouter()
