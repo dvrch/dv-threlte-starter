@@ -21,6 +21,8 @@
     { "source": "/textures/:path*", "destination": "https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com/textures/:path*" },
     { "source": "/assets/:path*", "destination": "https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com/assets/:path*" },
     { "source": "/api/(.*)", "destination": "/backend/wsgi.py" },
+    { "source": "/admin", "destination": "/backend/wsgi.py" },
+    { "source": "/admin/(.*)", "destination": "/backend/wsgi.py" },
     { "source": "/dashboard", "destination": "/backend/wsgi.py" },
     { "source": "/dashboard/(.*)", "destination": "/backend/wsgi.py" },
     { "source": "/(.*)", "destination": "/index.html" }
