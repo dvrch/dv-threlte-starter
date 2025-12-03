@@ -1,9 +1,28 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
 
 # from .views import # Assurez-vous d'importer correctement votre vue
 from django.conf import settings
 from django.conf.urls.static import static
+
+# Diagnostic view
+def health_check(request):
+    """Health check endpoint for debugging"""
+    try:
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        db_status = "✅ Database connected"
+    except Exception as e:
+        db_status = f"❌ Database error: {str(e)}"
+    
+    return JsonResponse({
+        "status": "ok",
+        "database": db_status,
+        "debug": settings.DEBUG,
+        "secret_key_set": bool(settings.SECRET_KEY),
+    })
 
 from rest_framework.routers import DefaultRouter
 from films.views import FilmViewSet
@@ -31,6 +50,9 @@ router.register(r'geometries', GeometryViewSet, basename='geometries')
 from django.views.generic import RedirectView
 
 urlpatterns = [
+    # Health check for debugging
+    path('health/', health_check, name='health'),
+    
     # Redirection de la racine vers l'API
     path('', RedirectView.as_view(url='/api/', permanent=False)),
     
