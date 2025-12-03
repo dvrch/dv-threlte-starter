@@ -12,9 +12,9 @@
 		vague: () => import('../../routes/vague/+page.svelte'),
 		tissus: () => import('../../routes/bibi/tissus-simulat.svelte'),
 		desk: () => import('../../routes/desksc/+page.svelte'),
-		nissan: () => import('../../routes/Spaceship/Nissan.svelte'),
+		// nissan: () => import('../../routes/Spaceship/Nissan.svelte'), // Temporarily disabled
 		bibi: () => import('../../routes/bibi/bibanime.svelte'),
-		garden: () => import('../../routes/app/models/garden.svelte'),
+		// garden: () => import('../../routes/app/models/garden.svelte'), // Temporarily disabled
 		nissangame: () => import('../../routes/app/nissangame.svelte'),
 		bibigame: () => import('../../routes/app/bibigame.svelte')
 	};
@@ -46,13 +46,8 @@
 	<T.Group position={posArray} rotation={rotArray} scale={geometry.scale ?? 1}>
 		{#if LoadedDynamicComponent}
 			<!-- 1. Render the dynamically loaded Svelte component when available -->
-			{#if geometry.type === 'garden'}
-				{@const Component = LoadedDynamicComponent}
-				<Component url={geometry.model_url} />
-			{:else}
-				{@const Component = LoadedDynamicComponent}
-				<Component />
-			{/if}
+			{@const Component = LoadedDynamicComponent}
+			<Component />
 		{:else if geometry.model_url}
 			<!-- 2. Render a generic GLTF model if model_url is present -->
 			<GltfModel url={geometry.model_url} />

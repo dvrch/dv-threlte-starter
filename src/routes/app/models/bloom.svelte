@@ -16,12 +16,12 @@
 	const { scene, renderer, camera } = useThrelte()
 	const composer = new EffectComposer(renderer)
 
-	const setupEffectComposer = (camera: THREE.Camera) => {
+	const setupEffectComposer = (cam: THREE.Camera) => {
 		composer.removeAllPasses()
-		composer.addPass(new RenderPass(scene, camera))
+		composer.addPass(new RenderPass(scene, cam))
 		composer.addPass(
 			new EffectPass(
-				camera,
+				cam,
 				new BloomEffect({
 					intensity,
 					luminanceThreshold,
@@ -35,7 +35,7 @@
 		)
 		composer.addPass(
 			new EffectPass(
-				camera,
+				cam,
 				new SMAAEffect({
 					preset: SMAAPreset.LOW,
 				})
@@ -43,10 +43,10 @@
 		)
 	}
 
-	$effect(() => { if ($camera) { setupEffectComposer($camera); } })
+	$effect(() => { if (camera) { setupEffectComposer(camera); } })
 
 	useTask(({ delta }) => {
-		if (!composer || !$camera || !$scene) return;
+		if (!composer || !camera || !scene) return;
 		composer.render(delta)
 	})
 </script>
