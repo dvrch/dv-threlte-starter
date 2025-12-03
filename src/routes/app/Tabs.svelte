@@ -11,9 +11,9 @@
 </script>
 
 <div class="tabs">
-  <button class:active={activeTab === 'scene'} onclick={() => setTab('scene')}>Scene</button>
+  <button class:active={activeTab === 'scene'} onclick={() => setTab('scene')}>open|close</button>
   <button class:active={activeTab === 'add'} onclick={() => setTab('add')}>Add Geometry</button>
-  <button class:active={activeTab === 'upload'} onclick={() => setTab('upload')}>Upload 3D</button>
+
 </div>
 
 <style>

@@ -16,15 +16,21 @@
 				? `${PUBLIC_API_URL}/api/geometries/` 
 				: '/api/geometries/';
 			
+			console.log('Fetching geometries from:', apiUrl);
 			const response = await fetch(apiUrl);
-			if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+			
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.error('API Error Response:', errorText);
+				throw new Error(`HTTP error! status: ${response.status} - ${errorText.substring(0, 200)}`);
+			}
 			
 			const data = await response.json();
 			geometries = data.results || [];
-			console.log('Loaded geometries:', geometries.length);
+			console.log('✅ Loaded geometries:', geometries.length);
 		} catch (e) {
 			error = (e as Error).message;
-			console.error('Error loading geometries:', e);
+			console.error('❌ Error loading geometries:', e);
 		} finally {
 			loading = false;
 		}
