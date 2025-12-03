@@ -12,12 +12,17 @@ import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
-
-# Add the project's parent directory to the sys.path
-# This is the directory that contains the Django project folder.
+# Get the project root (parent of backend/)
 PROJECT_DIR = Path(__file__).resolve().parent.parent
-sys.path.append(str(PROJECT_DIR))
+sys.path.insert(0, str(PROJECT_DIR))
+
+# Load .env from project root (works both locally and on Vercel)
+env_file = PROJECT_DIR / '.env'
+if env_file.exists():
+    load_dotenv(env_file)
+else:
+    # Fallback for Vercel (where .env might not exist, vars come from Dashboard)
+    load_dotenv()
 
 from django.core.wsgi import get_wsgi_application
 
