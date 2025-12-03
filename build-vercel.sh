@@ -17,5 +17,25 @@ python manage.py collectstatic --noinput --clear
 echo "🗄️ Migration de la base de données..."
 python manage.py migrate
 
-# 3. Afficher les logs pour le débogage
+# 3. Créer le superuser s'il n'existe pas
+echo "👤 Configuration du superuser..."
+python manage.py shell << EOF
+from django.contrib.auth import get_user_model
+import os
+
+User = get_user_model()
+
+# Utiliser les variables d'environnement ou les valeurs par défaut
+ADMIN_USERNAME = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'kd')
+ADMIN_EMAIL = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'dvrchipro@gmail.com')
+ADMIN_PASSWORD = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'admin123')
+
+if not User.objects.filter(username=ADMIN_USERNAME).exists():
+    User.objects.create_superuser(ADMIN_USERNAME, ADMIN_EMAIL, ADMIN_PASSWORD)
+    print(f"✅ Superuser '{ADMIN_USERNAME}' créé!")
+else:
+    print(f"✅ Superuser '{ADMIN_USERNAME}' existe déjà")
+EOF
+
+# 4. Afficher les logs pour le débogage
 echo "✅ Configuration Vercel terminée!"
