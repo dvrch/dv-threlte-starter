@@ -7,7 +7,12 @@ from django.conf.urls.static import static
 
 from rest_framework.routers import DefaultRouter
 from films.views import FilmViewSet
-from Base_threlte_dv.views import GeometryViewSet, TypeView
+try:
+    # Try relative import first (local dev)
+    from Base_threlte_dv.views import GeometryViewSet, TypeView
+except ImportError:
+    # Fall back to absolute import (Vercel)
+    from backend.Base_threlte_dv.views import GeometryViewSet, TypeView
 
 # Création d'un routeur principal pour toutes les APIs
 router = DefaultRouter()
