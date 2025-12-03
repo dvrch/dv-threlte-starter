@@ -43,10 +43,10 @@
 ## 🚀 À Faire Maintenant
 
 ### 1. Tester Localement (URGENT!)
-- [ ] `cd /home/kd/Bureau/dv-threlte-starter`
-- [ ] `chmod +x start-dev.sh`
-- [ ] `./start-dev.sh`
-- [ ] Ouvrir `http://localhost:5173/app`
+- [x] `cd /home/kd/Bureau/dv-threlte-starter`
+- [x] `chmod +x start-dev.sh`
+- [x] `./start-dev.sh`
+- [x] Ouvrir `http://localhost:5173/app`
 - [ ] Vérifier que les objets 3D apparaissent
 - [ ] Vérifier console du navigateur (F12) pour erreurs
 
