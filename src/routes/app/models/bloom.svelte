@@ -46,7 +46,7 @@
 	$effect(() => { if ($camera) { setupEffectComposer($camera); } })
 
 	useTask(({ delta }) => {
-		if (!composer || !camera.current || !scene.current) return;
+		if (!composer || !$camera || !$scene) return;
 		composer.render(delta)
 	})
 </script>

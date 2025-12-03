@@ -15,6 +15,7 @@ Title: Nissan Skyline GTR r35
 	import { AddEquation, CustomBlending, Group, LessEqualDepth, OneFactor } from 'three';
 
   export const ref = new Group()
+  let { ...rest } = $props(); // Capture rest props
 
   const gltf = useGltf('/models/nissan.glb')
 
@@ -44,7 +45,7 @@ Title: Nissan Skyline GTR r35
 
 </script>
 
-<T is={ref} dispose={false} {...restProps}>
+<T is={ref} dispose={false} {...rest}>
   {#await gltf}
     <slot name="fallback" />
   {:then gltf}

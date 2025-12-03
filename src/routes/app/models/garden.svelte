@@ -17,7 +17,7 @@ Title: Japanese Bridge Garden
   import { browser } from '$app/environment';
  
   export const ref = new Group()
-  let { url = '/models/garden.glb' }: { url?: string } = $props(); // Default to local path
+  let { url = '/models/garden.glb', ...rest } = $props(); // Default to local path
 
   let currentModelUrl = url; // Start with the provided URL
 
@@ -44,7 +44,7 @@ Title: Japanese Bridge Garden
 </script>
 
 
-<T is={ref} dispose={false} {...restProps}>
+<T is={ref} dispose={false} {...rest}>
   {#await gltf}
     <slot name="fallback" />
   {:then gltf}

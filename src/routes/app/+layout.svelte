@@ -4,6 +4,7 @@
     import Bloom from '$lib/components/bloom.svelte';
     import Tabs from './Tabs.svelte'
     import AddGeometry from './AddGeometry.svelte'
+    import { browser } from '$app/environment'
     // aucune donnée de layout utilisée ici
 
 	let { children } = $props();

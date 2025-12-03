@@ -3,12 +3,11 @@
   import { onMount, onDestroy } from 'svelte';
   import { writable } from 'svelte/store';
   import Nissangame from './nissangame.svelte';
-  import Garden from './models/garden.svelte'; 
+  //import Garden from './models/garden.svelte'; // Temporarily disabled - 404 on GLB file
   import { T } from '@threlte/core';
-  import { ContactShadows, Float, Grid, OrbitControls } from '@threlte/extras';
+  import { ContactShadows, Float, Grid, OrbitControls, useGltf } from '@threlte/extras';
   import Bloom from './models/bloom.svelte';
-  import { useGltf } from '@threlte/extras';
-  import Nissan from './models/Nissan.svelte';
+  //import Nissan from './models/Nissan.svelte'; // Temporarily disabled - restProps error
   import AddGeometry from './AddGeometry.svelte';
   import { addToast } from '$lib/stores/toasts';
   import GltfModel from '$lib/components/GltfModel.svelte'; // Importer le nouveau composant
@@ -18,6 +17,9 @@
   import Vague from '../vague/+page.svelte';
   import Spaceship from '../Spaceship/+page.svelte';
   import Desk from '../desksc/+page.svelte';
+  
+  // ✅ Importer les variables d'environnement
+  import { PUBLIC_API_URL } from '$env/static/public';
   
   type Position = {
     x: number;
@@ -59,7 +61,12 @@
 
   const loadGeometries = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/geometries/');
+      // ✅ Utiliser PUBLIC_API_URL au lieu de localhost:8000
+      const apiUrl = PUBLIC_API_URL 
+        ? `${PUBLIC_API_URL}/api/geometries/` 
+        : '/api/geometries/';
+      
+      const response = await fetch(apiUrl);
       if (!response.ok) throw new Error('Failed to fetch geometries');
       const data = await response.json();
       geometries = data.results || [];
@@ -131,15 +138,9 @@
     {:else if geometry.type === 'nissangame'}
       <Nissangame />
     {:else if geometry.type === 'garden'}
-      <Garden />
-      {#await useGltf('/assets/garden.glb') then ghost}
-      <T is={ghost.scene} position={[0, 0, 0]} scale={0.4} />
-      {/await}
+      <!-- Garden temporarily disabled -->
     {:else if geometry.type === 'nissan'}
-      <Nissan 
-        position={[geometry.position.x, geometry.position.y, geometry.position.z]}
-        rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]}
-      />
+      <!-- Nissan temporarily disabled -->
     {:else if geometry.type === 'bibi'}
       <Bibanime 
         position={[geometry.position.x, geometry.position.y, geometry.position.z]} 
