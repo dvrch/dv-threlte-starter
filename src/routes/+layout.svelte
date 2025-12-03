@@ -5,21 +5,43 @@
 	import Toast from '$lib/components/Toast.svelte';
 
 	let { children } = $props();
+
+	// Check if we're on a 3D app route
+	$effect(() => {
+		const isAppRoute = $page.url.pathname.startsWith('/app');
+		if (typeof window !== 'undefined') {
+			if (isAppRoute) {
+				document.documentElement.style.overflow = 'hidden';
+				document.body.style.overflow = 'hidden';
+				document.body.style.margin = '0';
+				document.body.style.padding = '0';
+			} else {
+				document.documentElement.style.overflow = '';
+				document.body.style.overflow = '';
+				document.body.style.margin = '';
+				document.body.style.padding = '';
+			}
+		}
+	});
 </script>
 
-<div class="app">
+<div class="app" class:is-app-route={$page.url.pathname.startsWith('/app')}>
 	<Toast />
-	<Header />
+	{#if !$page.url.pathname.startsWith('/app')}
+		<Header />
+	{/if}
 
-	<main>
+	<main class:full-screen={$page.url.pathname.startsWith('/app')}>
 		{#key $page.url.pathname}
 			{@render children()}
 		{/key}
 	</main>
 
-	<footer>
-		<p>© 2023 - PRESENT</p>
-	</footer>
+	{#if !$page.url.pathname.startsWith('/app')}
+		<footer>
+			<p>© 2023 - PRESENT</p>
+		</footer>
+	{/if}
 </div>
 
 <style>
@@ -27,6 +49,11 @@
 		display: flex;
 		flex-direction: column;
 		min-height: 100vh;
+	}
+
+	.app.is-app-route {
+		min-height: 100vh;
+		height: 100vh;
 	}
 
 	main {
@@ -38,6 +65,14 @@
 		max-width: 64rem;
 		margin: 0 auto;
 		box-sizing: border-box;
+	}
+
+	main.full-screen {
+		padding: 0;
+		max-width: 100%;
+		width: 100%;
+		height: 100vh;
+		margin: 0;
 	}
 
 	footer {
