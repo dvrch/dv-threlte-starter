@@ -20,6 +20,8 @@
     { "source": "/models/:path*", "destination": "https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com/models/:path*" },
     { "source": "/textures/:path*", "destination": "https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com/textures/:path*" },
     { "source": "/assets/:path*", "destination": "https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com/assets/:path*" },
+    { "source": "/health", "destination": "/backend/wsgi.py" },
+    { "source": "/health/(.*)", "destination": "/backend/wsgi.py" },
     { "source": "/api/(.*)", "destination": "/backend/wsgi.py" },
     { "source": "/admin", "destination": "/backend/wsgi.py" },
     { "source": "/admin/(.*)", "destination": "/backend/wsgi.py" },
