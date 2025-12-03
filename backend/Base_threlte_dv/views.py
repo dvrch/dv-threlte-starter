@@ -10,10 +10,21 @@ from urllib.parse import quote
 import os
 import re
 import requests
+import logging
+
+logger = logging.getLogger(__name__)
 
 class GeometryViewSet(viewsets.ModelViewSet):
     queryset = Geometry.objects.all()
     serializer_class = GeometrySerializer
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            logger.info("✅ GeometryViewSet.list() called")
+            return super().list(request, *args, **kwargs)
+        except Exception as e:
+            logger.error(f"❌ Error in GeometryViewSet.list(): {str(e)}", exc_info=True)
+            raise
 
     def _upload_to_blob(self, file):
         token = os.environ.get('BLOB_READ_WRITE_TOKEN')
