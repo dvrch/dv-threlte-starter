@@ -35,8 +35,6 @@ SECRET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG sera 'False' sur Vercel si la variable d'env est définie sur "False"
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 # L'URL de production sera ajoutée automatiquement par Vercel.
@@ -44,8 +42,8 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
     ".vercel.app",
+    ".now.sh",  # For Vercel
     "dv-threlte-starter.vercel.app",
-    "*.vercel.app",
 ]
 
 # Ajouter les domaines depuis les variables d'environnement Vercel
@@ -62,6 +60,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "whitenoise.runserver_nostatic",  # Should be before staticfiles
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
@@ -111,6 +110,7 @@ ADMIN_INDEX_TITLE = "Gestion des Films et Géométries"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -120,7 +120,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "urls"
+ROOT_URLCONF = "backend.urls"
 
 TEMPLATES = [
     {
@@ -139,7 +139,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "backend.wsgi.app"
-ROOT_URLCONF = "backend.urls"
+ASGI_APPLICATION = "backend.asgi.application"
+
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -216,6 +217,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 
 # Media files configuration
 # Les fichiers média sont stockés localement en développement
