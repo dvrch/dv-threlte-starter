@@ -268,7 +268,9 @@ else:
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Logging configuration for Vercel debugging
+# Logging configuration for Vercel
+# NOTE: Vercel Serverless has a READ-ONLY filesystem, so we can ONLY use console handler
+# (no file handler possible on Vercel - use stdout/stderr instead)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -287,11 +289,8 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'django.log',
-            'formatter': 'verbose',
-        },
+        # NOTE: File handler removed - Vercel filesystem is read-only
+        # Use stdout/stderr (console) for logging on Vercel
     },
     'root': {
         'handlers': ['console'],
