@@ -17,4 +17,4 @@ from backend.asgi import application
 # Wrap the ASGI application with Mangum for Vercel's Lambda environment.
 # 'lifespan="off"' is recommended for Django apps on Lambda to avoid issues
 # with startup/shutdown signals.
-handler = Mangum(application, lifespan="off")
+app = Mangum(application, lifespan="off")
