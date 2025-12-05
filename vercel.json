@@ -1,36 +1,45 @@
 {
-  "version": 2,
-  "buildCommand": "npm run build && bash build-vercel.sh",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "build" }
-    },
-    {
-      "src": "backend/wsgi.py",
-      "use": "@vercel/python",
-      "config": {
-        "includeFiles": ["backend/**", "staticfiles/**", "requirements.txt"],
-        "runtime": "python3.13"
-      }
-    }
-  ],
-  "rewrites": [
-    { "source": "/models/:path*", "destination": "https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com/models/:path*" },
-    { "source": "/textures/:path*", "destination": "https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com/textures/:path*" },
-    { "source": "/assets/:path*", "destination": "https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com/assets/:path*" },
-    { "source": "/health", "destination": "/backend/wsgi.py" },
-    { "source": "/health/(.*)", "destination": "/backend/wsgi.py" },
-    { "source": "/api/(.*)", "destination": "/backend/wsgi.py" },
-    { "source": "/admin", "destination": "/backend/wsgi.py" },
-    { "source": "/admin/(.*)", "destination": "/backend/wsgi.py" },
-    { "source": "/dashboard", "destination": "/backend/wsgi.py" },
-    { "source": "/dashboard/(.*)", "destination": "/backend/wsgi.py" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "env": {
-    "DEBUG": "False",
-    "STORE_ID": "store_W0CB58Ft2bj7Sg0v"
-  }
+	"version": 2,
+	"buildCommand": "npm run build && bash build-vercel.sh",
+	"builds": [
+		{
+			"src": "package.json",
+			"use": "@vercel/static-build",
+			"config": { "distDir": "build" }
+		},
+		{
+			"src": "backend/wsgi.py",
+			"use": "@vercel/python",
+			"config": {
+				"includeFiles": ["backend/**", "staticfiles/**", "requirements.txt"],
+				"runtime": "python3.12"
+			}
+		}
+	],
+	"rewrites": [
+		{
+			"source": "/models/:path*",
+			"destination": "https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com/models/:path*"
+		},
+		{
+			"source": "/textures/:path*",
+			"destination": "https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com/textures/:path*"
+		},
+		{
+			"source": "/assets/:path*",
+			"destination": "https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com/assets/:path*"
+		},
+		{ "source": "/health", "destination": "/backend/wsgi.py" },
+		{ "source": "/health/(.*)", "destination": "/backend/wsgi.py" },
+		{ "source": "/api/(.*)", "destination": "/backend/wsgi.py" },
+		{ "source": "/admin", "destination": "/backend/wsgi.py" },
+		{ "source": "/admin/(.*)", "destination": "/backend/wsgi.py" },
+		{ "source": "/dashboard", "destination": "/backend/wsgi.py" },
+		{ "source": "/dashboard/(.*)", "destination": "/backend/wsgi.py" },
+		{ "source": "/(.*)", "destination": "/index.html" }
+	],
+	"env": {
+		"DEBUG": "False",
+		"STORE_ID": "store_W0CB58Ft2bj7Sg0v"
+	}
 }
