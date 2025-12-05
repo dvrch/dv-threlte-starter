@@ -9,6 +9,7 @@ from django.views.generic import RedirectView
 
 logger = logging.getLogger(__name__)
 
+
 # Diagnostic view
 def health_check(request):
     """Health check endpoint for debugging"""
@@ -43,7 +44,6 @@ urlpatterns = [
     path("api/", include("backend.Base_threlte_dv.urls")),
     # Interface d'administration
     path("admin/", admin.site.urls),
-    path('admin/', admin.site.urls),
 ]
 
 # Configuration pour servir les fichiers statiques et média en développement
