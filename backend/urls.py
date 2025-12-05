@@ -1,6 +1,9 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
+import logging
+
+logger = logging.getLogger(__name__)
 
 # from .views import # Assurez-vous d'importer correctement votre vue
 from django.conf import settings
@@ -9,20 +12,24 @@ from django.conf.urls.static import static
 # Diagnostic view
 def health_check(request):
     """Health check endpoint for debugging"""
+    response_data = {
+        "status": "ok",
+        "debug": settings.DEBUG,
+        "secret_key_set": bool(settings.SECRET_KEY),
+        "allowed_hosts": settings.ALLOWED_HOSTS,
+    }
+    
     try:
         from django.db import connection
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
-        db_status = "✅ Database connected"
+        response_data["database"] = "✅ Connected"
+        logger.info("Health check: Database connected")
     except Exception as e:
-        db_status = f"❌ Database error: {str(e)}"
+        response_data["database"] = f"❌ Error: {str(e)}"
+        logger.error(f"Health check failed: {str(e)}")
     
-    return JsonResponse({
-        "status": "ok",
-        "database": db_status,
-        "debug": settings.DEBUG,
-        "secret_key_set": bool(settings.SECRET_KEY),
-    })
+    return JsonResponse(response_data)
 
 from rest_framework.routers import DefaultRouter
 from films.views import FilmViewSet

@@ -39,7 +39,18 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 # L'URL de production sera ajoutée automatiquement par Vercel.
-ALLOWED_HOSTS = ["127.0.0.1", ".vercel.app", "localhost"]
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    ".vercel.app",
+    "dv-threlte-starter.vercel.app",
+    "*.vercel.app"
+]
+
+# Ajouter les domaines depuis les variables d'environnement Vercel
+VERCEL_URL = os.environ.get("VERCEL_URL")
+if VERCEL_URL and VERCEL_URL not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.insert(0, VERCEL_URL)
 
 
 # Application definition
@@ -126,8 +137,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "wsgi.application"
-
+WSGI_APPLICATION = "backend.wsgi.application"
+ROOT_URLCONF = "backend.urls"
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -138,23 +149,22 @@ WSGI_APPLICATION = "wsgi.application"
 # Configuration de la base de données avec Neon
 DATABASE_URL = os.environ.get(
     "DATABASE_URL",
-    "postgresql://neondb_owner:npg_zKtQE5JVDU0R@ep-lucky-truth-agdq4088-pooler.c-2.eu-central-1.aws.neon.tech/neondb"
+    "postgresql://neondb_owner:npg_zKtQE5JVDU0R@ep-lucky-truth-agdq4088-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require"
 )
 
 # Parse l'URL de la base de données
 db_config = dj_database_url.parse(DATABASE_URL)
 
-# Ajout des paramètres SSL spécifiques pour Neon
-# Neon requiert SSL pour toutes les connexions
-db_config.setdefault('OPTIONS', {})
+# Ensure OPTIONS dict exists
+if 'OPTIONS' not in db_config:
+    db_config['OPTIONS'] = {}
+
+# Configuration optimisée pour Neon Pooler sur Vercel
 db_config['OPTIONS'].update({
     'sslmode': 'require',
     'connect_timeout': 10,
+    'options': '-c statement_timeout=30000'  # 30 sec timeout
 })
-
-# Pour les connexions poolées, s'assurer que SSL est bien configuré
-if 'sslmode' not in db_config.get('OPTIONS', {}):
-    db_config['OPTIONS']['sslmode'] = 'require'
 
 DATABASES = {
     "default": db_config
@@ -163,13 +173,8 @@ DATABASES = {
 # Configuration des connexions pour la performance
 if DATABASE_URL and 'neon' in DATABASE_URL:
     # Configuration spécifique pour Neon DB avec pooling
-    DATABASES['default'].update({
-        'CONN_MAX_AGE': 600,  # Réutiliser les connexions pendant 10 minutes
-        'OPTIONS': {
-            **DATABASES['default'].get('OPTIONS', {}),
-            'connect_timeout': 10,
-        }
-    })
+    DATABASES['default']['CONN_MAX_AGE'] = 600  # Réutiliser les connexions pendant 10 minutes
+    DATABASES['default']['ATOMIC_REQUESTS'] = False  # Ne pas lier toutes les requêtes à une transaction
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -244,12 +249,12 @@ CORS_ALLOW_METHODS = [
 
 # Ajouter les URLs de production Vercel automatiquement
 VERCEL_URL = os.environ.get("VERCEL_URL")
-VERCEL_FRONTEND_URL = os.environ.get("VERCEL_FRONTEND_URL")  # Si déployé dans un projet Vercel
+VERCEL_FRONTEND_URL = os.environ.get("VERCEL_FRONTEND_URL")
 
-if VERCEL_URL:
+if VERCEL_URL and f"https://{VERCEL_URL}" not in CORS_ALLOWED_ORIGINS:
     CORS_ALLOWED_ORIGINS.append(f"https://{VERCEL_URL}")
 
-if VERCEL_FRONTEND_URL:
+if VERCEL_FRONTEND_URL and VERCEL_FRONTEND_URL not in CORS_ALLOWED_ORIGINS:
     CORS_ALLOWED_ORIGINS.append(VERCEL_FRONTEND_URL)
 
 # En développement uniquement, permettre TOUS les domaines (localhost + network)
@@ -262,3 +267,56 @@ else:
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Logging configuration for Vercel debugging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{levelname}] {asctime} {name} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '[{levelname}] {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'django.log',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'WARNING',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'Base_threlte_dv': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
