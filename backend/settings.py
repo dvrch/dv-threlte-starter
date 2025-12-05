@@ -229,6 +229,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",      # Next.js dev
     "http://localhost:5173",      # Vite/SvelteKit dev
     "http://127.0.0.1:5173",      # Vite/SvelteKit dev (127.0.0.1)
+    "http://192.168.1.59:5173",   # Local network SvelteKit dev
     "http://localhost:8000",      # Django dev
 ]
 
@@ -251,11 +252,11 @@ if VERCEL_URL:
 if VERCEL_FRONTEND_URL:
     CORS_ALLOWED_ORIGINS.append(VERCEL_FRONTEND_URL)
 
-# En développement uniquement, permettre tous les domaines
+# En développement uniquement, permettre TOUS les domaines (localhost + network)
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
 else:
-    # En production, être strict avec les origines
+    # En production, être strict avec les origines autorisées
     CORS_ALLOW_ALL_ORIGINS = False
 
 # Default primary key field type
