@@ -163,7 +163,7 @@ if 'OPTIONS' not in db_config:
 db_config['OPTIONS'].update({
     'sslmode': 'require',
     'connect_timeout': 10,
-    'options': '-c statement_timeout=30000'  # 30 sec timeout
+    # NOTE: statement_timeout not supported by Neon Pooler - removed
 })
 
 DATABASES = {
@@ -289,8 +289,6 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
-        # NOTE: File handler removed - Vercel filesystem is read-only
-        # Use stdout/stderr (console) for logging on Vercel
     },
     'root': {
         'handlers': ['console'],
