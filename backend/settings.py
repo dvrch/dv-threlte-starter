@@ -7,13 +7,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
+
 import dj_database_url
 from dotenv import load_dotenv
 
 # Chargement des variables d'environnement depuis .env (si le fichier existe)
-env_path = Path(__file__).resolve().parent.parent / '.env'
+env_path = Path(__file__).resolve().parent.parent / ".env"
 if env_path.exists():
     load_dotenv(env_path)
 else:
@@ -44,7 +45,7 @@ ALLOWED_HOSTS = [
     "localhost",
     ".vercel.app",
     "dv-threlte-starter.vercel.app",
-    "*.vercel.app"
+    "*.vercel.app",
 ]
 
 # Ajouter les domaines depuis les variables d'environnement Vercel
@@ -64,43 +65,43 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
-    "Base_threlte_dv",
-    "films",
+    "backend.Base_threlte_dv",
+    "backend.films",
     "taggit",
 ]
 
 # Configuration de l'API REST
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
     ],
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
-    'DEFAULT_FILTER_BACKENDS': [
-        'rest_framework.filters.SearchFilter',
-        'rest_framework.filters.OrderingFilter',
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+    "DEFAULT_FILTER_BACKENDS": [
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
     ],
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
     # Personnalisation de l'interface navigable
-    'DEFAULT_METADATA_CLASS': 'rest_framework.metadata.SimpleMetadata',
-    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.AcceptHeaderVersioning',
-    'DEFAULT_AUTHENTICATION_CLASSES': [],
+    "DEFAULT_METADATA_CLASS": "rest_framework.metadata.SimpleMetadata",
+    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.AcceptHeaderVersioning",
+    "DEFAULT_AUTHENTICATION_CLASSES": [],
     # Documentation de l'API
-    'DEFAULT_TITLE': 'API Films et Géométries',
-    'DEFAULT_DESCRIPTION': '''
+    "DEFAULT_TITLE": "API Films et Géométries",
+    "DEFAULT_DESCRIPTION": """
     API de gestion des films et des géométries.
-    
+
     Endpoints disponibles:
     - /api/films/ : Gestion des films
     - /api/geometries/ : Gestion des géométries
     - /api/types/ : Liste des types disponibles
     - /api/upload/ : Gestion des uploads
-    ''',
-    'SERVE_INCLUDE_SCHEMA': True,
+    """,
+    "SERVE_INCLUDE_SCHEMA": True,
 }
 
 # Personnalisation de l'interface d'administration
@@ -149,32 +150,36 @@ ROOT_URLCONF = "backend.urls"
 # Configuration de la base de données avec Neon
 DATABASE_URL = os.environ.get(
     "DATABASE_URL",
-    "postgresql://neondb_owner:npg_zKtQE5JVDU0R@ep-lucky-truth-agdq4088-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require"
+    "postgresql://neondb_owner:npg_zKtQE5JVDU0R@ep-lucky-truth-agdq4088-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require",
 )
 
 # Parse l'URL de la base de données
 db_config = dj_database_url.parse(DATABASE_URL)
 
 # Ensure OPTIONS dict exists
-if 'OPTIONS' not in db_config:
-    db_config['OPTIONS'] = {}
+if "OPTIONS" not in db_config:
+    db_config["OPTIONS"] = {}
 
 # Configuration optimisée pour Neon Pooler sur Vercel
-db_config['OPTIONS'].update({
-    'sslmode': 'require',
-    'connect_timeout': 10,
-    # NOTE: statement_timeout not supported by Neon Pooler - removed
-})
+db_config["OPTIONS"].update(
+    {
+        "sslmode": "require",
+        "connect_timeout": 10,
+        # NOTE: statement_timeout not supported by Neon Pooler - removed
+    }
+)
 
-DATABASES = {
-    "default": db_config
-}
+DATABASES = {"default": db_config}
 
 # Configuration des connexions pour la performance
-if DATABASE_URL and 'neon' in DATABASE_URL:
+if DATABASE_URL and "neon" in DATABASE_URL:
     # Configuration spécifique pour Neon DB avec pooling
-    DATABASES['default']['CONN_MAX_AGE'] = 600  # Réutiliser les connexions pendant 10 minutes
-    DATABASES['default']['ATOMIC_REQUESTS'] = False  # Ne pas lier toutes les requêtes à une transaction
+    DATABASES["default"]["CONN_MAX_AGE"] = (
+        600  # Réutiliser les connexions pendant 10 minutes
+    )
+    DATABASES["default"]["ATOMIC_REQUESTS"] = (
+        False  # Ne pas lier toutes les requêtes à une transaction
+    )
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -231,20 +236,20 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Déterminer les origines autorisées selon l'environnement
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",      # Next.js dev
-    "http://localhost:5173",      # Vite/SvelteKit dev
-    "http://127.0.0.1:5173",      # Vite/SvelteKit dev (127.0.0.1)
-    "http://192.168.1.59:5173",   # Local network SvelteKit dev
-    "http://localhost:8000",      # Django dev
+    "http://localhost:3000",  # Next.js dev
+    "http://localhost:5173",  # Vite/SvelteKit dev
+    "http://127.0.0.1:5173",  # Vite/SvelteKit dev (127.0.0.1)
+    "http://192.168.1.59:5173",  # Local network SvelteKit dev
+    "http://localhost:8000",  # Django dev
 ]
 
 CORS_ALLOW_METHODS = [
-    'DELETE',
-    'GET',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
 ]
 
 # Ajouter les URLs de production Vercel automatiquement
@@ -272,48 +277,48 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # NOTE: Vercel Serverless has a READ-ONLY filesystem, so we can ONLY use console handler
 # (no file handler possible on Vercel - use stdout/stderr instead)
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '[{levelname}] {asctime} {name} {message}',
-            'style': '{',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname}] {asctime} {name} {message}",
+            "style": "{",
         },
-        'simple': {
-            'format': '[{levelname}] {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+        "simple": {
+            "format": "[{levelname}] {message}",
+            "style": "{",
         },
     },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
-            'propagate': False,
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "DEBUG" if DEBUG else "INFO",
+            "propagate": False,
         },
-        'django.db.backends': {
-            'handlers': ['console'],
-            'level': 'DEBUG' if DEBUG else 'WARNING',
-            'propagate': False,
+        "django.db.backends": {
+            "handlers": ["console"],
+            "level": "DEBUG" if DEBUG else "WARNING",
+            "propagate": False,
         },
-        'django.request': {
-            'handlers': ['console'],
-            'level': 'ERROR',
-            'propagate': False,
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
         },
-        'Base_threlte_dv': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
+        "Base_threlte_dv": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
         },
     },
 }
