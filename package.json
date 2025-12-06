@@ -4,8 +4,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "vite dev --host 0.0.0.0",
-		"build": "bash scripts/upload_assets.sh && svelte-kit sync && vite build",
-		"preview": "vite preview",
+		    "build": "svelte-kit sync && vite build",		"preview": "vite preview",
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
 		"format": "prettier --plugin-search-dir . --write .",
 		"sync": "svelte-kit sync"
