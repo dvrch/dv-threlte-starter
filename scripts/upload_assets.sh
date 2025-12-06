@@ -42,7 +42,7 @@ find . -type f | while read -r file; do
   echo "Téléversement de '$pathname'..."
   # Utilise le token BLOB_READ_WRITE_TOKEN que Vercel fournit durant le build
   # Le pathname dans le store est explicitement défini pour garantir la structure
-  vercel blob put "$pathname" --pathname "$pathname" --token "$BLOB_READ_WRITE_TOKEN"
+  vercel blob put "$pathname" --pathname "$pathname" --token "$BLOB_READ_WRITE_TOKEN" --force
 done
 echo "--- Téléversement des assets terminé ---"
 
