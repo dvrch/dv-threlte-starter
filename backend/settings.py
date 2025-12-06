@@ -113,6 +113,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    "backend.json_response_middleware.JSONResponseMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -234,17 +235,25 @@ VERCEL_BLOB_STORE_ID = os.environ.get("STORE_ID", "your-store-id")
 FORMS_URLFIELD_ASSUME_HTTPS = True
 
 # CORS Configuration
-# Configuration pour développement local et production Vercel
 CORS_ALLOW_CREDENTIALS = True
 
-# Déterminer les origines autorisées selon l'environnement
+# En développement, permettre toutes les origines pour plus de flexibilité
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOW_ALL_ORIGINS = False
+
+# En production, spécifier les origines autorisées
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Next.js dev
-    "http://localhost:5173",  # Vite/SvelteKit dev
-    "http://127.0.0.1:5173",  # Vite/SvelteKit dev (127.0.0.1)
-    "http://192.168.1.59:5173",  # Local network SvelteKit dev
-    "http://localhost:8000",  # Django dev
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://dv-threlte-starter.vercel.app",
 ]
+
+# Ajouter dynamiquement l'URL de prévisualisation de Vercel si elle existe
+VERCEL_URL = os.environ.get("VERCEL_URL")
+if VERCEL_URL and f"https://{VERCEL_URL}" not in CORS_ALLOWED_ORIGINS:
+    CORS_ALLOWED_ORIGINS.append(f"https://{VERCEL_URL}")
 
 CORS_ALLOW_METHODS = [
     "DELETE",
@@ -255,22 +264,17 @@ CORS_ALLOW_METHODS = [
     "PUT",
 ]
 
-# Ajouter les URLs de production Vercel automatiquement
-VERCEL_URL = os.environ.get("VERCEL_URL")
-VERCEL_FRONTEND_URL = os.environ.get("VERCEL_FRONTEND_URL")
-
-if VERCEL_URL and f"https://{VERCEL_URL}" not in CORS_ALLOWED_ORIGINS:
-    CORS_ALLOWED_ORIGINS.append(f"https://{VERCEL_URL}")
-
-if VERCEL_FRONTEND_URL and VERCEL_FRONTEND_URL not in CORS_ALLOWED_ORIGINS:
-    CORS_ALLOWED_ORIGINS.append(VERCEL_FRONTEND_URL)
-
-# En développement uniquement, permettre TOUS les domaines (localhost + network)
-if DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    # En production, être strict avec les origines autorisées
-    CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

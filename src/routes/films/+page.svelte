@@ -1,101 +1,97 @@
 <script>
-    import {FilmStore} from '../../film-store'
-    import {onMount} from 'svelte'
+	import { FilmStore } from '../../film-store';
+	import { onMount } from 'svelte';
+	import { API_ENDPOINTS } from '$lib/config';
 
-    let tags = $state([])
-    let selectedTag = $state('');
+	let tags = $state([]);
+	let selectedTag = $state('');
 
-    const filteredFilms = $derived(Array.isArray($FilmStore) ? $FilmStore.filter(film => {
-        return selectedTag == '' || film.tags.includes(selectedTag);
-    }) : []);
+	const filteredFilms = $derived(
+		Array.isArray($FilmStore)
+			? $FilmStore.filter((film) => {
+					return selectedTag == '' || film.tags.includes(selectedTag);
+			  })
+			: []
+	);
 
-    let setTags = () => {
-        let tagSet = new Set();
-        $FilmStore.map(film => film.tags.forEach(tag => tagSet.add(tag)));
-        tags = Array.from(tagSet)
-    }
+	let setTags = () => {
+		let tagSet = new Set();
+		$FilmStore.map((film) => film.tags.forEach((tag) => tagSet.add(tag)));
+		tags = Array.from(tagSet);
+	};
 
-    onMount(async function () {
-        if (!$FilmStore.length) {
-            const endpoint = 'http://localhost:8000/api/films/'
-            try {
-                const response = await fetch(endpoint);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                FilmStore.set(data.results || []);
-            } catch (error) {
-                console.error('There was a problem with the fetch operation:', error);
-            }
-        }
-        setTags()
-    })
+	onMount(async function () {
+		if (!$FilmStore.length) {
+			const endpoint = API_ENDPOINTS.FILMS;
+			try {
+				const response = await fetch(endpoint);
+				if (!response.ok) {
+					throw new Error('Network response was not ok');
+				}
+				const data = await response.json();
+				FilmStore.set(data.results || []);
+			} catch (error) {
+				console.error('There was a problem with the fetch operation:', error);
+			}
+		}
+		setTags();
+	});
 
-    let handleDelete = (id) => {
-        const endpoint = `/api/films/${id}`
-        fetch(endpoint, {method: 'DELETE'}).then(response => {
-            if (response.status == 204) {
-                FilmStore.update(prev => prev.filter(film => film.id != id))
-                setTags()
-            }
-        })
-    }
+	let handleDelete = (id) => {
+		const endpoint = `${API_ENDPOINTS.FILMS}${id}/`;
+		fetch(endpoint, { method: 'DELETE' }).then((response) => {
+			if (response.status == 204) {
+				FilmStore.update((prev) => prev.filter((film) => film.id != id));
+				setTags();
+			}
+		});
+	};
 </script>
 
 <div>
-    <h2 class="my-4">Film List</h2>
+	<h2 class="my-4">Film List</h2>
 
-    <div class="my-4">
-        {#each tags as tag}
-            <button
-                class="btn btn-sm btn-warning me-2 mb-1"
-                onclick={() => (selectedTag = tag)}
-            >
-                {tag}
-            </button>
-        {/each }
-        <button
-            class="btn btn-sm btn-warning me-2 mb-1"
-            onclick={() => (selectedTag = '')}
-        >
-            ALL
-        </button>
-    </div>
-    
-    <div class="my-4 row">
-        {#each filteredFilms as film}
-        <div class="col-12 col-sm-6 col-md-4">
-            
-            <div class="card w-100 h-100">
-                <img class="card-img-top" style="height: 300px; object-fit: cover" 
-                    src="{film.image_url}" 
-                    alt="Film">
-                <div class="card-body d-flex flex-column justify-content-between gap-4">
-					<div>
-                        <h5 class="card-title">{ film.name }</h5>
-                        <p class="card-text">Directed by { film.director }</p>
-                    </div>
-                    <div>
-                        <a href="/films/{film.id}" class="btn btn-primary">View</a>
+	<div class="my-4">
+		{#each tags as tag}
+			<button class="btn btn-sm btn-warning me-2 mb-1" onclick={() => (selectedTag = tag)}>
+				{tag}
+			</button>
+		{/each}
+		<button class="btn btn-sm btn-warning me-2 mb-1" onclick={() => (selectedTag = '')}>
+			ALL
+		</button>
+	</div>
 
-                        <button
-                            class="btn btn-danger ml-2"
-                            onclick={() => handleDelete(film.id)}
-                        >
-                            Delete 
-                        </button>
-                        <div class="mt-3">
-                            {#each film.tags as tag}
-                                <div class="d-inline-flex p-2 border me-1 mb-1">{tag}</div>
-                            {/each }
-                        </div>
+	<div class="my-4 row">
+		{#each filteredFilms as film}
+			<div class="col-12 col-sm-6 col-md-4">
+				<div class="card w-100 h-100">
+					<img
+						class="card-img-top"
+						style="height: 300px; object-fit: cover"
+						src={film.image_url}
+						alt="Film"
+					/>
+					<div class="card-body d-flex flex-column justify-content-between gap-4">
+						<div>
+							<h5 class="card-title">{film.name}</h5>
+							<p class="card-text">Directed by {film.director}</p>
+						</div>
+						<div>
+							<a href="/films/{film.id}" class="btn btn-primary">View</a>
+
+							<button class="btn btn-danger ml-2" onclick={() => handleDelete(film.id)}>
+								Delete
+							</button>
+							<div class="mt-3">
+								{#each film.tags as tag}
+									<div class="d-inline-flex p-2 border me-1 mb-1">{tag}</div>
+								{/each}
+							</div>
+						</div>
 					</div>
-                </div>
-              </div>
-
-        </div>
-        {/each}
-    </div>
-    
+				</div>
+			</div>
+		{/each}
+	</div>
 </div>

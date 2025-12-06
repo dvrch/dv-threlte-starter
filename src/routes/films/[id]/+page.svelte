@@ -1,41 +1,42 @@
 <script>
-    import { FilmStore } from '../../../film-store';
-    import { onMount } from 'svelte';
+	import { FilmStore } from '../../../film-store';
+	import { onMount } from 'svelte';
+	import { API_ENDPOINTS } from '$lib/config';
 
-    // Mode runes : récupération des props via $props()
-    let { data } = $props();
+	// Mode runes : récupération des props via $props()
+	let { data } = $props();
 
-    // État local réactif pour le film
-    let film = $state(null);
+	// État local réactif pour le film
+	let film = $state(null);
 
-    onMount(async () => {
-        if ($FilmStore.length) {
-            film = $FilmStore.find((film) => film.id == data.id);
-        } else {
-            const endpoint = `/api/films/${data.id}/`;
-            let response = await fetch(endpoint);
-            if (response.status === 200) {
-                film = await response.json();
-            } else {
-                film = null;
-            }
-        }
-    });
+	onMount(async () => {
+		if ($FilmStore.length) {
+			film = $FilmStore.find((film) => film.id == data.id);
+		} else {
+			const endpoint = `${API_ENDPOINTS.FILMS}${data.id}/`;
+			let response = await fetch(endpoint);
+			if (response.status === 200) {
+				film = await response.json();
+			} else {
+				film = null;
+			}
+		}
+	});
 </script>
 
 <div class="row mt-4">
-    {#if film }
-        <h2 class="mb-4">{ film.name }</h2>
-        <div class="col-12 col-md-4">
-            <img src="{ film.image }" alt="Film" class="w-100"/>
-        </div>
-        <div class="col-12 col-md-8">
-            <p class="mb-2"><b>{ film.name }</b>, directed by <i>{ film.director }</i></p>
-            <p class="mb-2">{ film.description }</p>
+	{#if film}
+		<h2 class="mb-4">{film.name}</h2>
+		<div class="col-12 col-md-4">
+			<img src={film.image} alt="Film" class="w-100" />
+		</div>
+		<div class="col-12 col-md-8">
+			<p class="mb-2"><b>{film.name}</b>, directed by <i>{film.director}</i></p>
+			<p class="mb-2">{film.description}</p>
 
-            <a href="/films/{film.id}/update" class="btn btn-primary mt-2">Update</a>
-        </div>
-    {:else }
-        <p>No film was found with ID {data.id}</p>
-    {/if }
+			<a href="/films/{film.id}/update" class="btn btn-primary mt-2">Update</a>
+		</div>
+	{:else}
+		<p>No film was found with ID {data.id}</p>
+	{/if}
 </div>

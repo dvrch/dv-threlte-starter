@@ -4,7 +4,7 @@
 	import Dynamic3DModel from '$lib/components/Dynamic3DModel.svelte';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
-	import { PUBLIC_API_URL } from '$env/static/public';
+	import { API_ENDPOINTS } from '$lib/config';
 
 	let geometries = $state([]);
 	let loading = $state(true);
@@ -12,19 +12,17 @@
 
 	onMount(async () => {
 		try {
-			const apiUrl = PUBLIC_API_URL 
-				? `${PUBLIC_API_URL}/api/geometries/` 
-				: '/api/geometries/';
-			
+			const apiUrl = API_ENDPOINTS.GEOMETRIES;
+
 			console.log('Fetching geometries from:', apiUrl);
 			const response = await fetch(apiUrl);
-			
+
 			if (!response.ok) {
 				const errorText = await response.text();
 				console.error('API Error Response:', errorText);
 				throw new Error(`HTTP error! status: ${response.status} - ${errorText.substring(0, 200)}`);
 			}
-			
+
 			const data = await response.json();
 			geometries = data.results || [];
 			console.log('✅ Loaded geometries:', geometries.length);

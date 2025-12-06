@@ -1,47 +1,38 @@
 {
 	"version": 2,
-	"buildCommand": "npm run build && bash build-vercel.sh",
 	"builds": [
 		{
-			"src": "package.json",
-			"use": "@vercel/static-build",
-			"config": { "distDir": "build" }
+			"src": "api/index.py",
+			"use": "@vercel/python"
 		},
 		{
-			"src": "api/index.py",
-			"use": "@vercel/python",
-			"config": {
-				"includeFiles": ["api/**", "backend/**", "staticfiles/**", "requirements.txt"],
-				"runtime": "python3.12"
-			}
+			"src": "package.json",
+			"use": "@vercel/svelte-kit"
 		}
 	],
-	"rewrites": [
+	"routes": [
 		{
-			"source": "/models/:path*",
-			"destination": "https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com/models/:path*"
+			"src": "/api/(.*)",
+			"dest": "api/index.py"
 		},
 		{
-			"source": "/textures/:path*",
-			"destination": "https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com/textures/:path*"
+			"src": "/admin/(.*)",
+			"dest": "api/index.py"
 		},
 		{
-			"source": "/assets/:path*",
-			"destination": "https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com/assets/:path*"
+			"src": "/health/(.*)",
+			"dest": "api/index.py"
 		},
-		{ "source": "/health", "destination": "/api/index.py" },
-		{ "source": "/health/(.*)", "destination": "/api/index.py" },
-		{ "source": "/api/(.*)", "destination": "/api/index.py" },
-		{ "source": "/admin", "destination": "/api/index.py" },
-		{ "source": "/admin/(.*)", "destination": "/api/index.py" },
-		{ "source": "/dashboard", "destination": "/api/index.py" },
-		{ "source": "/dashboard/(.*)", "destination": "/api/index.py" },
-		{ "source": "/(.*)", "destination": "/index.html" }
+		{
+			"src": "/(.*)",
+			"dest": "/$1"
+		}
 	],
 	"env": {
 		"PYTHONPATH": "/var/task",
 		"DJANGO_SETTINGS_MODULE": "backend.settings",
+		"SECRET_KEY": "votre-secret-key",
 		"DEBUG": "False",
-		"STORE_ID": "store_W0CB58Ft2bj7Sg0v"
+		"ALLOWED_HOSTS": "dv-threlte-starter.vercel.app,.vercel.app"
 	}
 }
