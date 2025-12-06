@@ -39,6 +39,8 @@
 		{ "source": "/(.*)", "destination": "/index.html" }
 	],
 	"env": {
+		"PYTHONPATH": "/var/task",
+		"DJANGO_SETTINGS_MODULE": "backend.settings",
 		"DEBUG": "False",
 		"STORE_ID": "store_W0CB58Ft2bj7Sg0v"
 	}
