@@ -6,6 +6,16 @@ set -e
 
 echo "--- Début du téléversement des assets statiques vers Vercel Blob ---"
 
+# Vérifier si le token est défini
+if [ -z "$VERCEL_BLOB_RW_TOKEN" ]; then
+  echo "Erreur : La variable d'environnement VERCEL_BLOB_RW_TOKEN n'est pas définie."
+  echo "Veuillez l'ajouter dans les paramètres de votre projet Vercel."
+  exit 1
+fi
+
+echo "Installation de la CLI Vercel..."
+npm install -g vercel
+
 ASSET_DIR="static"
 
 # Vérifie si le dossier existe
@@ -23,12 +33,12 @@ cd "$ASSET_DIR"
 find . -type f | while read -r file; do
   # Retire le './' du début pour un chemin plus propre
   pathname="${file#./}"
-  
+
   # Ignore les fichiers système comme .DS_Store
   if [[ "$pathname" == ".DS_Store" ]]; then
     continue
   fi
-  
+
   echo "Téléversement de '$pathname'..."
   # Utilise le token VERCEL_BLOB_RW_TOKEN que Vercel fournit durant le build
   # Le pathname dans le store est explicitement défini pour garantir la structure
