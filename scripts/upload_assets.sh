@@ -7,8 +7,8 @@ set -e
 echo "--- Début du téléversement des assets statiques vers Vercel Blob ---"
 
 # Vérifier si le token est défini
-if [ -z "$VERCEL_BLOB_RW_TOKEN" ]; then
-  echo "Erreur : La variable d'environnement VERCEL_BLOB_RW_TOKEN n'est pas définie."
+if [ -z "$BLOB_READ_WRITE_TOKEN" ]; then
+  echo "Erreur : La variable d'environnement BLOB_READ_WRITE_TOKEN n'est pas définie."
   echo "Veuillez l'ajouter dans les paramètres de votre projet Vercel."
   exit 1
 fi
@@ -40,11 +40,10 @@ find . -type f | while read -r file; do
   fi
 
   echo "Téléversement de '$pathname'..."
-  # Utilise le token VERCEL_BLOB_RW_TOKEN que Vercel fournit durant le build
+  # Utilise le token BLOB_READ_WRITE_TOKEN que Vercel fournit durant le build
   # Le pathname dans le store est explicitement défini pour garantir la structure
-  vercel blob put "$pathname" --pathname "$pathname" --token "$VERCEL_BLOB_RW_TOKEN"
+  vercel blob put "$pathname" --pathname "$pathname" --token "$BLOB_READ_WRITE_TOKEN"
 done
-
 echo "--- Téléversement des assets terminé ---"
 
 # Retourne au dossier précédent
