@@ -11,13 +11,13 @@
 			"config": { "distDir": "build" }
 		}
 	],
-	"routes": [
-		{ "src": "/api/(.*)", "dest": "api/index.py" },
-		{ "src": "/admin/(.*)", "dest": "api/index.py" },
-		{ "src": "/health/(.*)", "dest": "api/index.py" },
-		{ "src": "/static/(.*)", "dest": "/static/$1" },
-		{ "src": "/(.*)", "dest": "/index.html" }
-	],
+"routes": [
+    { "src": "/api/(.*)", "dest": "api/index.py" },
+    { "src": "/admin/(.*)", "dest": "api/index.py" },
+    { "src": "/health/(.*)", "dest": "api/index.py" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
 	"env": {
 		"PYTHONPATH": "/var/task",
 		"DJANGO_SETTINGS_MODULE": "backend.settings",
