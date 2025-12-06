@@ -17,5 +17,12 @@
 		{ "src": "/health/(.*)", "dest": "api/index.py" },
 		{ "src": "/static/(.*)", "dest": "/static/$1" },
 		{ "src": "/(.*)", "dest": "/index.html" }
-	]
+	],
+	"env": {
+		"PYTHONPATH": "/var/task",
+		"DJANGO_SETTINGS_MODULE": "backend.settings",
+		"SECRET_KEY": "votre-secret-key-a-definir-dans-les-variables-d-environnement-vercel",
+		"DEBUG": "False",
+		"ALLOWED_HOSTS": "dv-threlte-starter.vercel.app,.vercel.app"
+	}
 }
