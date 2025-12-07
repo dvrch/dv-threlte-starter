@@ -40,10 +40,15 @@ rapport_modifications.md
 .___.md
 
 # Ignore local static assets already on Vercel Blob
-# /static/assets/
-# /static/media/
-# /static/models/
-# /static/textures/
-# /static/i*.jpg
-# /static/list.json
+/static/assets/
+/static/media/
+/static/models/
+/static/textures/
+/static/public/
+/static/fkisios/
+/static/i*.jpg
+/static/list.json
+*.glb
+*.blend
+*.bin
 backend/conversv.md
