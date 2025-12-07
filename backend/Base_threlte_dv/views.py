@@ -1,4 +1,5 @@
 import logging
+import logging
 import os
 import re
 
@@ -10,6 +11,8 @@ from rest_framework.views import APIView
 from .dv_config import TYPE_CHOICES
 from .models import Geometry
 from .serializers import GeometrySerializer
+
+logger = logging.getLogger(__name__)
 
 
 class GeometryViewSet(viewsets.ModelViewSet):
