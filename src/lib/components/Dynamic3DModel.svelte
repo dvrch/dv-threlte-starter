@@ -4,6 +4,8 @@
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte'; // Need onMount for dynamic imports
 
+	import { getAssetUrl } from '$lib/asset-helper';
+
 	let { geometry }: { geometry: any } = $props();
 
 	// Map geometry types to their respective Svelte components using dynamic imports
@@ -50,7 +52,7 @@
 			<Component {geometry} />
 		{:else if geometry.model_url}
 			<!-- 2. Render a generic GLTF model if model_url is present -->
-			<GltfModel url={geometry.model_url} />
+			<GltfModel url={getAssetUrl(geometry.model_url)} />
 		{:else if geometry.type === 'box'}
 			<!-- 3. Render primitive shapes -->
 			<T.Mesh>

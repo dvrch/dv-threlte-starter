@@ -2,8 +2,8 @@
 import { dev } from '$app/environment';
 
 // IMPORTANT : Vous devrez mettre l'URL de base de votre Vercel Blob ici.
-// Idéalement, via une variable d'environnement.
-const BLOB_BASE_URL = process.env.BLOB_BASE_URL || 'https://<remplacer-par-votre-url-vercel-blob>';
+// Idéalement, via une variable d'environnement avec le chemin public VITE_.
+const BLOB_BASE_URL = import.meta.env.VITE_BLOB_BASE_URL || 'https://<remplacer-par-votre-url-vercel-blob>';
 
 /**
  * Retourne l'URL d'un asset en fonction de l'environnement.
@@ -17,6 +17,9 @@ export function getAssetUrl(path: string): string {
   } else {
     // --- En PRODUCTION ---
     // On construit l'URL complète vers le Vercel Blob.
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
     // On s'assure que le chemin commence bien par un slash.
     const cleanPath = path.startsWith('/') ? path : '/' + path;
     return `${BLOB_BASE_URL}${cleanPath}`;

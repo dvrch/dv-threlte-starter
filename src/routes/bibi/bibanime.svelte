@@ -13,8 +13,10 @@
 		scale?: number | [number, number, number];
 	} = $props();
 
+	import { getAssetUrl } from '$lib/asset-helper';
+
 	// Load the GLTF model
-	const gltfPromise = useGltf<THREE.Group>('/public/bibi.glb');
+	const gltfPromise = useGltf<THREE.Group>(getAssetUrl('/public/bibi.glb'));
 	let gltf = $state();
 	gltfPromise.then((res) => (gltf = res));
 

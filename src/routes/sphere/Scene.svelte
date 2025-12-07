@@ -6,12 +6,14 @@
 	import { writable } from 'svelte/store';
 	import * as THREE from 'three';
 
+	import { getAssetUrl } from '$lib/asset-helper';
+
 	// Store to manage texture state
 	let currentTexture = writable(null);
   
 	// Path to your GLB model and textures
-	const glbPath = '/public/cloth_sim.glb';
-	const textures = ['/public/bibi.png'];
+	const glbPath = getAssetUrl('/public/cloth_sim.glb');
+	const textures = [getAssetUrl('/public/bibi.png')];
 	let activeTextureIndex = 0;
   
 	let model = null; // To store the loaded 3D model
@@ -28,6 +30,8 @@
 		  const action = mixer.clipAction(gltf.animations[0]);
 		  action.play();
 		}
+	  }, undefined, (error) => {
+		console.error('An error happened loading the GLB model:', error);
 	  });
 	};
   
@@ -36,11 +40,15 @@
 	  const textureLoader = new TextureLoader();
 	  textureLoader.load(textures[activeTextureIndex], (texture) => {
 		currentTexture.set(texture);
-		model.traverse((child) => {
-		  if (child.isMesh) {
-			child.material = new MeshStandardMaterial({ map: texture });
-		  }
-		});
+		if (model) {
+			model.traverse((child) => {
+				if (child.isMesh) {
+					child.material = new MeshStandardMaterial({ map: texture });
+				}
+			});
+		}
+	  }, undefined, (error) => {
+		console.error('An error happened loading the texture:', error);
 	  });
 	};
   
