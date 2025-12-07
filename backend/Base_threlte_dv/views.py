@@ -9,11 +9,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .dv_config import TYPE_CHOICES
-from .models import Geometry
+from .models import Geometry, BlobLog
 from .serializers import GeometrySerializer
 
 logger = logging.getLogger(__name__)
-
 
 
 class GeometryViewSet(viewsets.ModelViewSet):
@@ -62,6 +61,7 @@ class GeometryViewSet(viewsets.ModelViewSet):
             
             # Important: lire le contenu du fichier
             file_content = file_obj.read()
+            file_size = len(file_content)
             
             # put request
             response = requests.put(api_url, headers=headers, data=file_content)
@@ -71,6 +71,17 @@ class GeometryViewSet(viewsets.ModelViewSet):
             blob_url = data.get("url")
             
             logger.info(f"✅ Upload successful! URL: {blob_url}")
+            
+            # Log to DB
+            try:
+                BlobLog.objects.create(
+                    filename=filename,
+                    url=blob_url,
+                    file_size=file_size
+                )
+            except Exception as e:
+                logger.error(f"⚠️ Failed to save BlobLog: {e}")
+
             return blob_url
 
         except Exception as e:

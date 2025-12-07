@@ -61,3 +61,20 @@ class Geometry(models.Model):
 
     class Meta:
         ordering = ["-id"]  # Orden par défaut pour éviter les warnings de pagination
+
+
+class BlobLog(models.Model):
+    """
+    Journal des fichiers uploadés sur Vercel Blob.
+    Permet de garder une trace locale (en DB Neon) de ce qui est dans le Cloud.
+    """
+    filename = models.CharField(max_length=255)
+    url = models.URLField(max_length=1024)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    file_size = models.PositiveIntegerField(null=True, blank=True, help_text="Taille en octets")
+    
+    class Meta:
+        ordering = ["-uploaded_at"]
+
+    def __str__(self):
+        return f"{self.filename} ({self.uploaded_at})"

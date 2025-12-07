@@ -4,7 +4,8 @@
 	"private": true,
 	"scripts": {
 		"dev": "vite dev --host 0.0.0.0",
-		    "build": "svelte-kit sync && vite build",		"preview": "vite preview",
+		"build": "svelte-kit sync && vite build",
+		"preview": "vite preview",
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
 		"format": "prettier --plugin-search-dir . --write .",
 		"sync": "svelte-kit sync"
@@ -35,6 +36,8 @@
 		"@threlte/core": "^8.3.0",
 		"@threlte/extras": "^9.7.0",
 		"@types/marked": "^5.0.2",
+		"@vercel/blob": "^2.0.0",
+		"dotenv": "^17.2.3",
 		"mammoth": "^1.11.0",
 		"marked": "^16.4.2",
 		"postprocessing": "^6.38.0"

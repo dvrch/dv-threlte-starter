@@ -129,62 +129,72 @@
 		}
 	};
 
+	import { upload } from '@vercel/blob/client';
+
 	const handleSubmit = async () => {
 		isLoading = true;
 		try {
-			// Si un fichier est sélectionné, utiliser la logique d'upload
+			let modelUrl = '';
+
+			// 1. Client-side Upload to Vercel Blob
 			if (file) {
-				const formData = new FormData();
-				const randomId = Math.random().toString(36).substring(2, 7);
-				const uniqueName = `${name || file.name}-${randomId}`;
-				const modelType = file.name.split('.').pop()?.toLowerCase();
-
-				formData.append('model_file', file);
-				formData.append('name', uniqueName);
-				formData.append('type', 'gltf_model');
-				formData.append('color', color);
-				formData.append('position', JSON.stringify(position));
-				formData.append('rotation', JSON.stringify(rotation));
-				if (modelType) formData.append('model_type', modelType);
-
-				const response = await fetch(API_ENDPOINTS.GEOMETRIES, {
-					method: 'POST',
-					body: formData
+				const blob = await upload(file.name, file, {
+					access: 'public',
+					handleUploadUrl: '/api/upload'
 				});
-
-				if (!response.ok) {
-					const errorData = await response.json().catch(() => ({}));
-					throw new Error(errorData.name?.[0] || errorData.detail || 'Upload failed');
-				}
-				addToast('Model uploaded successfully!', 'success');
-			} else {
-				// Sinon, utiliser la logique pour les formes de base
-				const randomId = Math.random().toString(36).substring(2, 7);
-				const uniqueName = isEditing ? name : `${name}-${randomId}`;
-				const geometry = { name: uniqueName, type, color, position, rotation };
-
-				let url = API_ENDPOINTS.GEOMETRIES;
-				let method = 'POST';
-				if (isEditing && selectedGeometryId) {
-					url = `${url}${selectedGeometryId}/`;
-					method = 'PUT';
-				}
-
-				const response = await fetch(url, {
-					method,
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(geometry)
-				});
-
-				if (!response.ok) {
-					const errorBody = await response.json();
-					throw new Error(
-						errorBody.name?.[0] ||
-							(isEditing ? 'Failed to update geometry' : 'Failed to add geometry')
-					);
-				}
-				addToast(isEditing ? 'Geometry updated!' : 'Geometry added!', 'success');
+				modelUrl = blob.url;
+				addToast('File uploaded to Blob!', 'success');
 			}
+
+			// 2. Submit Metadata to Django
+			const randomId = Math.random().toString(36).substring(2, 7);
+			const uniqueName = isEditing ? name : `${name || (file ? file.name : 'geo')}-${randomId}`;
+			
+			const geometryData = {
+				name: uniqueName,
+				type: type,
+				color: color,
+				position: position, // JSON automatically serialized
+				rotation: rotation,
+				model_url: modelUrl || undefined 
+			};
+			
+			// Si on edit et qu'on a pas changé le fichier, on ne met pas model_url (ou on garde l'ancien)
+			// Mais ici on simplifie: si modelUrl est vide, le backend garde l'ancien si PATCH/PUT partiel?
+			// Attention: pour PUT il faut tout envoyer. Pour PATCH c'est partiel.
+			// Ici on utilise PUT pour update complet ou POST pour create.
+			
+			// Si c'est un upload de fichier, on force le type 'gltf_model' pour le backend
+			if (file) {
+				geometryData.type = 'gltf_model';
+				const ext = file.name.split('.').pop()?.toLowerCase();
+				if (ext) geometryData.model_type = ext;
+			}
+
+			let url = API_ENDPOINTS.GEOMETRIES;
+			let method = 'POST';
+			
+			if (isEditing && selectedGeometryId) {
+				url = `${url}${selectedGeometryId}/`;
+				method = 'PUT'; // Ou PATCH si on veut
+			}
+
+			// Envoi JSON uniquement ! Plus de FormData pour le fichier vers Django
+			const response = await fetch(url, {
+				method,
+				headers: { 
+					'Content-Type': 'application/json',
+					'Accept': 'application/json'
+				},
+				body: JSON.stringify(geometryData)
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => ({}));
+				throw new Error(errorData.name?.[0] || errorData.detail || 'Save failed');
+			}
+
+			addToast(isEditing ? 'Geometry updated!' : 'Geometry added!', 'success');
 
 			// Après succès, rafraîchir et notifier
 			if (!isEditing) resetForm();
