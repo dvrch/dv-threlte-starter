@@ -58,8 +58,14 @@
 	  changeTexture();
 	};
   
-	loadModel();
-	changeTexture();
+	// Check if paths are valid before loading
+	if (glbPath && !glbPath.includes('<remplacer-par-votre-url-vercel-blob>')) {
+		loadModel();
+	}
+	
+	if (textures[0] && !textures[0].includes('<remplacer-par-votre-url-vercel-blob>')) {
+		changeTexture();
+	}
   
 	// Animate the model every frame
 	useTask(() => {
