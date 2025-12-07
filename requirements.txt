@@ -11,5 +11,5 @@ sqlparse==0.5.1
 asgiref==3.8.1
 requests==2.32.3
 python-dotenv==1.0.1
-django-storages[s3]==1.14.4
-boto3==1.35.71
+cloudinary==1.41.0
+dj3-cloudinary-storage==0.0.6

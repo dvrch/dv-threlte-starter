@@ -54,34 +54,5 @@ rapport_modifications.md
 backend/conversv.md
 file-list.json
 limitation adapt.ini
-src/routes/app/yoteprjoj/yoteprjoj.gltf
-src/routes/app/yoteprjoj/texures/Béton - 05 cb -opt.jpg
-src/routes/app/yoteprjoj/texures/Béton - 28 cb -opt.jpg
-src/routes/app/yoteprjoj/texures/Béton - clair crbn -opt.jpg
-src/routes/app/yoteprjoj/texures/Blocs béton - appareil courant -opt.jpg
-src/routes/app/yoteprjoj/texures/Bois - Acajou vertical -opt.jpg
-src/routes/app/yoteprjoj/texures/Bois - Noyer horizontal -opt.jpg
-src/routes/app/yoteprjoj/texures/Bois - Pin granuleux vertical -opt.jpg
-src/routes/app/yoteprjoj/texures/Brique - appareil américain -opt.jpg
-src/routes/app/yoteprjoj/texures/Carreaux - Blanc mat 30x30 -opt.jpg
-src/routes/app/yoteprjoj/texures/Chaussée - Asphalte clair cb -opt.jpg
-src/routes/app/yoteprjoj/texures/Chaussée - Pierres 02 crb -opt.jpg
-src/routes/app/yoteprjoj/texures/Herbe - 01 cb -opt.jpg
-src/routes/app/yoteprjoj/texures/Herbe - brune cb -opt.jpg
-src/routes/app/yoteprjoj/texures/Métal - fer -opt.jpg
-src/routes/app/yoteprjoj/texures/Métal - grille 03 cba -opt.png
-src/routes/app/yoteprjoj/texures/Métal - Points perforés moyens ba -opt-1.png
-src/routes/app/yoteprjoj/texures/Métal - Points perforés moyens ba -opt.png
-src/routes/app/yoteprjoj/texures/Métal - Zinc -opt.jpg
-src/routes/app/yoteprjoj/texures/Parquet - 05 -opt.jpg
-src/routes/app/yoteprjoj/texures/Parquet - 11 -opt.jpg
-src/routes/app/yoteprjoj/texures/Pierre - Granit rouge -opt.jpg
-src/routes/app/yoteprjoj/texures/Plâtre - blanc truelle c -opt.jpg
-src/routes/app/yoteprjoj/texures/Stuc - Beige brut c -opt.jpg
-src/routes/app/yoteprjoj/texures/Stuc - Blanc fin cb -opt.jpg
-src/routes/app/yoteprjoj/texures/Stuc - Gris brut c -opt.jpg
-src/routes/app/yoteprjoj/texures/Stuc - Rouge brut c -opt.jpg
-src/routes/app/yoteprjoj/texures/Textile - 01 cb -opt.jpg
-src/routes/app/yoteprjoj/texures/Textile - Tissu gris cb -opt.jpg
-src/routes/app/yoteprjoj/texures/Tuiles de toit - Espagnol 02 -opt.jpg
-src/routes/app/yoteprjoj/texures/TV plate 27.jpg
+src/routes/app/yoteprjoj/*
+vercel-blob-backup/*

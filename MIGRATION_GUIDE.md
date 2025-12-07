@@ -1,105 +1,110 @@
-# 🚀 Guide de Migration - Architecture Hybride
+# 🚀 Guide de Migration - Architecture Hybride avec Cloudinary
 
 ## 📋 Vue d'ensemble
 
-Ce guide vous accompagne pour migrer de Vercel Blob vers une architecture hybride avec **Railway (Django)** + **Backblaze B2 (Stockage)** + **Vercel (Frontend)**.
+Migration vers **Cloudinary** (100% gratuit, **SANS carte bancaire**) + **Railway** (Django) + **Vercel** (Frontend).
 
 ---
 
 ## ✅ Phase 1 : Configuration (COMPLÉTÉE)
 
-Les fichiers suivants ont été créés/modifiés :
-
-### Fichiers créés
-- ✅ [`scripts/download-vercel-blob.js`](file:///home/kd/Bureau/dv-threlte-starter/scripts/download-vercel-blob.js) - Téléchargement Vercel Blob
-- ✅ [`scripts/upload-to-b2.py`](file:///home/kd/Bureau/dv-threlte-starter/scripts/upload-to-b2.py) - Upload vers Backblaze B2
-- ✅ [`railway.toml`](file:///home/kd/Bureau/dv-threlte-starter/railway.toml) - Config déploiement Railway
-- ✅ [`.env.production`](file:///home/kd/Bureau/dv-threlte-starter/.env.production) - Variables production
-
-### Fichiers modifiés
-- ✅ [`requirements.txt`](file:///home/kd/Bureau/dv-threlte-starter/requirements.txt) - Ajout `django-storages[s3]`, `boto3`
-- ✅ [`backend/settings.py`](file:///home/kd/Bureau/dv-threlte-starter/backend/settings.py) - Config Backblaze B2
-- ✅ [`.gitignore`](file:///home/kd/Bureau/dv-threlte-starter/.gitignore) - Ignore fichiers lourds
+### Fichiers créés/modifiés
+- ✅ [`scripts/upload-to-cloudinary.py`](file:///home/kd/Bureau/dv-threlte-starter/scripts/upload-to-cloudinary.py) - Upload vers Cloudinary
+- ✅ [`requirements.txt`](file:///home/kd/Bureau/dv-threlte-starter/requirements.txt) - Dépendances Cloudinary
+- ✅ [`backend/settings.py`](file:///home/kd/Bureau/dv-threlte-starter/backend/settings.py) - Config Django Cloudinary
+- ✅ [`.env.production`](file:///home/kd/Bureau/dv-threlte-starter/.env.production) - Variables Cloudinary
+- ✅ [`railway.toml`](file:///home/kd/Bureau/dv-threlte-starter/railway.toml) - Déploiement Railway
 
 ---
 
-## 🔄 Phase 2 : Migration des Fichiers
+## 🎨 Phase 2 : Créer Compte Cloudinary (GRATUIT)
 
-### Étape 1 : Télécharger depuis Vercel Blob
+### Étape 1 : Inscription (sans CB)
+
+1. **Aller sur** : [cloudinary.com/users/register_free](https://cloudinary.com/users/register_free)
+2. **S'inscrire avec** : Email ou GitHub
+3. **Plan** : Free (automatique) - **Aucune CB demandée** ✅
+
+### Étape 2 : Récupérer Credentials
+
+1. Aller dans **Dashboard** (après connexion)
+2. Cliquer sur **Settings** (⚙️ en haut à droite)
+3. Aller dans **Access Keys**
+4. Noter :
+   - **Cloud Name** : `dxxxxx` (ou nom personnalisé)
+   - **API Key** : `123456789012345`
+   - **API Secret** : `AbCdEfGhIjKlMnOpQrStUvWxYz` (cliquer sur 👁️ pour voir)
+
+### Étape 3 : Configurer Variables Locales
+
+```bash
+# Dans .env local (pour tester upload)
+echo 'CLOUDINARY_CLOUD_NAME=ton-cloud-name' >> .env
+echo 'CLOUDINARY_API_KEY=ton-api-key' >> .env
+echo 'CLOUDINARY_API_SECRET=ton-api-secret' >> .env
+```
+
+---
+
+## 📤 Phase 3 : Upload Fichiers vers Cloudinary
+
+### Option A : Upload Automatique (Recommandé)
 
 ```bash
 # 1. Installer dépendances
-npm install @vercel/blob
+pip install cloudinary
 
-# 2. Récupérer le token dans Vercel Dashboard
-# Vercel > Storage > Blob > Settings > Read/Write Token
+# 2. Configurer credentials (ou utiliser .env)
+export CLOUDINARY_CLOUD_NAME=ton-cloud-name
+export CLOUDINARY_API_KEY=ton-api-key
+export CLOUDINARY_API_SECRET=ton-api-secret
 
-# 3. Télécharger tous les fichiers
-BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxx node scripts/download-vercel-blob.js
+# 3. Upload tous les fichiers depuis static/
+python scripts/upload-to-cloudinary.py
 ```
 
-**Résultat** : Dossier `vercel-blob-backup/` avec tous vos fichiers + `file-list.json`
+Le script uploade automatiquement :
+- `static/models/*.glb` → Fichiers 3D
+- `static/assets/*` → Images
+- `static/public/*` → Autres assets
 
-### Étape 2 : Créer compte Backblaze B2
+### Option B : Upload Manuel (Interface Web)
 
-1. **Inscription** : [backblaze.com/b2/sign-up.html](https://www.backblaze.com/b2/sign-up.html)
-2. **Créer un Bucket** :
-   - Nom : `dv-threlte-assets` (ou autre)
-   - Région : `us-west-004` (recommandé)
-   - Visibilité : **Public**
-3. **Générer Application Key** :
-   - Menu : Account > Application Keys
-   - Créer nouvelle clé avec accès Read/Write
-   - **Noter** : `keyID` et `applicationKey` (ne seront plus affichés)
-
-### Étape 3 : Upload vers Backblaze B2
-
-```bash
-# 1. Configurer credentials
-export B2_KEY_ID=your-key-id-here
-export B2_APPLICATION_KEY=your-application-key-here
-export B2_BUCKET_NAME=dv-threlte-assets
-
-# 2. Uploader tous les fichiers
-python scripts/upload-to-b2.py
-```
-
-**Résultat** : Tous vos fichiers sont maintenant sur B2 avec URLs publiques
+1. Aller sur [cloudinary.com/console/media_library](https://cloudinary.com/console/media_library)
+2. Cliquer **Upload**
+3. Glisser-déposer fichiers
+4. Créer un dossier `dv-threlte` pour organiser
 
 ---
 
-## 🚂 Phase 3 : Déploiement Backend sur Railway
+## 🚂 Phase 4 : Déploiement Backend sur Railway
 
 ### Étape 1 : Créer projet Railway
 
-1. Aller sur [railway.app](https://railway.app/)
-2. **Sign up with GitHub**
-3. **New Project** > **Deploy from GitHub repo**
-4. Sélectionner `dvrch/dv-threlte-starter`
+1. [railway.app](https://railway.app/) → **Sign up with GitHub**
+2. **New Project** → **Deploy from GitHub repo**
+3. Sélectionner `dvrch/dv-threlte-starter`
 
 ### Étape 2 : Ajouter PostgreSQL
 
-1. Dans votre projet Railway : **New** > **Database** > **PostgreSQL**
-2. Railway génère automatiquement `DATABASE_URL`
+1. **New** → **Database** → **PostgreSQL**
+2. Railway génère `DATABASE_URL` automatiquement
 
-### Étape 3 : Configurer Variables d'Environnement
+### Étape 3 : Variables d'Environnement
 
-Dans Railway Dashboard > **Variables**, ajouter :
+Dans **Railway Dashboard > Variables**, ajouter :
 
 ```bash
-# Django Core
-SECRET_KEY=changez-moi-avec-une-cle-secrete-longue
+# Django
+SECRET_KEY=changez-moi-avec-cle-longue-aleatoire
 DEBUG=False
-DJANGO_SETTINGS_MODULE=backend.settings
 ALLOWED_HOSTS=.railway.app,.vercel.app
 
-# Backblaze B2
-USE_B2_STORAGE=True
-B2_KEY_ID=votre-key-id-b2
-B2_APPLICATION_KEY=votre-application-key-b2
-B2_BUCKET_NAME=dv-threlte-assets
-B2_ENDPOINT_URL=https://s3.us-west-004.backblazeb2.com
-B2_REGION=us-west-004
+# Cloudinary
+USE_CLOUDINARY=True
+CLOUDINARY_CLOUD_NAME=ton-cloud-name
+CLOUDINARY_API_KEY=ton-api-key
+CLOUDINARY_API_SECRET=ton-api-secret
 
 # CORS
 CORS_ALLOWED_ORIGINS=https://dv-threlte-starter.vercel.app,http://localhost:5173
@@ -107,117 +112,92 @@ CORS_ALLOWED_ORIGINS=https://dv-threlte-starter.vercel.app,http://localhost:5173
 
 ### Étape 4 : Déployer
 
-Railway détecte automatiquement `railway.toml` et déploie Django.
+Railway détecte `railway.toml` et déploie automatiquement.
 
-**Vérifier** : Copier l'URL publique (ex: `https://dv-threlte-starter-backend.up.railway.app`)
-
+**Tester** :
 ```bash
-curl https://dv-threlte-starter-backend.up.railway.app/api/health
+curl https://[ton-app].up.railway.app/api/health
 # Expected: {"status": "ok"}
 ```
 
 ---
 
-## 🌐 Phase 4 : Mise à jour Frontend
+## 🌐 Phase 5 : Mise à jour Frontend Vercel
 
 ### Dans Vercel Dashboard
 
-1. **Settings** > **Environment Variables**
+1. **Settings** → **Environment Variables**
 2. Modifier `VITE_API_URL` :
    ```
-   VITE_API_URL=https://dv-threlte-starter-backend.up.railway.app
+   VITE_API_URL=https://[ton-app].up.railway.app
    ```
-3. **Redéployer** : Deployments > ... > Redeploy
-
-### Test Frontend → Backend
-
-Ouvrir l'app Vercel et vérifier dans DevTools (Network) que les appels API pointent vers Railway.
+3. **Redéployer** : Deployments → ... → Redeploy
 
 ---
 
-## 🧹 Phase 5 : Nettoyage Git (Optionnel)
+## 🧪 Test Complet
 
-> [!CAUTION]
-> Cette étape est **irréversible** et réécrit l'historique Git
-
+### 1. Backend Django
 ```bash
-# 1. Sauvegarder d'abord
-git clone https://github.com/dvrch/dv-threlte-starter backup-repo
-
-# 2. Installer git-filter-repo
-pip install git-filter-repo
-
-# 3. Nettoyer fichiers lourds de l'historique
-git filter-repo --path-glob '*.glb' --invert-paths --force
-git filter-repo --path-glob '*.blend' --invert-paths --force
-git filter-repo --path-glob '*.bin' --invert-paths --force
-
-# 4. Force push (⚠️ ATTENTION)
-git remote add origin https://github.com/dvrch/dv-threlte-starter
-git push origin --force --all
-
-# 5. Nettoyer cache local
-git reflog expire --expire=now --all
-git gc --prune=now --aggressive
+curl https://[ton-app].up.railway.app/api/health
 ```
 
----
-
-## ✅ Vérification Finale
-
-### Backend Django
+### 2. Upload Fichier 3D
 ```bash
-curl https://[votre-app].up.railway.app/api/health
-# {"status": "ok"}
+curl -X POST https://[ton-app].up.railway.app/api/upload \
+  -F "file=@test.glb"
+# {"url": "https://res.cloudinary.com/.../test.glb", "status": "success"}
 ```
 
-### Upload Fichier 3D
-```bash
-curl -X POST https://[votre-app].up.railway.app/api/upload \
-  -F "file=@test.glb" \
-  -H "Content-Type: multipart/form-data"
-# {"url": "https://s3...backblazeb2.com/.../test.glb", "status": "success"}
-```
-
-### Frontend Vercel
-1. Ouvrir app : `https://dv-threlte-starter.vercel.app`
+### 3. Frontend
+1. Ouvrir `https://dv-threlte-starter.vercel.app`
 2. Tester formulaire upload
 3. Vérifier chargement modèles 3D
 
 ---
 
-## 📊 Coûts Estimés
+## 💰 Coûts
 
 | Service | Plan | Coût/mois |
 |---------|------|-----------|
-| **Vercel** (Frontend) | Hobby | **$0** |
-| **Railway** (Backend) | Crédits gratuits | **$0** puis ~$5-10 |
-| **Backblaze B2** | 10GB gratuit | **$0** puis ~$0.50 |
-| **Neon PostgreSQL** | Gratuit | **$0** |
+| **Cloudinary** | Free | **$0** (25GB, sans CB) |
+| **Railway** | Crédits | **$0** puis ~$5-10 |
+| **Vercel** | Hobby | **$0** |
+| **Neon PostgreSQL** | Free | **$0** |
 
-**Total** : ~$5-10/mois après crédits gratuits
+**Total** : $0 initialement, ~$5-10/mois après crédits Railway
 
 ---
 
 ## 🆘 Dépannage
 
-### ❌ Erreur "Invalid Credentials" (Railway)
-- Vérifier que `SECRET_KEY` est défini
-- Vérifier `DJANGO_SETTINGS_MODULE=backend.settings`
+### ❌ "Invalid Cloudinary credentials"
+- Vérifier `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+- Vérifier qu'il n'y a pas d'espaces dans les valeurs
 
-### ❌ CORS Error (Frontend → Backend)
+### ❌ Upload échoue
+- Vérifier que `USE_CLOUDINARY=True` sur Railway
+- Vérifier quota Cloudinary (Dashboard → Usage)
+
+### ❌ CORS Error
 - Vérifier `CORS_ALLOWED_ORIGINS` inclut URL Vercel
 - Vérifier `ALLOWED_HOSTS` inclut `.railway.app`
 
-### ❌ Upload fichier échoue
-- Vérifier `USE_B2_STORAGE=True`
-- Vérifier credentials B2 valides
-- Vérifier bucket existe et est public
+---
+
+## 🎁 Avantages Cloudinary
+
+- ✅ **Gratuit sans CB** (25 GB)
+- ✅ **CDN mondial** automatique
+- ✅ **Optimisation images** gratuite
+- ✅ **Pas de limite bande passante** (plan Free)
+- ✅ **Interface drag & drop**
+- ✅ **Support fichiers 3D** (.glb, .gltf)
 
 ---
 
 ## 📚 Ressources
 
+- [Cloudinary Docs](https://cloudinary.com/documentation)
 - [Railway Docs](https://docs.railway.app/)
-- [Backblaze B2 Docs](https://www.backblaze.com/b2/docs/)
-- [django-storages](https://django-storages.readthedocs.io/)
+- [django-cloudinary-storage](https://django-cloudinary-storage.readthedocs.io/)

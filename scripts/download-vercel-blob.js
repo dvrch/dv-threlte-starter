@@ -7,10 +7,10 @@
  *   3. Executer: node scripts/download-vercel-blob.js
  */
 
-const fs = require('fs');
-const path = require('path');
-const https = require('https');
-const { list } = require('@vercel/blob');
+import fs from 'fs';
+import path from 'path';
+import https from 'https';
+import { list } from '@vercel/blob';
 
 // Configuration
 const BLOB_READ_WRITE_TOKEN = process.env.BLOB_READ_WRITE_TOKEN || '';

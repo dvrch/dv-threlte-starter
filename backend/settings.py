@@ -65,7 +65,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
-    "storages",  # For Backblaze B2 / S3-compatible storage
+    "cloudinary_storage",  # Cloudinary storage (gratuit sans CB)
+    "cloudinary",
     "backend.Base_threlte_dv",
     "backend.films",
     "taggit",
@@ -224,29 +225,32 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 # Media files configuration
-# Configuration Backblaze B2 pour stockage fichiers (images, GLB, etc.)
-USE_B2_STORAGE = os.environ.get("USE_B2_STORAGE", "False") == "True"
+# Configuration Cloudinary (gratuit sans carte bancaire)
+USE_CLOUDINARY = os.environ.get("USE_CLOUDINARY", "False") == "True"
 
-if USE_B2_STORAGE:
-    # Backblaze B2 Storage (S3-compatible)
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+if USE_CLOUDINARY:
+    # Cloudinary Storage (100% gratuit, 25GB)
+    import cloudinary
+    import cloudinary.uploader
+    import cloudinary.api
     
-    AWS_ACCESS_KEY_ID = os.environ.get('B2_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = os.environ.get('B2_APPLICATION_KEY')
-    AWS_STORAGE_BUCKET_NAME = os.environ.get('B2_BUCKET_NAME')
-    AWS_S3_ENDPOINT_URL = os.environ.get('B2_ENDPOINT_URL', 'https://s3.us-west-004.backblazeb2.com')
-    AWS_S3_REGION_NAME = os.environ.get('B2_REGION', 'us-west-004')
-    
-    # Permissions et configuration
-    AWS_DEFAULT_ACL = 'public-read'
-    AWS_S3_OBJECT_PARAMETERS = {
-        'CacheControl': 'max-age=86400',  # 1 jour
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+        'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+        'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
     }
-    AWS_QUERYSTRING_AUTH = False  # URLs publiques sans signature
-    AWS_S3_FILE_OVERWRITE = False  # Ne pas écraser fichiers existants
     
-    # URL de base pour les fichiers
-    MEDIA_URL = f"{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/"
+    cloudinary.config(
+        cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
+        api_key=CLOUDINARY_STORAGE['API_KEY'],
+        api_secret=CLOUDINARY_STORAGE['API_SECRET'],
+        secure=True
+    )
+    
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    
+    # URL de base Cloudinary
+    MEDIA_URL = f"https://res.cloudinary.com/{CLOUDINARY_STORAGE['CLOUD_NAME']}/"
 else:
     # Stockage local (développement)
     MEDIA_URL = "/media/"
