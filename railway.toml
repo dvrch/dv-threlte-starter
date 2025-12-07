@@ -1,38 +1,8 @@
-# 🚂 Configuration Railway pour Django Backend UNIQUEMENT
+# Railway détecte automatiquement Python via requirements.txt
+# Pas besoin de configuration complexe
 
 [build]
 builder = "NIXPACKS"
 
-[build.nixpacksPlan]
-# Ne builder que Python, pas Node.js/pnpm
-providers = ["python"]
-
-[build.nixpacksPlan.phases.setup]
-nixPkgs = ["python311", "gcc", "postgresql"]
-
-[build.nixpacksPlan.phases.install]
-cmds = ["pip install -r requirements.txt"]
-
-[build.nixpacksPlan.phases.build]
-cmds = [
-  "cd backend",
-  "python manage.py collectstatic --noinput"
-]
-
 [deploy]
-startCommand = "cd backend && gunicorn films_backend.wsgi:application --bind 0.0.0.0:$PORT"
-healthcheckPath = "/api/health"
-healthcheckTimeout = 100
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 10
-
-# Variables à définir dans Railway Dashboard:
-# - SECRET_KEY=your-secret-key
-# - DEBUG=False
-# - ALLOWED_HOSTS=.railway.app,.vercel.app
-# - DATABASE_URL (auto-provisioned par PostgreSQL)
-# - USE_CLOUDINARY=True
-# - CLOUDINARY_CLOUD_NAME=xxx
-# - CLOUDINARY_API_KEY=xxx
-# - CLOUDINARY_API_SECRET=xxx
-# - CORS_ALLOWED_ORIGINS=https://dv-threlte-starter.vercel.app
+startCommand = "cd backend && gunicorn wsgi:application --bind 0.0.0.0:$PORT"

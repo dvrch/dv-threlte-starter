@@ -1,11 +1,14 @@
-# Ignorer frontend et fichiers non-Django pour Railway
+# Ignorer frontend pour Railway (Django backend uniquement)
 node_modules/
 .svelte-kit/
 build/
-static/
 src/
+static/models/
+static/assets/
+static/public/
 *.md
-*.json
-!package.json
-!requirements.txt
+!README.md
 pnpm-lock.yaml
+package.json
+vite.config.js
+svelte.config.js
