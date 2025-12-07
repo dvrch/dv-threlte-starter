@@ -1,12 +1,21 @@
 <script>
-  // ... autres imports existants ...
+  import { onMount } from 'svelte';
   import { BloomEffect, EffectComposer, EffectPass, KernelSize, RenderPass, SMAAEffect, SMAAPreset } from 'postprocessing'
   
   import { useThrelte, useTask } from '@threlte/core'
-  const composer = new EffectComposer(renderer)
-  composer.setSize(innerWidth, innerHeight)
+
+  const { renderer, scene, camera } = useThrelte(); // Get renderer, scene, and camera from useThrelte
+
+  let composer; // Declare composer here
 
   const setupEffectComposer = () => {
+    if (!renderer || !scene || !camera.current) return; // Ensure they are defined
+
+    if (!composer) { // Initialize composer only once
+      composer = new EffectComposer(renderer);
+      composer.setSize(window.innerWidth, window.innerHeight);
+    }
+
     composer.removeAllPasses()
     composer.addPass(new RenderPass(scene, camera.current))
     composer.addPass(
@@ -36,21 +45,26 @@
 
   useTask((_, delta) => {
     // Mettre à jour l'environnement et le rendu
-    setupEnvironmentMapping()
-    composer.render(delta)
+    setupEnvironmentMapping() // Assuming this function is defined elsewhere
+    if (composer) { // Only render if composer is initialized
+      composer.render(delta)
+    }
   })
 
   onMount(() => {
     setupEffectComposer()
-    setupEnvironmentMapping()
+    setupEnvironmentMapping() // Assuming this function is defined elsewhere
     
     const interval = setInterval(() => {
       setupEnvironmentMapping()
     }, 1000)
     
+    // Assuming cleanupFunctions is defined elsewhere
     cleanupFunctions.push(() => {
       clearInterval(interval)
-      composer.dispose()
+      if (composer) {
+        composer.dispose()
+      }
     })
   })
 </script>
