@@ -58,14 +58,8 @@
 	  changeTexture();
 	};
   
-	// Check if paths are valid before loading
-	if (glbPath) {
-		loadModel();
-	}
-	
-	if (textures[0]) {
-		changeTexture();
-	}
+	loadModel();
+	changeTexture();
   
 	// Animate the model every frame
 	useTask(() => {

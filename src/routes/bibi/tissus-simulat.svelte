@@ -16,12 +16,8 @@
   import { getAssetUrl } from '$lib/asset-helper';
 
   // Use the useGltf hook to load the model
-  const gltfPromise = useGltf<THREE.Group>(getAssetUrl('/public/cloth_sim.glb'));
-  let gltf = $state();
-  
-  gltfPromise.then((res) => {
-      gltf = res;
-  }).catch(err => console.error('Failed to load cloth_sim.glb', err));
+  const gltf = useGltf<THREE.Group>(getAssetUrl('/public/cloth_sim.glb'));
+  gltf.catch(err => console.error('Failed to load cloth_sim.glb', err));
 
   // Animate the model using useTask
   let mixer: THREE.AnimationMixer | undefined;
@@ -32,7 +28,7 @@
 
   // When the model is loaded, set up the animation mixer
   $effect(() => {
-    if (gltf && gltf.scene && gltf.animations) {
+    if (gltf) {
       mixer = new THREE.AnimationMixer(gltf.scene);
       gltf.animations.forEach((clip) => {
         mixer?.clipAction(clip).play();

@@ -7,6 +7,8 @@
   // Remplacer useGltf et useGltfAnimations par GLTFLoader pour éviter l'erreur de module
   import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
+  import { getAssetUrl } from '$lib/asset-helper';
+  
   let {
     position = [0, 0, 0],
     rotation = [0, 0, 0]
@@ -21,7 +23,7 @@
 
   // Charger le modèle GLTF
   const loader = new GLTFLoader();
-  loader.load('/public/cloth_sim.glb', (gltf) => {
+  loader.load(getAssetUrl('/public/cloth_sim.glb'), (gltf) => {
     model = gltf.scene;
     mixer = new THREE.AnimationMixer(model);
     gltf.animations.forEach((clip: THREE.AnimationClip) => mixer.clipAction(clip).play());

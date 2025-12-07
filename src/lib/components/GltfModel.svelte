@@ -7,10 +7,17 @@
 	let { url, ...restProps }: { url: string } = $props();
 
 	let gltf: any = $state(null); // Declare gltf as a mutable variable
-
-	onMount(() => {
-		if (browser) {
-			gltf = useGltf(url); // Call useGltf only on the client
+	
+	$effect(() => {
+		if (browser && url) {
+			const gltfStore = useGltf(url);
+			// useGltf return a store that is also a promise
+			gltfStore.then((loaded) => {
+				gltf = loaded;
+			}).catch((err) => {
+				console.error("Failed to load GLTF:", url, err);
+				gltf = null;
+			});
 		}
 	});
 </script>
