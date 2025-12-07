@@ -43,6 +43,7 @@ ALLOWED_HOSTS = [
     "localhost",
     ".vercel.app",
     ".now.sh",  # For Vercel
+    ".railway.app",  # For Railway deployment
     "dv-threlte-starter.vercel.app",
 ]
 
@@ -64,6 +65,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
+    "storages",  # For Backblaze B2 / S3-compatible storage
     "backend.Base_threlte_dv",
     "backend.films",
     "taggit",
@@ -222,12 +224,35 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 # Media files configuration
-# Les fichiers média sont stockés localement en développement
-# En production, utilisez Vercel Blob Storage
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# Configuration Backblaze B2 pour stockage fichiers (images, GLB, etc.)
+USE_B2_STORAGE = os.environ.get("USE_B2_STORAGE", "False") == "True"
 
-# Configuration Vercel Blob Storage
+if USE_B2_STORAGE:
+    # Backblaze B2 Storage (S3-compatible)
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    
+    AWS_ACCESS_KEY_ID = os.environ.get('B2_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('B2_APPLICATION_KEY')
+    AWS_STORAGE_BUCKET_NAME = os.environ.get('B2_BUCKET_NAME')
+    AWS_S3_ENDPOINT_URL = os.environ.get('B2_ENDPOINT_URL', 'https://s3.us-west-004.backblazeb2.com')
+    AWS_S3_REGION_NAME = os.environ.get('B2_REGION', 'us-west-004')
+    
+    # Permissions et configuration
+    AWS_DEFAULT_ACL = 'public-read'
+    AWS_S3_OBJECT_PARAMETERS = {
+        'CacheControl': 'max-age=86400',  # 1 jour
+    }
+    AWS_QUERYSTRING_AUTH = False  # URLs publiques sans signature
+    AWS_S3_FILE_OVERWRITE = False  # Ne pas écraser fichiers existants
+    
+    # URL de base pour les fichiers
+    MEDIA_URL = f"{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/"
+else:
+    # Stockage local (développement)
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
+
+# Legacy: Configuration Vercel Blob Storage (deprecated)
 BLOB_READ_WRITE_TOKEN = os.environ.get("BLOB_READ_WRITE_TOKEN")
 VERCEL_BLOB_STORE_ID = os.environ.get("STORE_ID", "your-store-id")
 
@@ -249,6 +274,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     "https://dv-threlte-starter.vercel.app",
 ]
+
+# Ajouter dynamiquement l'URL Railway si elle existe
+RAILWAY_PUBLIC_DOMAIN = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+if RAILWAY_PUBLIC_DOMAIN and f"https://{RAILWAY_PUBLIC_DOMAIN}" not in CORS_ALLOWED_ORIGINS:
+    CORS_ALLOWED_ORIGINS.append(f"https://{RAILWAY_PUBLIC_DOMAIN}")
 
 # Ajouter dynamiquement l'URL de prévisualisation de Vercel si elle existe
 VERCEL_URL = os.environ.get("VERCEL_URL")

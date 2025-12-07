@@ -1,0 +1,28 @@
+# 🚂 Configuration Railway pour Django Backend
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "pip install -r requirements.txt && python manage.py collectstatic --noinput"
+
+[deploy]
+startCommand = "gunicorn backend.films_backend.films_backend.wsgi:application --bind 0.0.0.0:$PORT"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 100
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[[services]]
+name = "django-backend"
+
+[services.env]
+PYTHONUNBUFFERED = "1"
+DJANGO_SETTINGS_MODULE = "backend.films_backend.films_backend.settings"
+
+# Variables à définir dans Railway Dashboard:
+# - SECRET_KEY
+# - DEBUG=False
+# - ALLOWED_HOSTS=.railway.app,.vercel.app
+# - DATABASE_URL (auto-provisioned)
+# - B2_KEY_ID
+# - B2_APPLICATION_KEY
+# - B2_BUCKET_NAME
