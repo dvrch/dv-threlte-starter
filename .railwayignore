@@ -1,0 +1,11 @@
+# Ignorer frontend et fichiers non-Django pour Railway
+node_modules/
+.svelte-kit/
+build/
+static/
+src/
+*.md
+*.json
+!package.json
+!requirements.txt
+pnpm-lock.yaml
