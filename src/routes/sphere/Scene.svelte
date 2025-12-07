@@ -59,11 +59,11 @@
 	};
   
 	// Check if paths are valid before loading
-	if (glbPath && !glbPath.includes('<remplacer-par-votre-url-vercel-blob>')) {
+	if (glbPath) {
 		loadModel();
 	}
 	
-	if (textures[0] && !textures[0].includes('<remplacer-par-votre-url-vercel-blob>')) {
+	if (textures[0]) {
 		changeTexture();
 	}
   

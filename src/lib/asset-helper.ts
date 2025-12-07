@@ -3,7 +3,7 @@ import { dev } from '$app/environment';
 
 // IMPORTANT : Vous devrez mettre l'URL de base de votre Vercel Blob ici.
 // Idéalement, via une variable d'environnement avec le chemin public VITE_.
-const BLOB_BASE_URL = import.meta.env.VITE_BLOB_BASE_URL || 'https://<remplacer-par-votre-url-vercel-blob>';
+const BLOB_BASE_URL = import.meta.env.VITE_BLOB_BASE_URL || 'https://w0cb58ft2bj7sg0v.public.blob.vercel-storage.com';
 
 /**
  * Retourne l'URL d'un asset en fonction de l'environnement.
