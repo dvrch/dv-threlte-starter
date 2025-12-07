@@ -15,26 +15,10 @@ from .serializers import GeometrySerializer
 logger = logging.getLogger(__name__)
 
 
+
 class GeometryViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         try:
-            logger.info("✅ GeometryViewSet.list() called - DEBUG MODE")
-            # Temporarily bypass the database to test the API route
-            # dummy_data = [
-            #     {
-            #         "id": 1,
-            #         "name": "Debug Cube",
-            #         "type": "CUBE",
-            #         "model_url": "https://example.com/cube.glb",
-            #     },
-            #     {
-            #         "id": 2,
-            #         "name": "Debug Sphere",
-            #         "type": "SPHERE",
-            #         "model_url": "https://example.com/sphere.glb",
-            #     },
-            # ]
-            # return Response(dummy_data, status=status.HTTP_200_OK)
             logger.info("✅ GeometryViewSet.list() called")
             return super().list(request, *args, **kwargs)
         except Exception as e:
@@ -44,41 +28,74 @@ class GeometryViewSet(viewsets.ModelViewSet):
     queryset = Geometry.objects.all()
     serializer_class = GeometrySerializer
 
-    def _upload_to_blob(self, file):
+    def _upload_to_blob(self, file_obj):
+        """
+        Uploads a file to Vercel Blob Storage.
+        Returns the public URL of the uploaded blob.
+        """
+        # On récupère le token depuis les variables d'environnement
+        # (chargées via dotenv ou l'environnement système)
         token = os.environ.get("BLOB_READ_WRITE_TOKEN")
+        
         if not token:
-            # Gérer le cas où le token n'est pas défini (par exemple, en développement local)
-            # Vous pouvez retourner une URL locale ou lever une exception
+            logger.warning("⚠️ BLOB_READ_WRITE_TOKEN not found. Falling back to local storage.")
             return None
 
-        filename = file.name
-        clean_filename = re.sub(r"[^a-zA-Z0-9._-]", "_", filename)
-        clean_filename = re.sub(r"_+", "_", clean_filename)
+        try:
+            filename = file_obj.name
+            # Nettoyage simple du nom de fichier
+            clean_filename = re.sub(r"[^a-zA-Z0-9._-]", "_", filename)
+            
+            # Déterminer le dossier
+            ext = filename.lower().split(".")[-1]
+            folder = "models" if ext in ["gltf", "glb"] else "images"
+            pathname = f"{folder}/{clean_filename}"
+            
+            # Appel à l'API de Vercel Blob
+            api_url = f"https://blob.vercel-storage.com/{pathname}"
+            headers = {
+                "Authorization": f"Bearer {token}",
+                # On ne met pas Content-Type ici, requests le gérera ou Vercel le détectera
+            }
+            
+            logger.info(f"📤 Uploading {filename} to Vercel Blob as {pathname}...")
+            
+            # Important: lire le contenu du fichier
+            file_content = file_obj.read()
+            
+            # put request
+            response = requests.put(api_url, headers=headers, data=file_content)
+            response.raise_for_status()
+            
+            data = response.json()
+            blob_url = data.get("url")
+            
+            logger.info(f"✅ Upload successful! URL: {blob_url}")
+            return blob_url
 
-        ext = filename.lower().split(".")[-1]
-        folder = "models" if ext in ["gltf", "glb"] else "images"
-        pathname = f"{folder}/{clean_filename}"
-        api_url = f"https://blob.vercel-storage.com/{pathname}"
-
-        headers = {"Authorization": f"Bearer {token}"}
-        response = requests.put(api_url, headers=headers, data=file.read())
-        response.raise_for_status()
-        return response.json().get("url")
+        except Exception as e:
+            logger.error(f"❌ Upload to Blob failed: {str(e)}", exc_info=True)
+            return None
 
     def perform_create(self, serializer):
         model_file = self.request.data.get("model_file")
+        
+        # Si un fichier est fourni, on essaie de l'envoyer sur le Blob
         if model_file:
             blob_url = self._upload_to_blob(model_file)
             if blob_url:
+                # Si succès, on enregistre l'URL du blob
                 serializer.save(model_url=blob_url)
             else:
-                # Gérer l'échec de l'upload si nécessaire
+                # Si échec ou pas de token, on laisse le comportement par défaut (local)
+                # Le modèle Geometry gère déjà l'assignation de model_url = file.url dans save()
                 serializer.save()
         else:
             serializer.save()
 
     def perform_update(self, serializer):
         model_file = self.request.data.get("model_file")
+        
         if model_file:
             blob_url = self._upload_to_blob(model_file)
             if blob_url:

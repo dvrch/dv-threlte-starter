@@ -9,25 +9,34 @@ const BLOB_BASE_URL = import.meta.env.VITE_BLOB_BASE_URL || import.meta.env.VITE
  * Retourne l'URL d'un asset en fonction de l'environnement.
  * @param path Le chemin de l'asset comme s'il était à la racine du site (ex: '/images/logo.png')
  */
+
 export function getAssetUrl(path: string): string {
-  if (dev) {
-    // --- En DÉVELOPPEMENT ---
-    // On retourne simplement le chemin local. Le serveur de dev de Vite s'en occupe.
+  // 1. Si l'URL est déjà absolue (http/https), on la retourne telle quelle
+  // C'est le cas pour les assets Vercel Blob
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) {
     return path;
-  } else {
-    // --- En PRODUCTION ---
-    if (path.startsWith('http://') || path.startsWith('https://')) {
-      return path;
-    }
-
-    // If no BLOB_BASE_URL is set or it is still the placeholder, fallback to local path
-    if (!BLOB_BASE_URL || BLOB_BASE_URL.includes('<remplacer-par-votre-url-vercel-blob>')) {
-      console.warn('VITE_BLOB_BASE_URL is not set. Falling back to local path:', path);
-      return path;
-    }
-
-    // On s'assure que le chemin commence bien par un slash.
-    const cleanPath = path.startsWith('/') ? path : '/' + path;
-    return `${BLOB_BASE_URL}${cleanPath} `;
   }
+
+  // 2. Si on est en développement local et qu'on a un path relatif
+  if (dev) {
+    // Si c'est un asset statique du dossier /static (commençant par /media),
+    // Django le sert en dev. 
+    // Vite proxy souvent /api mais pas forcément /media par défaut 
+    // sauf si configuré dans vite.config.js.
+    // Pour être sûr, on peut préfixer par l'URL de l'API Django si besoin,
+    // MAIS standardement Vite le gère si c'est dans `public` ou via proxy.
+    // ICI : on assume que 'path' est relatif à la racine du serveur web.
+    return path;
+  }
+
+  // 3. En production (ou si on veut forcer le Blob même en dev via ENV)
+  // On fallback sur le Blob si ce n'est pas une URL absolue
+  if (!BLOB_BASE_URL || BLOB_BASE_URL.includes('<remplacer-par-votre-url-vercel-blob>')) {
+    // Cas de secours si pas de config Blob
+    return path;
+  }
+
+  const cleanPath = path.startsWith('/') ? path : '/' + path;
+  return `${BLOB_BASE_URL}${cleanPath}`;
 }

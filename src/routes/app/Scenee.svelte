@@ -18,6 +18,7 @@
 	import Spaceship from '../Spaceship/+page.svelte';
 	import Desk from '../desksc/+page.svelte';
 
+	import { getAssetUrl } from '$lib/asset-helper';
 	import { API_ENDPOINTS } from '$lib/config';
 
 	type Position = {
@@ -67,7 +68,7 @@
 
 			console.log('Response status (Geometries):', response.status);
 			const text = await response.text();
-			console.log('Response text (Geometries, first 500 chars):', text.substring(0, 500));
+			// console.log('Response text (Geometries, first 500 chars):', text.substring(0, 500));
 
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}: ${text}`);
@@ -142,7 +143,7 @@
 	<Float floatIntensity={1} floatingRange={[0, 1]} on:click={() => handleGeometryClick(geometry)}>
 		{#if geometry.model_url}
 			<GltfModel
-				url={geometry.model_url}
+				url={getAssetUrl(geometry.model_url)}
 				position={geometry.position}
 				rotation={geometry.rotation}
 			/>
