@@ -47,7 +47,7 @@
 		{#if LoadedDynamicComponent}
 			<!-- 1. Render the dynamically loaded Svelte component when available -->
 			{@const Component = LoadedDynamicComponent}
-			<Component />
+			<Component {geometry} />
 		{:else if geometry.model_url}
 			<!-- 2. Render a generic GLTF model if model_url is present -->
 			<GltfModel url={geometry.model_url} />
