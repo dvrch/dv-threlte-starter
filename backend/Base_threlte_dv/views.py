@@ -20,23 +20,23 @@ class GeometryViewSet(viewsets.ModelViewSet):
         try:
             logger.info("✅ GeometryViewSet.list() called - DEBUG MODE")
             # Temporarily bypass the database to test the API route
-            dummy_data = [
-                {
-                    "id": 1,
-                    "name": "Debug Cube",
-                    "type": "CUBE",
-                    "model_url": "https://example.com/cube.glb",
-                },
-                {
-                    "id": 2,
-                    "name": "Debug Sphere",
-                    "type": "SPHERE",
-                    "model_url": "https://example.com/sphere.glb",
-                },
-            ]
-            return Response(dummy_data, status=status.HTTP_200_OK)
-            # logger.info("✅ GeometryViewSet.list() called")
-            # return super().list(request, *args, **kwargs)
+            # dummy_data = [
+            #     {
+            #         "id": 1,
+            #         "name": "Debug Cube",
+            #         "type": "CUBE",
+            #         "model_url": "https://example.com/cube.glb",
+            #     },
+            #     {
+            #         "id": 2,
+            #         "name": "Debug Sphere",
+            #         "type": "SPHERE",
+            #         "model_url": "https://example.com/sphere.glb",
+            #     },
+            # ]
+            # return Response(dummy_data, status=status.HTTP_200_OK)
+            logger.info("✅ GeometryViewSet.list() called")
+            return super().list(request, *args, **kwargs)
         except Exception as e:
             logger.error(f"❌ Error in GeometryViewSet.list(): {str(e)}", exc_info=True)
             raise
