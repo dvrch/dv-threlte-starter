@@ -18,7 +18,9 @@
 	// Load the GLTF model
 	const gltfPromise = useGltf<THREE.Group>(getAssetUrl('/public/bibi.glb'));
 	let gltf = $state();
-	gltfPromise.then((res) => (gltf = res));
+	gltfPromise.then((res) => (gltf = res)).catch(err => {
+		console.error('Failed to load bibi.glb', err);
+	});
 
 	// Create an animation mixer
 	let mixer: THREE.AnimationMixer | undefined;

@@ -41,7 +41,13 @@ Title: Nissan Skyline GTR r35
       'r35_dash_2017_r35_cf', 'r35_leather'
     ];
     
-    materials.forEach(materialName => alphaFix(model.materials[materialName]));
+    materials.forEach(materialName => {
+        if (model.materials[materialName]) {
+            alphaFix(model.materials[materialName]);
+        }
+    });
+  }).catch((err) => {
+      console.error("Failed to load Nissan Model", err);
   });
 
 

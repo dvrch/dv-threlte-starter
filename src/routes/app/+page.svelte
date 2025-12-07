@@ -24,7 +24,13 @@
 			}
 
 			const data = await response.json();
-			geometries = data.results || [];
+			// Filter out geometries that expect an URL but have none
+			geometries = (data.results || []).filter((g: any) => {
+				if (g.type === 'gltf_model' || g.type === 'glb') {
+					return g.model_url && g.model_url.trim() !== '';
+				}
+				return true;
+			});
 			console.log('✅ Loaded geometries:', geometries.length);
 		} catch (e) {
 			error = (e as Error).message;

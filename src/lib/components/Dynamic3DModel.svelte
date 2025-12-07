@@ -50,8 +50,8 @@
 			<!-- 1. Render the dynamically loaded Svelte component when available -->
 			{@const Component = LoadedDynamicComponent}
 			<Component {geometry} />
-		{:else if geometry.model_url}
-			<!-- 2. Render a generic GLTF model if model_url is present -->
+		{:else if geometry.model_url && geometry.model_url.trim() !== ''}
+			<!-- 2. Render a generic GLTF model if model_url is present and valid -->
 			<GltfModel url={getAssetUrl(geometry.model_url)} />
 		{:else if geometry.type === 'box'}
 			<!-- 3. Render primitive shapes -->

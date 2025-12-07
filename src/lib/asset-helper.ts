@@ -16,10 +16,16 @@ export function getAssetUrl(path: string): string {
     return path;
   } else {
     // --- En PRODUCTION ---
-    // On construit l'URL complète vers le Vercel Blob.
     if (path.startsWith('http://') || path.startsWith('https://')) {
       return path;
     }
+
+    // If no BLOB_BASE_URL is set or it is still the placeholder, fallback to local path
+    if (!BLOB_BASE_URL || BLOB_BASE_URL.includes('<remplacer-par-votre-url-vercel-blob>')) {
+      console.warn('VITE_BLOB_BASE_URL is not set. Falling back to local path:', path);
+      return path;
+    }
+
     // On s'assure que le chemin commence bien par un slash.
     const cleanPath = path.startsWith('/') ? path : '/' + path;
     return `${BLOB_BASE_URL}${cleanPath}`;
