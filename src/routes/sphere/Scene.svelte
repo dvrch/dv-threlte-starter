@@ -6,14 +6,14 @@
 	import { writable } from 'svelte/store';
 	import * as THREE from 'three';
 
-	import { getAssetUrl } from '$lib/asset-helper';
+	import { assets } from '$lib/services/assets';
 
 	// Store to manage texture state
 	let currentTexture = writable(null);
   
 	// Path to your GLB model and textures
-	const glbPath = getAssetUrl('/public/cloth_sim.glb');
-	const textures = [getAssetUrl('/public/bibi.png')];
+	const glbPath = assets.getUrl('/public/cloth_sim.glb');
+	const textures = [assets.getUrl('/public/bibi.png')];
 	let activeTextureIndex = 0;
   
 	let model = null; // To store the loaded 3D model

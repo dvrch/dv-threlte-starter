@@ -17,9 +17,9 @@ Title: Nissan Skyline GTR r35
   export const ref = new Group()
   let { ...rest } = $props(); // Capture rest props
 
-  import { getAssetUrl } from '$lib/asset-helper';
+  import { assets } from '$lib/services/assets';
 
-  const gltf = useGltf(getAssetUrl('/models/nissan.glb'))
+  const gltf = useGltf(assets.getUrl('/models/nissan.glb'))
 
   gltf.then((model) => {
     function alphaFix(material) {

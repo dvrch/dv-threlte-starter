@@ -7,7 +7,7 @@
   import { onMount } from 'svelte';
   import { navigate } from 'svelte-routing';
   import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
-  import { getAssetUrl } from '$lib/asset-helper';
+  import { assets } from '$lib/services/assets';
   import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader.js';
 
   const clock = new THREE.Clock();
@@ -32,7 +32,7 @@
 
       // Charger la police
       const loader = new FontLoader();
-      font = await loader.loadAsync(getAssetUrl('/fonts/font.json'));
+      font = await loader.loadAsync(assets.getUrl('/fonts/font.json'));
 
       // Vérifiez si la police est chargée avant de créer le maillage de texte
       if (font) {

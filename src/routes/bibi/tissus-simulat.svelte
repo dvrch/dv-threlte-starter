@@ -13,10 +13,10 @@
     scale?: number | [number, number, number];
   } = $props();
 
-  import { getAssetUrl } from '$lib/asset-helper';
+  import { assets } from '$lib/services/assets';
 
   // Use the useGltf hook to load the model
-  const gltf = useGltf<THREE.Group>(getAssetUrl('/public/cloth_sim.glb'));
+  const gltf = useGltf<THREE.Group>(assets.getUrl('/public/cloth_sim.glb'));
   gltf.catch(err => console.error('Failed to load cloth_sim.glb', err));
 
   // Animate the model using useTask
