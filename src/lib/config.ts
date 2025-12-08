@@ -7,9 +7,9 @@ export const CONFIG = {
 };
 // Backward compatibility for components using direct fetch
 export const API_ENDPOINTS = {
-    GEOMETRIES: `${CONFIG.API_URL}/geometries/`,
-    TYPES: `${CONFIG.API_URL}/types/`,
-    FILMS: `${CONFIG.API_URL}/films/`,
-    UPLOAD_BLOB: `${CONFIG.API_URL}/upload-blob/`,
-    HANDLE_UPLOAD: `${CONFIG.API_URL}/handle-upload/`
+    GEOMETRIES: `${CONFIG.API_URL}/api/geometries/`,
+    TYPES: `${CONFIG.API_URL}/api/types/`,
+    FILMS: `${CONFIG.API_URL}/api/films/`,
+    UPLOAD_BLOB: `${CONFIG.API_URL}/api/upload-blob/`,
+    HANDLE_UPLOAD: `${CONFIG.API_URL}/api/handle-upload/`
 };
