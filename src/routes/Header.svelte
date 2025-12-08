@@ -20,12 +20,12 @@
 			<li aria-current={$page.url.pathname === base + '/' ? 'page' : undefined}>
 				<a href="{base}/">Home</a>
 			</li>
-			<li aria-current={$page.url.pathname === base + '/about' ? 'page' : undefined}>
+			<!-- <li aria-current={$page.url.pathname === base + '/about' ? 'page' : undefined}>
 				<a href="{base}/about">About</a>
 			</li>
 			<li aria-current={$page.url.pathname.startsWith(base + '/sverdle') ? 'page' : undefined}>
 				<a href="{base}/sverdle">Sverdle</a>
-			</li>
+			</li> -->
 			<li aria-current={$page.url.pathname === base + '/scene-3d' ? 'page' : undefined}>
 				<a href="{base}/scene-3d">Scene 3D</a>
 			</li>
@@ -47,21 +47,21 @@
 			<li aria-current={$page.url.pathname === base + '/films' ? 'page' : undefined}>
 				<a href="{base}/films">films</a>
 			</li>
-			<li aria-current={$page.url.pathname === base + '/app/' ? 'page' : undefined}> 
-				<a href="{base}/app/">App</a> 
-			</li> 
+			<li aria-current={$page.url.pathname === base + '/app/' ? 'page' : undefined}>
+				<a href="{base}/app/">App</a>
+			</li>
 			<li aria-current={$page.url.pathname === base + '/mdwd/' ? 'page' : undefined}>
 				<a href="{base}/mdwd/">mdwd</a>
-			</li> 
+			</li>
 			<li aria-current={$page.url.pathname === base + '/bibi/' ? 'page' : undefined}>
 				<a href="{base}/bibi/">Bibi</a>
 			</li>
 			<li aria-current={$page.url.pathname === base + '/planet/' ? 'page' : undefined}>
 				<a href="{base}/planet/">Planet</a>
 			</li>
-			<li aria-current={$page.url.pathname === base + '/fkisios-main/' ? 'page' : undefined}>
+			<!-- <li aria-current={$page.url.pathname === base + '/fkisios-main/' ? 'page' : undefined}>
 				<a href="{base}/fkisios-main/">GameZ</a>
-			</li>
+			</li> -->
 		</ul>
 		<svg viewBox="0 0 2 3" aria-hidden="true">
 			<path d="M0,0 L0,3 C0.5,3 0.5,3 1,2 L2,0 Z" />
@@ -69,7 +69,7 @@
 	</nav>
 
 	<div class="corner">
-		<a href="https://github.com/Kayden1412/Sverdle">
+		<a href="https://github.com/dvrch/dv-threlte-starter">
 			<img src={github} alt="GitHub" />
 		</a>
 	</div>

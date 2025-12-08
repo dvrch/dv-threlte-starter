@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
-	import { Float, Grid } from '@threlte/extras';
+	import { Float, Grid, HTML } from '@threlte/extras';
 	import Dynamic3DModel from '$lib/components/Dynamic3DModel.svelte';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
@@ -50,13 +50,15 @@
 	});
 </script>
 
-{#if error}
-	<p class="error">Erreur: {error}</p>
-{:else if loading}
-	<p class="loading">Chargement des géométries...</p>
-{:else if geometries.length === 0}
-	<p class="empty">Aucune géométrie trouvée</p>
-{/if}
+<HTML center>
+	{#if error}
+		<p class="error">Erreur: {error}</p>
+	{:else if loading}
+		<p class="loading">Chargement des géométries...</p>
+	{:else if geometries.length === 0}
+		<p class="empty">Aucune géométrie trouvée</p>
+	{/if}
+</HTML>
 
 <Grid />
 

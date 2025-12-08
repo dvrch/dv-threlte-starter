@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Header from '../Header.svelte';
+
     let { children } = $props();
     import AddGeometry from './AddGeometry.svelte';
     import { page } from '$app/stores';
@@ -23,7 +23,7 @@
 </script>
 
 <div class="app" class:is-app-route={$page.url.pathname.startsWith('/app') || $page.url.pathname.startsWith('/vague')}>
-    <Header />
+
     <main class:full-screen={$page.url.pathname.startsWith('/app') || $page.url.pathname.startsWith('/vague')}>
         <!-- 3D Canvas -->
         <div class="canvas-container">
@@ -39,7 +39,7 @@
         </div>
         <!-- UI Controls -->
         <div class="ui-controls">
-            <button class="toggle-form" on:click={toggleForm} aria-label="Toggle Add Geometry Form">
+            <button class="toggle-form" onclick={toggleForm} aria-label="Toggle Add Geometry Form">
                 {#if $showForm}✖ Close Form{:else}+ Add Geometry{/if}
             </button>
             {#if $showForm}
