@@ -24,8 +24,9 @@
 			}
 
 			const data = await response.json();
+			const results = Array.isArray(data) ? data : data.results || [];
 			// Filter out geometries that expect an URL but have none
-			geometries = (data.results || []).filter((g: any) => {
+			geometries = results.filter((g: any) => {
 				if (g.type === 'gltf_model' || g.type === 'glb') {
 					return g.model_url && g.model_url.trim() !== '';
 				}

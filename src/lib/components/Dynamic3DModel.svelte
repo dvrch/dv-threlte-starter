@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
-	let { children } = $props();
 	import GltfModel from '$lib/components/GltfModel.svelte';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte'; // Need onMount for dynamic imports
