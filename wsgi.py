@@ -7,8 +7,10 @@ import os
 import sys
 
 # Ajouter backend au PYTHONPATH
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'backend'))
+backend_path = os.path.join(os.path.dirname(__file__), 'backend')
+sys.path.insert(0, backend_path)
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
 
-from backend.wsgi import application
+# Importer l'application depuis backend/wsgi.py
+from wsgi import application
