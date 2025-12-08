@@ -3,14 +3,12 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { writable } from 'svelte/store';
 	import Nissangame from './nissangame.svelte';
-	//import Garden from './models/garden.svelte'; // Temporarily disabled - 404 on GLB file
 	import { T } from '@threlte/core';
-	import { ContactShadows, Float, Grid, OrbitControls, useGltf } from '@threlte/extras';
+	import { ContactShadows, Float, Grid, OrbitControls } from '@threlte/extras';
 	import Bloom from './models/bloom.svelte';
-	//import Nissan from './models/Nissan.svelte'; // Temporarily disabled - restProps error
 	import AddGeometry from './AddGeometry.svelte';
 	import { addToast } from '$lib/stores/toasts';
-	import GltfModel from '$lib/components/GltfModel.svelte'; // Importer le nouveau composant
+	import GltfModel from '$lib/components/GltfModel.svelte';
 
 	import Tissus from '../bibi/tissus-simulat.svelte';
 	import Bibanime from '../bibi/bibanime.svelte';
@@ -18,24 +16,8 @@
 	import Spaceship from '../Spaceship/+page.svelte';
 	import Desk from '../desksc/+page.svelte';
 
-	import { getAssetUrl } from '$lib/asset-helper';
-	import { API_ENDPOINTS } from '$lib/config';
-
-	type Position = {
-		x: number;
-		y: number;
-		z: number;
-	};
-
-	type Geometry = {
-		id: string;
-		position: Position;
-		rotation: Position;
-		type: string;
-		color: string;
-		name: string;
-		model_url?: string; // Rendre model_url optionnel
-	};
+    import { assets } from '$lib/services/assets';
+    import { GeometriesRepository, type Geometry } from '$lib/repositories/geometries';
 
 	let geometries: Geometry[] = [];
 
@@ -47,10 +29,7 @@
 
 	const deleteGeometry = async (id: string) => {
 		try {
-			const response = await fetch(`${API_ENDPOINTS.GEOMETRIES}${id}/`, {
-				method: 'DELETE'
-			});
-			if (!response.ok) throw new Error('Failed to delete geometry');
+            await GeometriesRepository.delete(id);
 			loadGeometries();
 			addToast('Geometry deleted successfully!', 'success');
 		} catch (error) {
@@ -61,23 +40,11 @@
 
 	const loadGeometries = async () => {
 		try {
-			console.log('Fetching from:', API_ENDPOINTS.GEOMETRIES);
-			const response = await fetch(API_ENDPOINTS.GEOMETRIES, {
-				headers: { Accept: 'application/json' }
-			});
+            const data = await GeometriesRepository.getAll();
+			console.log('Loaded geometries:', data);
 
-			console.log('Response status (Geometries):', response.status);
-			const text = await response.text();
-			// console.log('Response text (Geometries, first 500 chars):', text.substring(0, 500));
-
-			if (!response.ok) {
-				throw new Error(`HTTP ${response.status}: ${text}`);
-			}
-
-			const data = JSON.parse(text);
-			console.log('Parsed data (Geometries):', data);
-
-			if (data.results && Array.isArray(data.results)) {
+            // Gestion de la pagination Django Rest Framework (results) ou liste directe
+			if (data && 'results' in data && Array.isArray(data.results)) {
 				geometries = data.results;
 			} else if (Array.isArray(data)) {
 				geometries = data;
@@ -85,9 +52,9 @@
 				console.error('Unexpected data format for geometries:', data);
 				geometries = [];
 			}
-			console.log('Loaded geometries:', geometries);
 		} catch (error) {
 			console.error('Error loading geometries:', error);
+            // addToast('Error loading geometries', 'error'); // Optionnel
 		}
 	};
 
@@ -143,7 +110,7 @@
 	<Float floatIntensity={1} floatingRange={[0, 1]} on:click={() => handleGeometryClick(geometry)}>
 		{#if geometry.model_url}
 			<GltfModel
-				url={getAssetUrl(geometry.model_url)}
+				url={assets.getUrl(geometry.model_url)}
 				position={geometry.position}
 				rotation={geometry.rotation}
 			/>
