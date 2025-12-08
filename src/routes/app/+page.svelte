@@ -10,10 +10,10 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 
-	onMount(async () => {
+	// Function to fetch geometries
+	const fetchGeometries = async () => {
 		try {
 			const apiUrl = API_ENDPOINTS.GEOMETRIES;
-
 			console.log('Fetching geometries from:', apiUrl);
 			const response = await fetch(apiUrl);
 
@@ -38,6 +38,14 @@
 		} finally {
 			loading = false;
 		}
+	};
+
+	onMount(async () => {
+		fetchGeometries();
+		window.addEventListener('modelAdded', fetchGeometries);
+		return () => {
+			window.removeEventListener('modelAdded', fetchGeometries);
+		};
 	});
 </script>
 

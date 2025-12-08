@@ -149,21 +149,21 @@
 			// 2. Submit Metadata to Django
 			const randomId = Math.random().toString(36).substring(2, 7);
 			const uniqueName = isEditing ? name : `${name || (file ? file.name : 'geo')}-${randomId}`;
-			
+
 			const geometryData = {
 				name: uniqueName,
 				type: type,
 				color: color,
 				position: position, // JSON automatically serialized
 				rotation: rotation,
-				model_url: modelUrl || undefined 
+				model_url: modelUrl || undefined
 			};
-			
+
 			// Si on edit et qu'on a pas changé le fichier, on ne met pas model_url (ou on garde l'ancien)
 			// Mais ici on simplifie: si modelUrl est vide, le backend garde l'ancien si PATCH/PUT partiel?
 			// Attention: pour PUT il faut tout envoyer. Pour PATCH c'est partiel.
 			// Ici on utilise PUT pour update complet ou POST pour create.
-			
+
 			// Si c'est un upload de fichier, on force le type 'gltf_model' pour le backend
 			if (file) {
 				geometryData.type = 'gltf_model';
@@ -173,7 +173,7 @@
 
 			let url = API_ENDPOINTS.GEOMETRIES;
 			let method = 'POST';
-			
+
 			if (isEditing && selectedGeometryId) {
 				url = `${url}${selectedGeometryId}/`;
 				method = 'PUT'; // Ou PATCH si on veut
@@ -182,9 +182,9 @@
 			// Envoi JSON uniquement ! Plus de FormData pour le fichier vers Django
 			const response = await fetch(url, {
 				method,
-				headers: { 
+				headers: {
 					'Content-Type': 'application/json',
-					'Accept': 'application/json'
+					Accept: 'application/json'
 				},
 				body: JSON.stringify(geometryData)
 			});
@@ -328,5 +328,96 @@
 </div>
 
 <style>
-	/* Styles are omitted for brevity, assuming they are complex and unchanged */
+	.form-container {
+		font-family: 'Inter', sans-serif;
+		color: #fff;
+		font-size: 0.85rem;
+		width: 100%;
+	}
+
+	h3 {
+		margin: 0 0 10px 0;
+		font-size: 1rem;
+		text-align: center;
+		color: #4db6ac;
+	}
+
+	form {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	input,
+	select,
+	button {
+		background: rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		color: white;
+		padding: 6px;
+		border-radius: 4px;
+		font-size: 0.8rem;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	input:focus,
+	select:focus {
+		outline: none;
+		border-color: #4db6ac;
+	}
+
+	.position-rotation {
+		display: flex;
+		gap: 5px;
+	}
+
+	.position-rotation > div {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	label {
+		font-size: 0.7rem;
+		color: #aaa;
+		margin-bottom: 2px;
+	}
+
+	.add-button {
+		background: #4db6ac;
+		color: black;
+		font-weight: bold;
+		cursor: pointer;
+		padding: 8px;
+		margin-top: 5px;
+	}
+
+	.add-button:hover {
+		background: #80cbc4;
+	}
+
+	.update-button {
+		background: #ffb74d;
+		color: black;
+		font-weight: bold;
+	}
+
+	.cancel-button {
+		background: transparent;
+		border: 1px solid #777;
+	}
+
+	.delete-section {
+		margin-top: 10px;
+		border-top: 1px solid rgba(255, 255, 255, 0.1);
+		padding-top: 10px;
+	}
+
+	.delete-button {
+		background: #ef5350;
+		color: white;
+		width: 100%;
+	}
 </style>
