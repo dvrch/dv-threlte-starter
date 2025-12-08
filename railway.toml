@@ -1,8 +1,0 @@
-# Railway détecte automatiquement Python via requirements.txt
-# Pas besoin de configuration complexe
-
-[build]
-builder = "NIXPACKS"
-
-[deploy]
-startCommand = "cd backend && gunicorn wsgi:application --bind 0.0.0.0:$PORT"
