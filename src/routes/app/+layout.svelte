@@ -29,6 +29,8 @@
         <div class="canvas-container">
             <Canvas>
                 <T.PerspectiveCamera makeDefault position={[-10, 10, 10]} fov={70}>
+                    <OrbitControls autoRotate enableZoom={true} minDistance={0} maxDistance={80} target={[0, 1.5, 0]} />
+                </T.PerspectiveCamera>
 
                 <T.DirectionalLight intensity={0.8} position={[5, 10, 0]} />
                 <T.AmbientLight intensity={0.2} />
