@@ -1,8 +1,7 @@
 <script lang="ts">
 	import Bibanime from '../bibi/bibanime.svelte';
 
-	import { T, Canvas } from '@threlte/core'
-	import { Grid, OrbitControls, TransformControls } from '@threlte/extras'
+	import { T } from '@threlte/core'
 	import * as Three from 'three'
 	const { DEG2RAD } = Three.MathUtils
 	import { onMount } from 'svelte';
@@ -69,21 +68,7 @@
 	});
 </script>
 
-<div class="scene-container">
-	<T.Scene>
+<Bibanime 
+	position={[bibanimePosition.x, bibanimePosition.y, bibanimePosition.z]} 
+	rotation={[bibanimeRotation.x, bibanimeRotation.y, bibanimeRotation.z]} />
 
-			<Bibanime 
-				position={[bibanimePosition.x, bibanimePosition.y, bibanimePosition.z]} 
-				rotation={[bibanimeRotation.x, bibanimeRotation.y, bibanimeRotation.z]} />
-		
-		</T.Scene>
-
-</div>
-
-<style>
-	.scene-container {
-		position: relative;
-		width: 100%;
-		height: 100vh;
-	}
-</style>

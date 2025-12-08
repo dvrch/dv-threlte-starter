@@ -16,7 +16,7 @@
   import { assets } from '$lib/services/assets';
 
   // Use the useGltf hook to load the model
-  const gltf = useGltf<THREE.Group>(assets.getUrl('/public/cloth_sim.glb'));
+  const gltf = useGltf<THREE.Group>('/public/cloth_sim.glb');
   gltf.catch(err => console.error('Failed to load cloth_sim.glb', err));
 
   // Animate the model using useTask

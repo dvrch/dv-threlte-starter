@@ -1,8 +1,4 @@
 <script lang="ts">
-	import { useTask, T } from '@threlte/core';
-	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-	import { TextureLoader, MeshStandardMaterial } from 'three';
-	import { OrbitControls } from '@threlte/extras';
 	import { writable } from 'svelte/store';
 	import * as THREE from 'three';
 
@@ -12,7 +8,7 @@
 	let currentTexture = writable(null);
   
 	// Path to your GLB model and textures
-	const glbPath = assets.getUrl('/public/cloth_sim.glb');
+	const glbPath = '/public/cloth_sim.glb'; // Corrected path for static asset
 	const textures = [assets.getUrl('/public/bibi.png')];
 	let activeTextureIndex = 0;
   
@@ -69,10 +65,6 @@
 	  }
 	});
 </script>
-
-<T.PerspectiveCamera makeDefault position={[0, 5, 10]} fov={75}>
-    <OrbitControls />
-</T.PerspectiveCamera>
 
 <T.AmbientLight intensity={0.5} />
 <T.DirectionalLight position={[5, 5, 5]} intensity={1} />

@@ -16,7 +16,7 @@
 	import { assets } from '$lib/services/assets';
 
 	// Load the GLTF model
-	const gltfPromise = useGltf<THREE.Group>(assets.getUrl('/public/bibi.glb'));
+	const gltfPromise = useGltf<THREE.Group>('/public/bibi.glb');
 	let gltf = $state();
 	gltfPromise.then((res) => (gltf = res)).catch(err => {
 		console.error('Failed to load bibi.glb', err);
