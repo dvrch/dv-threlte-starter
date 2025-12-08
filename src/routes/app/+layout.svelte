@@ -1,111 +1,111 @@
 <script lang="ts">
-    import { Canvas } from '@threlte/core'
-    import { T } from '@threlte/core'
-    import { Grid, OrbitControls, ContactShadows } from '@threlte/extras'
+    import Header from '../Header.svelte';
+    import AddGeometry from './AddGeometry.svelte';
+    import { page } from '$app/stores';
+    import { writable } from 'svelte/store';
+    import { onMount } from 'svelte';
+    import { Canvas } from '@threlte/core';
+    import { T } from '@threlte/core';
+    import { Grid, OrbitControls, ContactShadows } from '@threlte/extras';
     import Bloom from './models/bloom.svelte';
-    import Tabs from './Tabs.svelte'
-    import AddGeometry from './AddGeometry.svelte'
-    import { browser } from '$app/environment'
 
-    let { children } = $props();
+    // UI state
+    const showForm = writable(false);
+    const toggleForm = () => showForm.update(v => !v);
 
-    let activeTab: 'scene' | 'add' | 'upload' = $state('scene')
-    function handleTabChange(event: CustomEvent) {
-        activeTab = event.detail
-    }
-
-    import { onMount } from 'svelte'
-    
-    if (typeof window !== 'undefined') {
-        window.addEventListener('app:switchTab', (e: any) => {
-            if (e?.detail) activeTab = e.detail
-        })
-    }
+    // Ensure normal scrolling for all routes
+    onMount(() => {
+        if (typeof document !== 'undefined') {
+            document.body.style.overflow = '';
+        }
+    });
 </script>
 
-<div class="app-layout-container">
-    <div class="canvas-background">
-        <Canvas>
-            <T.PerspectiveCamera makeDefault position={[-10, 10, 10]} fov={70}>
+<div class="app" class:is-app-route={$page.url.pathname.startsWith('/app') || $page.url.pathname.startsWith('/vague')}>
+    <Header />
+    <main class:full-screen={$page.url.pathname.startsWith('/app') || $page.url.pathname.startsWith('/vague')}>
+        <!-- 3D Canvas -->
+        <div class="canvas-container">
+            <Canvas>
+                <T.PerspectiveCamera makeDefault position={[-10, 10, 10]} fov={70} />
                 <OrbitControls autoRotate enableZoom={true} minDistance={0} maxDistance={80} target={[0, 1.5, 0]} />
-            </T.PerspectiveCamera>
-
-            <T.DirectionalLight intensity={0.8} position={[5, 10, 0]} />
-            <T.AmbientLight intensity={0.2} />
-
-            <Grid position={[0, -0.001, 0]} cellColor="#ffffff" sectionColor="#ffffff" sectionThickness={0} fadeDistance={25} cellSize={2} />
-            <ContactShadows scale={10} blur={2} far={2.5} opacity={0.5} />
-            <!-- {@render children()} calls the page content which might contain 3D objects as well or HTML. If specific page content is HTML, it won't render inside Canvas. But +page.svelte contains Dynamic3DModel which IS 3D. -->
-            
-            <!-- Note: +page.svelte seems to mix HTML and 3D components. 
-                 If +page.svelte has HTML (like error messages), it cannot be inside <Canvas>.
-                 However, the previous code had {@render children()} inside <Canvas>.
-                 Let's check +page.svelte again. It has HTML <p> tags AND <T.Mesh>.
-                 SvelteKit + Threlte: You can't put HTML inside <Canvas> without <HTML> component.
-                 The previous layout likely worked because the children were mostly 3D or ignoring HTML? 
-                 Actually the previous code had {@render children()} inside <Canvas>.
-                 This implies +page.svelte only returned 3D nodes?
-                 But +page.svelte has <p class="error"> etc. This would likely cause issues or be invisible.
-                 
-                 Let's maintain the structure but fix the CSS.
-            -->
-            {@render children()}
-        </Canvas>
-    </div>
-
-    <!-- UI Overlay for AddGeometry -->
-    <div class="ui-overlay">
-        <Tabs on:tabChange={handleTabChange} />
-        {#if activeTab === 'add'}
-            <div class="form-wrapper">
-                <AddGeometry />
-            </div>
-        {/if}
-    </div>
+                <T.DirectionalLight intensity={0.8} position={[5, 10, 0]} />
+                <T.AmbientLight intensity={0.2} />
+                <Grid position={[0, -0.001, 0]} cellColor="#ffffff" sectionColor="#ffffff" sectionThickness={0} fadeDistance={25} cellSize={2} />
+                <ContactShadows scale={10} blur={2} far={2.5} opacity={0.5} />
+                {@render children()}
+            </Canvas>
+        </div>
+        <!-- UI Controls -->
+        <div class="ui-controls">
+            <button class="toggle-form" on:click={toggleForm} aria-label="Toggle Add Geometry Form">
+                {#if $showForm}✖ Close Form{:else}+ Add Geometry{/if}
+            </button>
+            {#if $showForm}
+                <div class="form-wrapper">
+                    <AddGeometry />
+                </div>
+            {/if}
+        </div>
+    </main>
+    {#if !$page.url.pathname.startsWith('/app') && !$page.url.pathname.startsWith('/vague')}
+        <footer>
+            <p>© 2023 - PRESENT</p>
+        </footer>
+    {/if}
 </div>
 
 <style>
-    .app-layout-container {
+    :global(html) {
+        background: #121212; /* dark background */
+        color: #e0e0e0;   /* light text */
+        font-family: 'Inter', sans-serif;
+    }
+    .canvas-container {
         position: relative;
         width: 100%;
-        height: 80vh; /* Fixed height for the 3D view, allowing footer to exist below */
-        background: #111;
-        margin-top: 20px;
-        border-radius: 12px;
-        overflow: hidden;
+        height: 80vh; /* keep space for UI */
     }
-
-    .canvas-background {
+    .ui-controls {
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-    }
-
-    .ui-overlay {
-        position: absolute;
-        top: 20px;
-        right: 20px;
+        top: 1rem;
+        right: 1rem;
         z-index: 10;
         display: flex;
         flex-direction: column;
-        align-items: flex-end; /* Align right */
-        pointer-events: none; /* Let clicks pass through */
+        align-items: flex-end;
     }
-
-    .ui-overlay :global(*) {
-        pointer-events: auto; /* Re-enable clicks on children */
+    .toggle-form {
+        background: #4db6ac;
+        color: #000;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-bottom: 0.5rem;
     }
-
     .form-wrapper {
-        margin-top: 10px;
-        background: rgba(0, 0, 0, 0.8);
-        padding: 10px;
+        background: rgba(0,0,0,0.85);
+        padding: 1rem;
         border-radius: 8px;
-        max-width: 300px; /* Small width */
-        max-height: 400px;
+        max-width: 320px;
+        max-height: 70vh;
         overflow-y: auto;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    @media (max-width: 600px) {
+        .canvas-container {
+            height: 60vh;
+        }
+        .ui-controls {
+            left: 50%;
+            right: auto;
+            transform: translateX(-50%);
+            top: 0.5rem;
+        }
+        .form-wrapper {
+            width: 90%;
+            left: 5%;
+        }
     }
 </style>
-
