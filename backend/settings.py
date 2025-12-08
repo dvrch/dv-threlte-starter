@@ -279,6 +279,11 @@ CORS_ALLOWED_ORIGINS = [
     "https://dv-threlte-starter.vercel.app",
 ]
 
+# Autoriser les sous-domaines Vercel (pour les previews)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://dv-threlte-starter-.*\.vercel\.app$",
+]
+
 # Ajouter dynamiquement l'URL Railway si elle existe
 RAILWAY_PUBLIC_DOMAIN = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
 if RAILWAY_PUBLIC_DOMAIN and f"https://{RAILWAY_PUBLIC_DOMAIN}" not in CORS_ALLOWED_ORIGINS:
