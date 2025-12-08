@@ -28,8 +28,8 @@
         <!-- 3D Canvas -->
         <div class="canvas-container">
             <Canvas>
-                <T.PerspectiveCamera makeDefault position={[-10, 10, 10]} fov={70} />
-                <OrbitControls autoRotate enableZoom={true} minDistance={0} maxDistance={80} target={[0, 1.5, 0]} />
+                <T.PerspectiveCamera makeDefault position={[-10, 10, 10]} fov={70}>
+
                 <T.DirectionalLight intensity={0.8} position={[5, 10, 0]} />
                 <T.AmbientLight intensity={0.2} />
                 <Grid position={[0, -0.001, 0]} cellColor="#ffffff" sectionColor="#ffffff" sectionThickness={0} fadeDistance={25} cellSize={2} />
@@ -86,7 +86,7 @@
         margin-bottom: 0.5rem;
     }
     .form-wrapper {
-        background: rgba(30, 30, 40, 0.85);
+        background: rgba(30, 30, 40, 0.6);
         backdrop-filter: blur(10px);
         padding: 1rem;
         border-radius: 8px;
