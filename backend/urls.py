@@ -40,8 +40,8 @@ urlpatterns = [
     # Redirection de la racine vers l'API
     path("", RedirectView.as_view(url="/api/", permanent=False)),
     # URLs de l'API - inclure les routeurs des applications
-    path("api/", include("backend.films.urls")),
     path("api/", include("backend.Base_threlte_dv.urls")),
+    path("api/", include("backend.films.urls")),
     # Interface d'administration
     path("admin/", admin.site.urls),
 ]
