@@ -9,7 +9,7 @@ const config = {
 		adapter: adapter()
 	},
 	compilerOptions: {
-		// runes: true // Pas nécessaire d'activer explicitement pour les dernières versions ou si erreur
+		runes: true
 	}
 };
 
