@@ -1,6 +1,9 @@
 {
 	"name": "chairs",
 	"version": "0.0.1",
+	"engines": {
+		"node": ">=20.0.0 <21.0.0"
+	},
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
