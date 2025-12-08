@@ -30,10 +30,10 @@
 	});
 	let file: File | null = $state(null); // State for the uploaded file
 
-	let geometries = $state([]);
+	let geometries = $state<any[]>([]);
 	let selectedGeometryId = $state('');
 	let isEditing = $state(false);
-	let types = $state([]);
+	let types = $state<string[]>([]);
 	let isLoading = $state(false);
 
 	const loadTypes = async () => {
@@ -129,7 +129,7 @@
 		}
 	};
 
-	import { upload } from '@vercel/blob/client';
+	// import { upload } from '@vercel/blob/client';
 
 	const handleSubmit = async () => {
 		isLoading = true;
@@ -137,20 +137,38 @@
 			let modelUrl = '';
 
 			// 1. Client-side Upload to Vercel Blob
+			// 1. Upload to Backend (Cloudinary via Django)
 			if (file) {
-				const blob = await upload(file.name, file, {
-					access: 'public',
-					handleUploadUrl: '/api/upload'
+				const formData = new FormData();
+				formData.append('file', file);
+
+				// Assuming the backend has an upload endpoint that returns { url: '...' }
+				// We use API_ENDPOINTS.UPLOAD_BLOB or fallback to a standard upload path
+				const uploadUrl = API_ENDPOINTS.UPLOAD_BLOB || `${API_ENDPOINTS.GEOMETRIES}upload/`;
+
+				console.log('Uploading file to:', uploadUrl);
+				const uploadResponse = await fetch(uploadUrl, {
+					method: 'POST',
+					body: formData
 				});
-				modelUrl = blob.url;
-				addToast('File uploaded to Blob!', 'success');
+
+				if (!uploadResponse.ok) {
+					const errText = await uploadResponse.text();
+					throw new Error(`Upload failed: ${uploadResponse.status} ${errText}`);
+				}
+
+				const uploadData = await uploadResponse.json();
+				modelUrl = uploadData.url || uploadData.file || uploadData.link;
+				if (!modelUrl) throw new Error('No URL returned from upload endpoint');
+
+				addToast('File uploaded successfully!', 'success');
 			}
 
 			// 2. Submit Metadata to Django
 			const randomId = Math.random().toString(36).substring(2, 7);
 			const uniqueName = isEditing ? name : `${name || (file ? file.name : 'geo')}-${randomId}`;
 
-			const geometryData = {
+			const geometryData: any = {
 				name: uniqueName,
 				type: type,
 				color: color,
@@ -305,7 +323,10 @@
 				id="file-upload"
 				type="file"
 				accept=".glb,.gltf"
-				onchange={(e) => (file = e.target.files?.[0] || null)}
+				onchange={(e) => {
+					const target = e.target as HTMLInputElement;
+					file = target.files?.[0] || null;
+				}}
 			/>
 			{#if file}
 				<p>Selected file: {file.name}</p>
