@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
+	let { children } = $props();
 	import GltfModel from '$lib/components/GltfModel.svelte';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte'; // Need onMount for dynamic imports
@@ -28,20 +29,30 @@
 	$effect(() => {
 		if (browser && DynamicComponentLoader) {
 			LoadedDynamicComponent = null; // Reset before loading new component
-			DynamicComponentLoader().then(module => {
-				LoadedDynamicComponent = module.default;
-			}).catch(error => {
-				console.error(`Failed to load dynamic component for type '${geometry.type}':`, error);
-				LoadedDynamicComponent = null;
-			});
+			DynamicComponentLoader()
+				.then((module) => {
+					LoadedDynamicComponent = module.default;
+				})
+				.catch((error) => {
+					console.error(`Failed to load dynamic component for type '${geometry.type}':`, error);
+					LoadedDynamicComponent = null;
+				});
 		} else {
 			LoadedDynamicComponent = null;
 		}
 	});
 
 	// reactive safe position/rotation arrays
-	const posArray = $derived([geometry?.position?.x ?? 0, geometry?.position?.y ?? 0, geometry?.position?.z ?? 0]);
-	const rotArray = $derived([geometry?.rotation?.x ?? 0, geometry?.rotation?.y ?? 0, geometry?.rotation?.z ?? 0]);
+	const posArray: [number, number, number] = $derived([
+		geometry?.position?.x ?? 0,
+		geometry?.position?.y ?? 0,
+		geometry?.position?.z ?? 0
+	]);
+	const rotArray: [number, number, number] = $derived([
+		geometry?.rotation?.x ?? 0,
+		geometry?.rotation?.y ?? 0,
+		geometry?.rotation?.z ?? 0
+	]);
 </script>
 
 {#if browser && geometry}
@@ -52,7 +63,11 @@
 			<Component {geometry} />
 		{:else if geometry.model_url && geometry.model_url.trim() !== ''}
 			<!-- 2. Render a generic GLTF model if model_url is present and valid -->
-			<GltfModel url={assets.getUrl(geometry.model_url)} />
+			<GltfModel
+				url={geometry.model_url && geometry.model_url.startsWith('http')
+					? geometry.model_url
+					: assets.getUrl(geometry.model_url)}
+			/>
 		{:else if geometry.type === 'box'}
 			<!-- 3. Render primitive shapes -->
 			<T.Mesh>

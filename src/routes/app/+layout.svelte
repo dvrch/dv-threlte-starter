@@ -1,5 +1,6 @@
 <script lang="ts">
     import Header from '../Header.svelte';
+    let { children } = $props();
     import AddGeometry from './AddGeometry.svelte';
     import { page } from '$app/stores';
     import { writable } from 'svelte/store';
