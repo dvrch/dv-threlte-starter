@@ -78,7 +78,7 @@
 
 	// Utiliser la boucle de rendu de Threlte pour l'animation
 	const clock = new THREE.Clock();
-	let t = 0;
+	let t = $state(0);
 	useTask(() => {
 		t += clock.getDelta();
 		animeGeometry(geometry, t);

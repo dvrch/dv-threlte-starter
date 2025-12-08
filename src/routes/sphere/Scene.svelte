@@ -16,8 +16,8 @@
 	const textures = [assets.getUrl('/public/bibi.png')];
 	let activeTextureIndex = 0;
   
-	let model = null; // To store the loaded 3D model
-	let mixer = null; // For animations
+	let model = $state(null); // To store the loaded 3D model
+	let mixer = $state(null); // For animations
 	let clock = new THREE.Clock(); // To manage animation time
   
 	// Load the GLB model
