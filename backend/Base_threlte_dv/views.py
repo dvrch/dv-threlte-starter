@@ -26,6 +26,7 @@ class GeometryViewSet(viewsets.ModelViewSet):
 
     queryset = Geometry.objects.all()
     serializer_class = GeometrySerializer
+    pagination_class = None
 
     def _upload_to_blob(self, file_obj):
         """
