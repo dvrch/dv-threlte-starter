@@ -353,7 +353,7 @@
 	button {
 		background: rgba(255, 255, 255, 0.1);
 		border: 1px solid rgba(255, 255, 255, 0.2);
-		color: white;
+		color: rgb(180, 175, 175);
 		padding: 6px;
 		border-radius: 4px;
 		font-size: 0.8rem;

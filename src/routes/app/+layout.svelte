@@ -65,7 +65,7 @@
     .canvas-container {
         position: relative;
         width: 100%;
-        height: 80vh; /* keep space for UI */
+        height: 100vh; /* keep space for UI */
     }
     .ui-controls {
         position: absolute;
@@ -86,7 +86,8 @@
         margin-bottom: 0.5rem;
     }
     .form-wrapper {
-        background: rgba(0,0,0,0.85);
+        background: rgba(30, 30, 40, 0.85);
+        backdrop-filter: blur(10px);
         padding: 1rem;
         border-radius: 8px;
         max-width: 320px;
