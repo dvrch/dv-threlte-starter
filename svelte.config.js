@@ -6,7 +6,10 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		runes: true
+		adapter: adapter()
+	},
+	compilerOptions: {
+		// runes: true // Pas nécessaire d'activer explicitement pour les dernières versions ou si erreur
 	}
 };
 
