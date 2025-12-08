@@ -12,5 +12,5 @@ sys.path.insert(0, backend_path)
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
 
-# Importer l'application depuis backend/wsgi.py
-from wsgi import application
+# Importer l'application depuis backend/wsgi.py (qui exporte 'app')
+from wsgi import app as application
