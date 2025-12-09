@@ -34,10 +34,9 @@
 
 {#if browser}
 <Bloom /> 
-{/if}
-
 <T.AmbientLight color="#ffffff" intensity={10} />
 <T.PointLight intensity={10} position={[1, 2, -4]} color="#76aac8" />
+{/if}
 
 
 
