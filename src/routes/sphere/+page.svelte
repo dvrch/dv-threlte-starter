@@ -1,15 +1,18 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import Scene from './Scene.svelte';
 	import './styles.css';
 
 	let sceneInstance: Scene;
 </script>
 
-<Scene bind:this={sceneInstance} />
+{#if browser}
+	<Scene bind:this={sceneInstance} />
 
-<div class="controls">
-	<button onclick={() => sceneInstance?.nextTexture()}>Change Texture</button>
-</div>
+	<div class="controls">
+		<button onclick={() => sceneInstance?.nextTexture()}>Change Texture</button>
+	</div>
+{/if}
 
 <style>
 	.controls {

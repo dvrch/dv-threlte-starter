@@ -19,6 +19,7 @@
 		"@neoconfetti/svelte": "^1.0.0",
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/adapter-static": "^3.0.0",
+		"@sveltejs/adapter-vercel": "^4.0.5",
 		"@sveltejs/kit": "^2.48.2",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"@threlte/rapier": "^3.2.0",

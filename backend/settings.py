@@ -156,41 +156,38 @@ ASGI_APPLICATION = "backend.asgi.application"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 # Configuration pour utiliser SQLite en local et PostgreSQL en production via une URL.
-# Vous devrez définir DATABASE_URL dans les variables d'environnement de Vercel.
+# Si DATABASE_URL est définie (en production sur Railway, Vercel, etc.), on utilise PostgreSQL.
+# Sinon, on utilise une base de données SQLite locale pour le développement.
+if "DATABASE_URL" in os.environ and os.environ.get("DATABASE_URL"):
+    DATABASE_URL = os.environ.get("DATABASE_URL")
 
-# Configuration de la base de données avec Neon
-DATABASE_URL = os.environ.get(
-    "DATABASE_URL",
-    "postgresql://neondb_owner:npg_zKtQE5JVDU0R@ep-lucky-truth-agdq4088-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require",
-)
+    # Parse l'URL de la base de données
+    db_config = dj_database_url.parse(DATABASE_URL)
 
-# Parse l'URL de la base de données
-db_config = dj_database_url.parse(DATABASE_URL)
+    # Configuration optimisée pour les services de DB cloud (Neon, Railway, etc.)
+    # La plupart exigent SSL.
+    db_config["OPTIONS"] = db_config.get("OPTIONS", {})
+    db_config["OPTIONS"].update(
+        {
+            "sslmode": "require",
+            "connect_timeout": 10,
+        }
+    )
 
-# Ensure OPTIONS dict exists
-if "OPTIONS" not in db_config:
-    db_config["OPTIONS"] = {}
+    # Réutilisation des connexions pour la performance
+    db_config["CONN_MAX_AGE"] = 600
+    # ATOMIC_REQUESTS=False est souvent recommandé pour pgbouncer/poolers
+    db_config["ATOMIC_REQUESTS"] = False
 
-# Configuration optimisée pour Neon Pooler sur Vercel
-db_config["OPTIONS"].update(
-    {
-        "sslmode": "require",
-        "connect_timeout": 10,
-        # NOTE: statement_timeout not supported by Neon Pooler - removed
+    DATABASES = {"default": db_config}
+else:
+    # Configuration pour le développement local (SQLite)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "backend" / "db.sqlite3",
+        }
     }
-)
-
-DATABASES = {"default": db_config}
-
-# Configuration des connexions pour la performance
-if DATABASE_URL and "neon" in DATABASE_URL:
-    # Configuration spécifique pour Neon DB avec pooling
-    DATABASES["default"]["CONN_MAX_AGE"] = (
-        600  # Réutiliser les connexions pendant 10 minutes
-    )
-    DATABASES["default"]["ATOMIC_REQUESTS"] = (
-        False  # Ne pas lier toutes les requêtes à une transaction
-    )
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -237,24 +234,24 @@ USE_CLOUDINARY = os.environ.get("USE_CLOUDINARY", "False") == "True"
 if USE_CLOUDINARY:
     # Cloudinary Storage (100% gratuit, 25GB)
     import cloudinary
-    import cloudinary.uploader
     import cloudinary.api
-    
+    import cloudinary.uploader
+
     CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
-        'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
-        'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+        "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME"),
+        "API_KEY": os.environ.get("CLOUDINARY_API_KEY"),
+        "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET"),
     }
-    
+
     cloudinary.config(
-        cloud_name=CLOUDINARY_STORAGE['CLOUD_NAME'],
-        api_key=CLOUDINARY_STORAGE['API_KEY'],
-        api_secret=CLOUDINARY_STORAGE['API_SECRET'],
-        secure=True
+        cloud_name=CLOUDINARY_STORAGE["CLOUD_NAME"],
+        api_key=CLOUDINARY_STORAGE["API_KEY"],
+        api_secret=CLOUDINARY_STORAGE["API_SECRET"],
+        secure=True,
     )
-    
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    
+
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
     # URL de base Cloudinary
     MEDIA_URL = f"https://res.cloudinary.com/{CLOUDINARY_STORAGE['CLOUD_NAME']}/"
 else:
@@ -292,7 +289,10 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 
 # Ajouter dynamiquement l'URL Railway si elle existe
 RAILWAY_PUBLIC_DOMAIN = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
-if RAILWAY_PUBLIC_DOMAIN and f"https://{RAILWAY_PUBLIC_DOMAIN}" not in CORS_ALLOWED_ORIGINS:
+if (
+    RAILWAY_PUBLIC_DOMAIN
+    and f"https://{RAILWAY_PUBLIC_DOMAIN}" not in CORS_ALLOWED_ORIGINS
+):
     CORS_ALLOWED_ORIGINS.append(f"https://{RAILWAY_PUBLIC_DOMAIN}")
 
 # Ajouter dynamiquement l'URL de prévisualisation de Vercel si elle existe
