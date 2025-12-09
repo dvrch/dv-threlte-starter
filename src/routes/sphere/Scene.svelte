@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { writable } from 'svelte/store';
 	import * as THREE from 'three';
+	import { onMount } from 'svelte'; // Added this import
 
 	import { assets } from '$lib/services/assets';
 
