@@ -42,6 +42,7 @@
 
 
 
+{#if browser}
 {#await  Promise.all(
 			modelNames.map(name => useGltf(`${name}.glb`)))
 	then results}
@@ -57,6 +58,9 @@
 		{/key}
 		
 {/await}
+{#else}
+<!-- Placeholder for SSR if needed, or just render nothing -->
+{/if}
 
 
 {#if browser}
