@@ -1,5 +1,6 @@
 import random
 import cloudinary # Added import for cloudinary
+from cloudinary_storage.storage import RawMediaCloudinaryStorage
 
 from django.db import models
 
@@ -24,6 +25,7 @@ class Geometry(models.Model):
         blank=True,
         null=True,
         help_text="Fichier 3D local (.glb, .gltf)",
+        storage=RawMediaCloudinaryStorage(),
     )
 
     # URL du modèle 3D (sera rempli automatiquement)
