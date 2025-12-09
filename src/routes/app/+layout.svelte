@@ -27,7 +27,7 @@
     <main class:full-screen={$page.url.pathname.startsWith('/app') || $page.url.pathname.startsWith('/vague')}>
         <!-- 3D Canvas -->
         <div class="canvas-container">
-            <Canvas>
+            <Canvas renderMode="always">
                 <T.PerspectiveCamera makeDefault position={[-10, 10, 10]} fov={70}>
                     <OrbitControls autoRotate enableZoom={true} minDistance={0} maxDistance={80} target={[0, 1.5, 0]} />
                 </T.PerspectiveCamera>

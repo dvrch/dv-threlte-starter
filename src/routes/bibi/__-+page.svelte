@@ -11,7 +11,7 @@
 	const defaultRotation: [number, number, number] = [0, 0, 0];
 </script>
 
-<Canvas>
+<Canvas renderMode="always">
 	
 	<T.PerspectiveCamera 
 		makeDefault 

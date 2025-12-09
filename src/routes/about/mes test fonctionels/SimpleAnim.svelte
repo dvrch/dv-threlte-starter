@@ -49,7 +49,7 @@ const clock = new THREE.Clock();
 </script>
 
 <div class="scene-container">
-  <Canvas>
+  <Canvas renderMode="always">
     <h1>Model Viewer</h1>
     <p>This is a simple model viewer that loads a 3D model and a texture.</p>
     <T.AmbientLight intensity={0.5} />

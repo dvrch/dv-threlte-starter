@@ -74,7 +74,7 @@
 </script>
 
 <div class="scene-container">
-  <Canvas>
+  <Canvas renderMode="always">
     <T.AmbientLight intensity={0.5} />
     <T.DirectionalLight position={[5, 10, 7.5]} intensity={1} />
     <T.PerspectiveCamera makeDefault position={[0, 1.5, 5]} fov={75}>

@@ -3,6 +3,6 @@
 	import Scene from './scene.svelte'
 </script>
 
-<Canvas>
+<Canvas renderMode="always">
 	<Scene />
 </Canvas>

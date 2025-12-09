@@ -10,7 +10,7 @@
 </script>
 
 <div>
-	<Canvas>
+	<Canvas renderMode="always">
 		<InteractivitySetup>
 			<T.DirectionalLight castShadow position={[3, 10, 10]} intensity={1.5} />
 			<T.AmbientLight intensity={0.5} />

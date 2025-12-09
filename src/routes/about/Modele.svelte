@@ -44,7 +44,7 @@
 </script>
 
 <div class="scene-container">
-  <Canvas>
+  <Canvas renderMode="always">
     <T.PerspectiveCamera makeDefault position={[0, 5, 10]} fov={75}>
       <OrbitControls />
     </T.PerspectiveCamera>

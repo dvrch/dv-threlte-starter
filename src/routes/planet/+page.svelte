@@ -7,7 +7,7 @@
 	let { data } = $props();
 </script>
 
-<Canvas>
+<Canvas renderMode="always">
 	<Earth />
 </Canvas>
 

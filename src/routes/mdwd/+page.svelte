@@ -22,7 +22,7 @@
 
 {#if activeTab === 'scene'}
 <div class="app-container" style="overflow: hidden; width: 92vw; height: 92vh; margin: 4vw 4vh;">
-  <Canvas>
+  <Canvas renderMode="always">
     <Scene />
   </Canvas>
   <div class="form-container">

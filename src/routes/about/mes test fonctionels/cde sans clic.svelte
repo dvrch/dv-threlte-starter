@@ -8,7 +8,7 @@
 </script>
 
 <div class="scene-container">
-  <Canvas>
+  <Canvas renderMode="always">
     <!-- Caméra -->
     <T.PerspectiveCamera 
       position={[0, 2, 5]} 
