@@ -16,48 +16,42 @@
 	let mixer = $state(null); // For animations
 	let clock = new THREE.Clock(); // To manage animation time
   
-	// Load the GLB model
-	const loadModel = async () => {
-		const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
-		const loader = new GLTFLoader();
-		loader.load(glbPath, (gltf) => {
-			model = gltf.scene;
-			if (gltf.animations.length > 0) {
-				mixer = new THREE.AnimationMixer(model);
-				const action = mixer.clipAction(gltf.animations[0]);
-				action.play();
-			}
-		}, undefined, (error) => {
-			console.error('An error happened loading the GLB model:', error);
-		});
-	};
-  
-	// Function to load a texture and update the material of the model
-	const changeTexture = async () => {
-		const { TextureLoader } = await import('three');
-		const { MeshStandardMaterial } = await import('three');
-		const textureLoader = new TextureLoader();
-		textureLoader.load(textures[activeTextureIndex], (texture) => {
-			currentTexture.set(texture);
-			if (model) {
-				model.traverse((child) => {
-					if (child.isMesh) {
-						child.material = new MeshStandardMaterial({ map: texture });
-					}
-				});
-			}
-		}, undefined, (error) => {
-			console.error('An error happened loading the texture:', error);
-		});
-	};
-  
-	// Switch to the next texture
-	export const nextTexture = () => {
-	  activeTextureIndex = (activeTextureIndex + 1) % textures.length;
-	  changeTexture();
-	};
-  
 	onMount(() => {
+		// Load the GLB model
+		const loadModel = async () => {
+			const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
+			const loader = new GLTFLoader();
+			loader.load(glbPath, (gltf) => {
+				model = gltf.scene;
+				if (gltf.animations.length > 0) {
+					mixer = new THREE.AnimationMixer(model);
+					const action = mixer.clipAction(gltf.animations[0]);
+					action.play();
+				}
+			}, undefined, (error) => {
+				console.error('An error happened loading the GLB model:', error);
+			});
+		};
+	  
+		// Function to load a texture and update the material of the model
+		const changeTexture = async () => {
+			const { TextureLoader } = await import('three');
+			const { MeshStandardMaterial } = await import('three');
+			const textureLoader = new TextureLoader();
+			textureLoader.load(textures[activeTextureIndex], (texture) => {
+				currentTexture.set(texture);
+				if (model) {
+					model.traverse((child) => {
+						if (child.isMesh) {
+							child.material = new MeshStandardMaterial({ map: texture });
+						}
+					});
+				}
+			}, undefined, (error) => {
+				console.error('An error happened loading the texture:', error);
+			});
+		};
+
 		loadModel();
 		changeTexture();
 		useTask(() => {
