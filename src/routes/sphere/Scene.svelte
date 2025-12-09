@@ -8,16 +8,16 @@
 	// Store to manage texture state
 	let currentTexture = writable(null);
   
-	// Path to your GLB model and textures
-	const glbPath = assets.getUrl('/public/cloth_sim.glb'); // Corrected path for static asset
-	const textures = [assets.getUrl('/public/bibi.png')];
-	let activeTextureIndex = 0;
-  
 	let model = $state(null); // To store the loaded 3D model
 	let mixer = $state(null); // For animations
 	let clock = new THREE.Clock(); // To manage animation time
   
 	onMount(() => {
+		// Path to your GLB model and textures
+		const glbPath = assets.getUrl('/public/cloth_sim.glb'); // Corrected path for static asset
+		const textures = [assets.getUrl('/public/bibi.png')];
+		let activeTextureIndex = 0; // Moved inside onMount as it depends on textures
+
 		// Load the GLB model
 		const loadModel = async () => {
 			const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
