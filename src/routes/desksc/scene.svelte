@@ -58,7 +58,7 @@
 		{/key}
 		
 {/await}
-{#else}
+{:else}
 <!-- Placeholder for SSR if needed, or just render nothing -->
 {/if}
 
