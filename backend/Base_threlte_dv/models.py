@@ -65,26 +65,30 @@ class Geometry(models.Model):
                 # Save again only if model_url actually changed to avoid infinite loop
                 super().save(update_fields=["model_url"])
 
-            # Parse Cloudinary URL to get public_id and resource_type
+            # Use the admin API to get full resource details
             try:
-                parsed_url = cloudinary.CloudinaryImage(self.model_url)
-                public_id = parsed_url.public_id
-                asset_type = parsed_url.resource_type # e.g., 'image', 'raw', 'video'
+                public_id_with_folder = '/'.join(self.model_file.url.split('/')[-2:])
+                public_id = public_id_with_folder.split('.')[0]
                 
-                if public_id:
+                resource_details = cloudinary.api.resource(public_id, resource_type="raw")
+                
+                if resource_details:
                     CloudinaryAsset.objects.update_or_create(
-                        public_id=public_id,
+                        public_id=resource_details.get("public_id"),
                         defaults={
-                            'url': self.model_url,
-                            'asset_type': asset_type,
+                            'asset_id': resource_details.get("asset_id"),
+                            'url': resource_details.get("secure_url"),
+                            'asset_type': resource_details.get("resource_type"),
                             'file_name': self.model_file.name,
+                            'format': resource_details.get("format"),
+                            'file_size': resource_details.get("bytes"),
+                            'tags': resource_details.get("tags", []),
+                            'metadata': resource_details.get("metadata", {}),
                         }
                     )
             except Exception as e:
-                print(f"Error processing Cloudinary URL for Geometry {self.pk}: {e}")
-                # Optionally, clear model_url if CloudinaryAsset creation failed
-                # self.model_url = ""
-                # super().save(update_fields=["model_url"])
+                print(f"Error fetching full resource details from Cloudinary for Geometry {self.pk}: {e}")
+
         elif self.model_file and not self.model_file.url.startswith('https://res.cloudinary.com/'):
             # This case means a file was provided but Cloudinary upload likely failed or returned a local path
             print(f"Warning: model_file provided for Geometry {self.pk} but did not result in a Cloudinary URL: {self.model_file.url}")
@@ -138,10 +142,15 @@ class BlobLog(models.Model):
 
 
 class CloudinaryAsset(models.Model):
+    asset_id = models.CharField(max_length=255, blank=True, null=True, help_text="Cloudinary Asset ID (unique, non-editable)")
     public_id = models.CharField(max_length=255, unique=True, help_text="Cloudinary Public ID")
     url = models.URLField(max_length=1024, help_text="URL de l'asset sur Cloudinary")
     asset_type = models.CharField(max_length=50, help_text="Type d'asset (image, video, raw, etc.)")
     file_name = models.CharField(max_length=255, blank=True, null=True, help_text="Nom original du fichier")
+    format = models.CharField(max_length=50, blank=True, help_text="Format du fichier (ex: glb, png)")
+    file_size = models.PositiveIntegerField(null=True, blank=True, help_text="Taille du fichier en octets")
+    tags = models.JSONField(default=list, blank=True, help_text="Tags associés à l'asset")
+    metadata = models.JSONField(default=dict, blank=True, help_text="Métadonnées additionnelles de Cloudinary")
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
