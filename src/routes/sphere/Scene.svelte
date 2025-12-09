@@ -58,16 +58,22 @@
 	changeTexture();
   
 	// Animate the model every frame
-	useTask(() => {
-	  if (mixer) {
-		const delta = clock.getDelta();
-		mixer.update(delta);
-	  }
+	onMount(() => {
+		useTask(() => {
+			if (mixer) {
+				const delta = clock.getDelta();
+				mixer.update(delta);
+			}
+		});
 	});
 </script>
 
+{#if browser}
 <T.AmbientLight intensity={0.5} />
 <T.DirectionalLight position={[5, 5, 5]} intensity={1} />
 {#if model}
     <T is={model} />
+{/if}
+{:else}
+<!-- Placeholder for SSR if needed, or just render nothing -->
 {/if}
