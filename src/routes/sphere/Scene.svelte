@@ -8,7 +8,7 @@
 	let currentTexture = writable(null);
   
 	// Path to your GLB model and textures
-	const glbPath = '/public/cloth_sim.glb'; // Corrected path for static asset
+	const glbPath = assets.getUrl('/public/cloth_sim.glb'); // Corrected path for static asset
 	const textures = [assets.getUrl('/public/bibi.png')];
 	let activeTextureIndex = 0;
   
