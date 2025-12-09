@@ -45,6 +45,12 @@ ALLOWED_HOSTS = [
     ".now.sh",  # For Vercel
     ".railway.app",  # For Railway deployment
     "dv-threlte-starter.vercel.app",
+    "dv-threlte-starter-production.up.railway.app",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://dv-threlte-starter-production.up.railway.app",
+    "https://dv-threlte-starter.vercel.app",
 ]
 
 # Ajouter les domaines depuis les variables d'environnement Vercel
