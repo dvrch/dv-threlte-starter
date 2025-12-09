@@ -45,22 +45,28 @@ class Geometry(models.Model):
     color = models.CharField(max_length=7, blank=True, default="#000000")  # Couleur
 
     def save(self, *args, **kwargs):
-        # Save the Geometry instance first to ensure model_file is processed
         is_new = self.pk is None
-        super().save(*args, **kwargs)
+        
+        # Store original model_file to check if it changed
+        original_model_file_url = ""
+        if not is_new:
+            try:
+                original_model_file_url = Geometry.objects.get(pk=self.pk).model_file.url
+            except Geometry.DoesNotExist:
+                pass # Object might have been deleted and recreated quickly
 
-        # If a model_file was provided and model_url was updated by Cloudinary storage
-        if self.model_file and self.model_url and self.model_url != self.model_file.url:
-            # Ensure model_url is updated if it wasn't already
-            if not is_new and self.model_url != self.model_file.url:
+        super().save(*args, **kwargs) # This triggers Cloudinary upload if model_file is set
+
+        # If model_file was provided and it resulted in a valid Cloudinary URL
+        if self.model_file and self.model_file.url and self.model_file.url.startswith('https://res.cloudinary.com/'):
+            # Ensure model_url is updated to the Cloudinary URL
+            if self.model_url != self.model_file.url:
                 self.model_url = self.model_file.url
+                # Save again only if model_url actually changed to avoid infinite loop
                 super().save(update_fields=["model_url"])
 
             # Parse Cloudinary URL to get public_id and resource_type
             try:
-                # Cloudinary URLs are typically structured like:
-                # https://res.cloudinary.com/<cloud_name>/<resource_type>/upload/.../<public_id>
-                # We need to extract public_id and resource_type
                 parsed_url = cloudinary.CloudinaryImage(self.model_url)
                 public_id = parsed_url.public_id
                 asset_type = parsed_url.resource_type # e.g., 'image', 'raw', 'video'
@@ -76,6 +82,29 @@ class Geometry(models.Model):
                     )
             except Exception as e:
                 print(f"Error processing Cloudinary URL for Geometry {self.pk}: {e}")
+                # Optionally, clear model_url if CloudinaryAsset creation failed
+                # self.model_url = ""
+                # super().save(update_fields=["model_url"])
+        elif self.model_file and not self.model_file.url.startswith('https://res.cloudinary.com/'):
+            # This case means a file was provided but Cloudinary upload likely failed or returned a local path
+            print(f"Warning: model_file provided for Geometry {self.pk} but did not result in a Cloudinary URL: {self.model_file.url}")
+            # Clear model_url if Cloudinary upload failed
+            if self.model_url:
+                self.model_url = ""
+                super().save(update_fields=["model_url"])
+        elif not self.model_file and self.model_url:
+            # If model_file is cleared but model_url still exists, clear CloudinaryAsset and model_url
+            try:
+                parsed_url = cloudinary.CloudinaryImage(self.model_url)
+                public_id = parsed_url.public_id
+                if public_id:
+                    CloudinaryAsset.objects.filter(public_id=public_id).delete()
+            except Exception as e:
+                print(f"Error cleaning up CloudinaryAsset for Geometry {self.pk}: {e}")
+            
+            self.model_url = ""
+            super().save(update_fields=["model_url"])
+
 
     def clean(self):
         if hasattr(self, "color") and self.color and not self.color.startswith("#"):
