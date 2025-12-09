@@ -57,11 +57,9 @@
 	  changeTexture();
 	};
   
-	loadModel();
-	changeTexture();
-  
-	// Animate the model every frame
 	onMount(() => {
+		loadModel();
+		changeTexture();
 		useTask(() => {
 			if (mixer) {
 				const delta = clock.getDelta();
