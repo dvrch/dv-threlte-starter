@@ -1,69 +1,61 @@
 <script lang="ts">
-  import { onMount, createEventDispatcher } from 'svelte';
-  import { initSn } from './demo_09.js';
-  import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-  import * as THREE from 'three';
+	import { onMount, createEventDispatcher } from 'svelte';
+	import { initSn } from './demo_09.js';
+	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+	import * as THREE from 'three';
+	import { AssetManager } from '$lib/config';
 
+	let { width = 100, height = 100 } = $props();
 
-  let { width = 100 } = $props();
-  let { height = 100 } = $props();
+	let canvas: HTMLCanvasElement;
+	let animationId: number;
+	let controls: OrbitControls;
 
-  let canvas: HTMLCanvasElement;
-  let animationId: number;
-  let controls: OrbitControls;
+	const dispatch = createEventDispatcher();
 
-  const dispatch = createEventDispatcher();
+	onMount(() => {
+		let cleanup: (() => void) | undefined;
 
-  onMount(() => {
-    let cleanup: (() => void) | undefined;
+		if (canvas) {
+			initSn(canvas)
+				.then(({ renderer, scene, camera, animate }) => {
+					if (camera) {
+						controls = new OrbitControls(camera, renderer.domElement);
 
-    if (canvas) {
-      initSn(canvas).then(({ renderer, scene, camera, animate }) => {
-        if (camera) {
-          controls = new OrbitControls(camera, renderer.domElement);
+						function loop() {
+							scene.rotation.y += 0.01;
+							animate();
+							controls.update();
+							renderer.render(scene, camera);
+							dispatch('render', { scene, camera, renderer });
+							animationId = requestAnimationFrame(loop);
+						}
 
+						loop();
 
-          function loop() {
-            scene.rotation.y += 0.01;
-            animate();
-            controls.update();
-            renderer.render(scene, camera);
-            dispatch('render', { scene, camera, renderer });
-            animationId = requestAnimationFrame(loop);
-          }
-          
-          loop();
-          
-          cleanup = () => {
-            cancelAnimationFrame(animationId);
-            renderer.dispose();
-            controls.dispose();
-          };
+						cleanup = () => {
+							cancelAnimationFrame(animationId);
+							renderer.dispose();
+							controls.dispose();
+						};
 
-          dispatch('sceneInitialized', { scene, camera, renderer, controls });
-        } else {
-          console.error("La caméra n'est pas définie.");
-        }
-      }).catch(error => {
-        console.error("Erreur lors de l'initialisation de la scène:", error);
-      });
-    }
+						dispatch('sceneInitialized', { scene, camera, renderer, controls });
+					} else {
+						console.error("La caméra n'est pas définie.");
+					}
+				})
+				.catch((error) => {
+					console.error("Erreur lors de l'initialisation de la scène:", error);
+				});
+		}
 
-    return () => {
-      cleanup?.();
-    };
-  });
+		return () => {
+			cleanup?.();
+		};
+	});
 </script>
 
-<canvas bind:this={canvas} {width} {height}></canvas>
-
-<style>
-  canvas {
-    width: 100%;
-    height: 100%;
-  }
-</style>
-
+<canvas bind:this={canvas} {width} {height} />
 
 <!--
 <script lang="ts">
@@ -92,10 +84,10 @@
     const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
     camera.position.set(0, 1.5, 5.2);
 
-    let gltf = await new GLTFLoader().loadAsync('/public/cloth_sim.glb');
+    let gltf = await new GLTFLoader().loadAsync(AssetManager.getAssetUrl('public/cloth_sim.glb'));
     const mesh = gltf.scene.children[0] as THREE.Mesh;
     
-    let texture = await new THREE.TextureLoader().loadAsync('/public/bibi.png');
+    let texture = await new THREE.TextureLoader().loadAsync(AssetManager.getAssetUrl('public/bibi.png'));
     
     if (mesh.material) {
       mesh.material = new THREE.MeshPhongMaterial({ map: texture, shininess: 10 });
@@ -211,3 +203,10 @@
   }
 </style>
 -->
+
+<style>
+	canvas {
+		width: 100%;
+		height: 100%;
+	}
+</style>

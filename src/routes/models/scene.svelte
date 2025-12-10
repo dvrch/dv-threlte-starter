@@ -1,24 +1,25 @@
 <script lang="ts">
-	import { T, useTask } from '@threlte/core'
-	import { OrbitControls, useGltf } from '@threlte/extras'
-	import { AmbientLight, PointLight } from 'three' // Importer les lumières de Three.js
+	import { T, useTask } from '@threlte/core';
+	import { OrbitControls, useGltf } from '@threlte/extras';
+	import { AmbientLight, PointLight } from 'three'; // Importer les lumières de Three.js
+	import { AssetManager } from '$lib/config';
 
-	let y = $state(2)
-	let rotation = $state(0)
+	let y = $state(2);
+	let rotation = $state(0);
 
 	function levitate() {
-		const time = Date.now() / 1000
-		const speed = 1
-		const offset = 3
-		y = Math.sin(time * speed) + offset
-		requestAnimationFrame(levitate)
+		const time = Date.now() / 1000;
+		const speed = 1;
+		const offset = 3;
+		y = Math.sin(time * speed) + offset;
+		requestAnimationFrame(levitate);
 	}
 
-	useTask((_, delta) => {
-		rotation += delta * 0.4
-	})
+	useTask((delta: number) => {
+		rotation += delta * 0.4;
+	});
 
-	levitate()
+	levitate();
 </script>
 
 <!-- <Bloom /> -->
@@ -30,15 +31,14 @@
 <!-- <T.AmbientLight color="#8f00ff" intensity={1} /> -->
 <T.PointLight intensity={10} position={[1, 2, -4]} color="#76aac8" />
 
-{#await useGltf('/assets/ghost.glb') then ghost}
+{#await useGltf(AssetManager.getAssetUrl('assets/ghost.glb')) then ghost}
 	<T is={ghost.scene} position={[0, y, 0]} scale={0.4} />
 {/await}
 
-{#await useGltf('/assets/garden.glb') then garden}
+{#await useGltf(AssetManager.getAssetUrl('assets/garden.glb')) then garden}
 	<T is={garden.scene} rotation.y={rotation} />
 {/await}
 
-{#await useGltf('/public/nissan2.glb') then nissan}
+{#await useGltf(AssetManager.getAssetUrl('public/nissan2.glb')) then nissan}
 	<T is={nissan.scene} position={[2, y, 1]} scale={0.4} />
 {/await}
-

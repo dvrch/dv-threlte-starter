@@ -1,54 +1,56 @@
 <script lang="ts">
-  import { T, useTask } from '@threlte/core';
-  import { useGltf } from '@threlte/extras';
-  import * as THREE from 'three';
+	import { T, useTask } from '@threlte/core';
+	import { useGltf } from '@threlte/extras';
+	import * as THREE from 'three';
+	import { AssetManager } from '$lib/config';
 
-  let {
-    position = [0, 0, 0],
-    rotation = [0, 0, 0],
-    scale = 1
-  }: {
-    position?: [number, number, number];
-    rotation?: [number, number, number];
-    scale?: number | [number, number, number];
-  } = $props();
+	let {
+		position = [0, 0, 0],
+		rotation = [0, 0, 0],
+		scale = 1
+	}: {
+		position?: [number, number, number];
+		rotation?: [number, number, number];
+		scale?: number | [number, number, number];
+	} = $props();
 
-  import { assets } from '$lib/services/assets';
+	// Use the useGltf hook to load the model
+	const gltf = useGltf(AssetManager.getAssetUrl('public/cloth_sim.glb'));
 
-  // Use the useGltf hook to load the model
-  const gltf = useGltf<THREE.Group>('/public/cloth_sim.glb');
-  gltf.catch(err => console.error('Failed to load cloth_sim.glb', err));
+	// Animate the model using useTask
+	let mixer: THREE.AnimationMixer | undefined;
+	useTask((delta: number) => {
+		if (!mixer) return;
+		mixer.update(delta);
+	});
 
-  // Animate the model using useTask
-  let mixer: THREE.AnimationMixer | undefined;
-  useTask((_, delta) => {
-    if (!mixer) return;
-    mixer.update(delta);
-  });
+	// When the model is loaded, set up the animation mixer
+	$effect(() => {
+		if (gltf) {
+			gltf
+				.then((loadedGltf) => {
+					mixer = new THREE.AnimationMixer(loadedGltf.scene);
+					loadedGltf.animations.forEach((clip: any) => {
+						mixer?.clipAction(clip).play();
+					});
+				})
+				.catch((err: any) => console.error('Failed to load cloth_sim.glb', err));
+		}
+	});
 
-  // When the model is loaded, set up the animation mixer
-  $effect(() => {
-    if (gltf) {
-      mixer = new THREE.AnimationMixer(gltf.scene);
-      gltf.animations.forEach((clip) => {
-        mixer?.clipAction(clip).play();
-      });
-    }
-  });
-
-    // Optional: Apply a texture if needed, assuming the model has a mesh
-    // const textureLoader = new THREE.TextureLoader();
-    // textureLoader.load('/public/zaki.png', (texture) => {
-    //   gltf.scene.traverse((child) => {
-    //     if (child instanceof THREE.Mesh) {
-    //       child.material = new THREE.MeshPhongMaterial({ map: texture, shininess: 10 });
-    //     }
-    //   });
-    // });
+	// Optional: Apply a texture if needed, assuming the model has a mesh
+	// const textureLoader = new THREE.TextureLoader();
+	// textureLoader.load('/public/zaki.png', (texture) => {
+	//   gltf.scene.traverse((child) => {
+	//     if (child instanceof THREE.Mesh) {
+	//       child.material = new THREE.MeshPhongMaterial({ map: texture, shininess: 10 });
+	//     }
+	//   });
+	// });
 </script>
 
-{#if gltf}
-  <T.Group {position} {rotation} {scale}>
-    <T is={gltf.scene} />
-  </T.Group>
-{/if}
+{#await gltf then loadedGltf}
+	<T.Group {position} {rotation} {scale}>
+		<T is={loadedGltf.scene} />
+	</T.Group>
+{/await}
