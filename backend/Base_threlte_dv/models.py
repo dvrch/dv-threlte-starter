@@ -47,69 +47,45 @@ class Geometry(models.Model):
     color = models.CharField(max_length=7, blank=True, default="#000000")  # Couleur
 
     def save(self, *args, **kwargs):
-        is_new = self.pk is None
-        
-        # Store original model_file to check if it changed
-        original_model_file_url = ""
-        if not is_new:
-            try:
-                original_model_file_url = Geometry.objects.get(pk=self.pk).model_file.url
-            except Geometry.DoesNotExist:
-                pass # Object might have been deleted and recreated quickly
+        # First, save the instance to handle the file upload via RawMediaCloudinaryStorage.
+        # The `super().save()` call will trigger the upload and populate `self.model_file`
+        # with Cloudinary details like .url and .public_id.
+        super().save(*args, **kwargs)
 
-        super().save(*args, **kwargs) # This triggers Cloudinary upload if model_file is set
-
-        # If model_file was provided and it resulted in a valid Cloudinary URL
-        if self.model_file and self.model_file.url and self.model_file.url.startswith('https://res.cloudinary.com/'):
-            # Ensure model_url is updated to the Cloudinary URL
-            if self.model_url != self.model_file.url:
-                self.model_url = self.model_file.url
-                # Save again only if model_url actually changed to avoid infinite loop
-                super().save(update_fields=["model_url"])
-
-            # Use the admin API to get full resource details
-            try:
-                public_id_with_folder = '/'.join(self.model_file.url.split('/')[-2:])
-                public_id = public_id_with_folder.split('.')[0]
-                
-                resource_details = cloudinary.api.resource(public_id, resource_type="raw")
-                
-                if resource_details:
-                    CloudinaryAsset.objects.update_or_create(
-                        public_id=resource_details.get("public_id"),
-                        defaults={
-                            'asset_id': resource_details.get("asset_id"),
-                            'url': resource_details.get("secure_url"),
-                            'asset_type': resource_details.get("resource_type"),
-                            'file_name': self.model_file.name,
-                            'format': resource_details.get("format"),
-                            'file_size': resource_details.get("bytes"),
-                            'tags': resource_details.get("tags", []),
-                            'metadata': resource_details.get("metadata", {}),
-                        }
-                    )
-            except Exception as e:
-                print(f"Error fetching full resource details from Cloudinary for Geometry {self.pk}: {e}")
-
-        elif self.model_file and not self.model_file.url.startswith('https://res.cloudinary.com/'):
-            # This case means a file was provided but Cloudinary upload likely failed or returned a local path
-            print(f"Warning: model_file provided for Geometry {self.pk} but did not result in a Cloudinary URL: {self.model_file.url}")
-            # Clear model_url if Cloudinary upload failed
-            if self.model_url:
-                self.model_url = ""
-                super().save(update_fields=["model_url"])
-        elif not self.model_file and self.model_url:
-            # If model_file is cleared but model_url still exists, clear CloudinaryAsset and model_url
-            try:
-                parsed_url = cloudinary.CloudinaryImage(self.model_url)
-                public_id = parsed_url.public_id
-                if public_id:
-                    CloudinaryAsset.objects.filter(public_id=public_id).delete()
-            except Exception as e:
-                print(f"Error cleaning up CloudinaryAsset for Geometry {self.pk}: {e}")
+        # After the save, check if a file was uploaded to Cloudinary.
+        # We can verify this by checking for the `public_id` attribute, which is added
+        # by the cloudinary_storage backend.
+        if self.model_file and hasattr(self.model_file, 'public_id'):
             
+            # The URL from the storage is the source of truth.
+            correct_url = self.model_file.url
+            
+            # Update the Geometry instance's own model_url field if it's not correct.
+            if self.model_url != correct_url:
+                self.model_url = correct_url
+                # Save again, but only update this one field to prevent an infinite loop.
+                super().save(update_fields=['model_url'])
+
+            # Now, create or update our asset tracking table with the correct info.
+            # This logic no longer makes a second API call. It trusts the upload result.
+            CloudinaryAsset.objects.update_or_create(
+                public_id=self.model_file.public_id,
+                defaults={
+                    'asset_id': getattr(self.model_file, 'asset_id', None),
+                    'url': correct_url,
+                    'asset_type': 'raw',  # We know it's 'raw' because we use RawMediaCloudinaryStorage
+                    'file_name': self.model_file.name,
+                    'file_size': self.model_file.size,
+                }
+            )
+        
+        # This part handles the case where the model_file is cleared in the admin.
+        elif not self.model_file and self.model_url:
+            # If the file is removed, we should also clear our local URL.
             self.model_url = ""
-            super().save(update_fields=["model_url"])
+            super().save(update_fields=['model_url'])
+            # A more advanced implementation could also delete the CloudinaryAsset entry
+            # or the file on Cloudinary, but that can be dangerous. For now, we just clear the URL.
 
 
     def clean(self):
