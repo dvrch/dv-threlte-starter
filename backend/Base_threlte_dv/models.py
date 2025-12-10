@@ -48,8 +48,8 @@ class Geometry(models.Model):
     color = models.CharField(max_length=7, blank=True, default="#000000")  # Couleur
 
     def clean(self):
-        if hasattr(self, "color") and self.color and not self.color.startswith("#"):
-            self.color = "#" + self.color
+        if self.color and not str(self.color).startswith("#"):
+            self.color = "#" + str(self.color)
 
     def format_position(self, x, y, z):
         self.position = {"x": x, "y": y, "z": z}
@@ -118,4 +118,4 @@ class CloudinaryAsset(models.Model):
         verbose_name_plural = "Cloudinary Assets"
 
     def __str__(self):
-        return self.file_name or self.public_id
+        return str(self.file_name or self.public_id)
