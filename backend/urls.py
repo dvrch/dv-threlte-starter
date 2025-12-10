@@ -18,6 +18,19 @@ def health_check(request):
         "debug": settings.DEBUG,
         "secret_key_set": bool(settings.SECRET_KEY),
         "allowed_hosts": settings.ALLOWED_HOSTS,
+        "use_cloudinary": getattr(settings, "USE_CLOUDINARY", False),
+        "cloudinary_config": {
+            "cloud_name": getattr(settings, "CLOUDINARY_STORAGE", {}).get(
+                "CLOUD_NAME", None
+            ),
+            "has_api_key": bool(
+                getattr(settings, "CLOUDINARY_STORAGE", {}).get("API_KEY", None)
+            ),
+            "has_api_secret": bool(
+                getattr(settings, "CLOUDINARY_STORAGE", {}).get("API_SECRET", None)
+            ),
+        },
+        "default_file_storage": str(settings.DEFAULT_FILE_STORAGE),
     }
 
     try:
