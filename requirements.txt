@@ -13,3 +13,5 @@ requests==2.32.3
 python-dotenv==1.0.1
 cloudinary==1.41.0
 dj3-cloudinary-storage==0.0.6
+django-storages[boto3]==1.14.4
+boto3==1.35.44

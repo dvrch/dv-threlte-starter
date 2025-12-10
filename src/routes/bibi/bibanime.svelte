@@ -2,6 +2,8 @@
 	import { T, useTask } from '@threlte/core';
 	import { useGltf } from '@threlte/extras';
 	import * as THREE from 'three';
+	import { browser } from '$app/environment';
+	import { getModelUrlByType } from '$lib/utils/geometry-loader';
 
 	let {
 		position = [0, 0, 0],
@@ -13,13 +15,28 @@
 		scale?: number | [number, number, number];
 	} = $props();
 
-	import { assets } from '$lib/services/assets';
+	// Load the GLTF model dynamically
+	let modelUrl = $state<string | null>(null);
+	let gltf: any = $state(null);
 
-	// Load the GLTF model
-	const gltfPromise = useGltf<THREE.Group>('/public/bibi.glb');
-	let gltf = $state();
-	gltfPromise.then((res) => (gltf = res)).catch(err => {
-		console.error('Failed to load bibi.glb', err);
+	// Find the model URL from API
+	getModelUrlByType('bibigame').then((url) => {
+		modelUrl = url;
+	});
+
+	// Load the GLTF model when URL is available
+	$effect(() => {
+		if (browser && modelUrl) {
+			const gltfStore = useGltf(modelUrl);
+			gltfStore
+				.then((loaded) => {
+					gltf = loaded;
+				})
+				.catch((err) => {
+					console.error('Failed to load bibi model:', err);
+					gltf = null;
+				});
+		}
 	});
 
 	// Create an animation mixer
@@ -29,20 +46,23 @@
 	$effect(() => {
 		if (gltf && gltf.animations && gltf.animations.length) {
 			mixer = new THREE.AnimationMixer(gltf.scene);
-			gltf.animations.forEach((clip) => {
+			gltf.animations.forEach((clip: any) => {
 				mixer?.clipAction(clip).play();
 			});
 		}
 	});
 
 	// Update the mixer on each frame
-	useTask((_, delta) => {
+	useTask((delta: number) => {
 		mixer?.update(delta);
 	});
 </script>
 
-{#if gltf}
+{#if browser && gltf}
 	<T.Group {position} {rotation} {scale}>
 		<T is={gltf.scene} />
 	</T.Group>
+{:else}
+	<!-- Fallback for SSR -->
+	<T.Group {position} {rotation} {scale} />
 {/if}

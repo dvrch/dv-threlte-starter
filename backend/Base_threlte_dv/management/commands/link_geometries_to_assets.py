@@ -65,3 +65,4 @@ class Command(BaseCommand):
                 f"🎉 Terminé : {linked_count} géométries liées, {not_found_count} non trouvées"
             )
         )
+# tst

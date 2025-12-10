@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
+    "storages",  # For S3/B2 storage
     "cloudinary_storage",  # Cloudinary storage (gratuit sans CB)
     "cloudinary",
     "backend.Base_threlte_dv",
@@ -158,8 +159,9 @@ ASGI_APPLICATION = "backend.asgi.application"
 # Configuration pour utiliser SQLite en local et PostgreSQL en production via une URL.
 # Si DATABASE_URL est définie (en production sur Railway, Vercel, etc.), on utilise PostgreSQL.
 # Sinon, on utilise une base de données SQLite locale pour le développement.
-if "DATABASE_URL" in os.environ and os.environ.get("DATABASE_URL"):
-    DATABASE_URL = os.environ.get("DATABASE_URL")
+database_url = os.environ.get("DATABASE_URL")
+if database_url and database_url.strip():
+    DATABASE_URL = database_url
 
     # Parse l'URL de la base de données
     db_config = dj_database_url.parse(DATABASE_URL)
@@ -228,10 +230,33 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 # Media files configuration
-# Configuration Cloudinary (gratuit sans carte bancaire)
+USE_B2_STORAGE = os.environ.get("USE_B2_STORAGE", "False") == "True"
 USE_CLOUDINARY = os.environ.get("USE_CLOUDINARY", "False") == "True"
 
-if USE_CLOUDINARY:
+if USE_B2_STORAGE:
+    # Backblaze B2 Storage (plus économique que Cloudinary)
+    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
+    # Configuration B2 S3-compatible
+    AWS_ACCESS_KEY_ID = os.environ.get("B2_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.environ.get("B2_APPLICATION_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.environ.get("B2_BUCKET_NAME")
+    AWS_S3_ENDPOINT_URL = os.environ.get("B2_ENDPOINT_URL")
+    AWS_S3_REGION_NAME = os.environ.get("B2_REGION", "eu-central-003")
+
+    # URL des médias
+    MEDIA_URL = (
+        f"{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/"
+        if AWS_S3_ENDPOINT_URL and AWS_STORAGE_BUCKET_NAME
+        else "/media/"
+    )
+
+    # Configuration supplémentaire pour B2
+    AWS_DEFAULT_ACL = None  # B2 ne supporte pas ACL comme S3
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_QUERYSTRING_AUTH = False  # URLs publiques sans signature
+
+elif USE_CLOUDINARY:
     # Cloudinary Storage (100% gratuit, 25GB)
     import cloudinary
     import cloudinary.api

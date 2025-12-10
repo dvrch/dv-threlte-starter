@@ -4,3 +4,9 @@ from django.apps import AppConfig
 class BaseThrelteDvConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "backend.Base_threlte_dv"
+
+    def ready(self):
+        """
+        Importe les signaux pour les activer
+        """
+        import backend.Base_threlte_dv.auto_sync_signals

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Test Dynamic Model Loading</title>
+	</head>
+	<body>
+		<h1>Testing Dynamic Model Loading</h1>
+		<p>API URL: https://dv-threlte-starter-production.up.railway.app/api/geometries/</p>
+
+		<h2>Bibi Model Data:</h2>
+		<pre id="bibi-data">Loading...</pre>
+
+		<h2>Test API Integration:</h2>
+		<button onclick="testModelLoading()">Test Bibi Model Loading</button>
+		<pre id="test-result"></pre>
+
+		<script>
+			// Test API call
+			fetch('https://dv-threlte-starter-production.up.railway.app/api/geometries/')
+				.then((response) => response.json())
+				.then((data) => {
+					const bibiModels = data.filter((geom) => geom.type === 'bibigame');
+					document.getElementById('bibi-data').textContent = JSON.stringify(bibiModels, null, 2);
+				})
+				.catch((error) => {
+					document.getElementById('bibi-data').textContent = 'Error: ' + error.message;
+				});
+
+			function testModelLoading() {
+				const result = document.getElementById('test-result');
+				result.textContent = 'Testing model URL resolution...';
+
+				// Simulate what our geometry-loader does
+				fetch('https://dv-threlte-starter-production.up.railway.app/api/geometries/')
+					.then((response) => response.json())
+					.then((geometries) => {
+						const bibiGeometry = geometries.find((geom) => geom.type.toLowerCase() === 'bibigame');
+						if (bibiGeometry && bibiGeometry.model_url) {
+							result.textContent = `✅ Success! Found model URL: ${bibiGeometry.model_url}`;
+
+							// Test if the model URL is accessible
+							return fetch(bibiGeometry.model_url, { method: 'HEAD' });
+						} else {
+							result.textContent = '❌ No model URL found for bibigame type';
+							throw new Error('No model URL');
+						}
+					})
+					.then((response) => {
+						if (response.ok) {
+							result.textContent += '\n✅ Model file is accessible!';
+						} else {
+							result.textContent += `\n❌ Model file not accessible: ${response.status}`;
+						}
+					})
+					.catch((error) => {
+						result.textContent = `❌ Error: ${error.message}`;
+					});
+			}
+		</script>
+	</body>
+</html>

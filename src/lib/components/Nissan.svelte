@@ -8,898 +8,1229 @@ Title: Nissan Skyline GTR r35
 -->
 
 <script>
-  // import { Group } from 'three'
-  import { T, forwardEventHandlers } from '@threlte/core'
-  import { useGltf } from '@threlte/extras'
+	// import { Group } from 'three'
+	import { T, forwardEventHandlers } from '@threlte/core';
+	import { useGltf } from '@threlte/extras';
+	import { browser } from '$app/environment';
+	import { getModelUrlByType } from '$lib/utils/geometry-loader';
 
 	import { AddEquation, CustomBlending, Group, LessEqualDepth, OneFactor } from 'three';
 
-  export const ref = new Group()
+	export const ref = new Group();
 
-  const gltf = useGltf('/models/nissan.glb')
+	let modelUrl = $state<string | null>(null);
 
-  gltf.then((model) => {
-    function alphaFix(material) {
-      if (material) {
-        material.transparent = true;
-        material.alphaToCoverage = true;
-        material.depthFunc = LessEqualDepth;
-        material.depthTest = true;
-        material.depthWrite = true;
-      }
-    }
-    
-    
-    const materials = [
-      'r35_paint', 'Meo_turbo_black', 'Meo_turbo_Gray', 'Meo_turbo_chrome', 'Meo_turbo_gold', 
-      'Meo_turbo_matblack', 'r35_badges', 'grille', 'r35_plastic', 'r35_interior', 
-      'r35_symbols_2017', 'r35_leather', 'r35_lejather_perf', 'r35_leather_stitching', 
-      'r35_steeringwheel', 'mirror', 'r35_cf', 'r35_taillight_2017', 'r35_signal_R_2017', 
-      'r35_dash_2017_r35_cf', 'r35_leather'
-    ];
-    
-    materials.forEach(materialName => alphaFix(model.materials[materialName]));
-  });
+	// Find model URL from API
+	getModelUrlByType('nissangame').then((url) => {
+		modelUrl = url;
+	});
 
-  const component = forwardEventHandlers()
+	// Load GLTF model when URL is available
+	const gltf = $derived(modelUrl && browser ? useGltf(modelUrl) : null);
+
+	gltf.then((model) => {
+		function alphaFix(material) {
+			if (material) {
+				material.transparent = true;
+				material.alphaToCoverage = true;
+				material.depthFunc = LessEqualDepth;
+				material.depthTest = true;
+				material.depthWrite = true;
+			}
+		}
+
+		const materials = [
+			'r35_paint',
+			'Meo_turbo_black',
+			'Meo_turbo_Gray',
+			'Meo_turbo_chrome',
+			'Meo_turbo_gold',
+			'Meo_turbo_matblack',
+			'r35_badges',
+			'grille',
+			'r35_plastic',
+			'r35_interior',
+			'r35_symbols_2017',
+			'r35_leather',
+			'r35_lejather_perf',
+			'r35_leather_stitching',
+			'r35_steeringwheel',
+			'mirror',
+			'r35_cf',
+			'r35_taillight_2017',
+			'r35_signal_R_2017',
+			'r35_dash_2017_r35_cf',
+			'r35_leather'
+		];
+
+		materials.forEach((materialName) => alphaFix(model.materials[materialName]));
+	});
+
+	const component = forwardEventHandlers();
 </script>
 
 <T is={ref} dispose={false} {...restProps} bind:this={$component}>
-  {#await gltf}
-    <slot name="fallback" />
-  {:then gltf}
-    <T.Group scale={0.01}>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_turbos_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-        <T.Mesh geometry={gltf.nodes.r35_turbos_Meo_turbo_black_0.geometry} material={gltf.materials.Meo_turbo_black} />
-        <T.Mesh geometry={gltf.nodes.r35_turbos_Meo_turbo_Gray_0.geometry} material={gltf.materials.Meo_turbo_Gray} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_turbos_Meo_turbo_chrome_0.geometry}
-          material={gltf.materials.Meo_turbo_chrome}
-        />
-        <T.Mesh geometry={gltf.nodes.r35_turbos_Meo_turbo_gold_0.geometry} material={gltf.materials.Meo_turbo_gold} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_turbos_Meo_turbo_matblack_0.geometry}
-          material={gltf.materials.Meo_turbo_matblack}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh
-          geometry={gltf.nodes.r35_bumper_R_2017_r35_signal_R_2017001_0.geometry}
-          material={gltf.materials['r35_signal_R_2017.001']}
-        />
-        <T.Mesh geometry={gltf.nodes.r35_bumper_R_2017_r35_cf_0.geometry} material={gltf.materials.r35_cf} />
-        <T.Mesh geometry={gltf.nodes.r35_bumper_R_2017_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-        <T.Mesh geometry={gltf.nodes.r35_bumper_R_2017_r35_badges_0.geometry} material={gltf.materials.r35_badges} />
-        <T.Mesh geometry={gltf.nodes.r35_bumper_R_2017_grille_0.geometry} material={gltf.materials.grille} />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh
-          geometry={gltf.nodes.r35_signalstalk_2017_r35_plastic_0.geometry}
-          material={gltf.materials.r35_plastic}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_signalstalk_2017_r35_interior_0.geometry}
-          material={gltf.materials.r35_interior}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_signalstalk_2017_r35_symbols_2017_0.geometry}
-          material={gltf.materials.r35_symbols_2017}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh
-          geometry={gltf.nodes.r35_parkingbrake_2017_r35_leather_0.geometry}
-          material={gltf.materials.r35_leather}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_parkingbrake_2017_r35_plastic_0.geometry}
-          material={gltf.materials.r35_plastic}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_parkingbrake_2017_r35_leather_perf_0.geometry}
-          material={gltf.materials.r35_leather_perf}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_parkingbrake_2017_r35_leather_stitching_0.geometry}
-          material={gltf.materials.r35_leather_stitching}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_steer_2017_r35_plastic_0.geometry} material={gltf.materials.r35_plastic} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_steer_2017_r35_leather_stitching_0.geometry}
-          material={gltf.materials.r35_leather_stitching}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_steer_2017_r35_symbols_2017_0.geometry}
-          material={gltf.materials.r35_symbols_2017}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_steer_2017_r35_steeringwheel_0.geometry}
-          material={gltf.materials.r35_steeringwheel}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_fenderflare_RR_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_fenderflare_RR_Meo_turbo_Gray_0.geometry}
-          material={gltf.materials.Meo_turbo_Gray}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_fenderflare_FL_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_fenderflare_FL_Meo_turbo_Gray_0.geometry}
-          material={gltf.materials.Meo_turbo_Gray}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_fenderflare_FR_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_fenderflare_FR_Meo_turbo_Gray_0.geometry}
-          material={gltf.materials.Meo_turbo_Gray}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_fenderflare_RL_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_fenderflare_RL_Meo_turbo_Gray_0.geometry}
-          material={gltf.materials.Meo_turbo_Gray}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh
-          geometry={gltf.nodes.r35_intercooler_Meo_turbo_Gray_0.geometry}
-          material={gltf.materials.Meo_turbo_Gray}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_intercooler_Meo_turbo_chrome_0.geometry}
-          material={gltf.materials.Meo_turbo_chrome}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_spoiler_LW_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_spoiler_LW_Meo_turbo_Gray_0.geometry}
-          material={gltf.materials.Meo_turbo_Gray}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_spoiler_LW_Meo_turbo_chrome_0.geometry}
-          material={gltf.materials.Meo_turbo_chrome}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh
-          geometry={gltf.nodes.r35_exhaust_LW_Meo_turbo_black_0.geometry}
-          material={gltf.materials.Meo_turbo_black}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_exhaust_LW_Meo_turbo_chrome_0.geometry}
-          material={gltf.materials.Meo_turbo_chrome}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_seat_FR_2017_mirror_0.geometry} material={gltf.materials.mirror} />
-        <T.Mesh geometry={gltf.nodes.r35_seat_FR_2017_r35_leather_0.geometry} material={gltf.materials.r35_leather} />
-        <T.Mesh geometry={gltf.nodes.r35_seat_FR_2017_r35_plastic_0.geometry} material={gltf.materials.r35_plastic} />
-        <T.Mesh geometry={gltf.nodes.r35_seat_FR_2017_r35_interior_0.geometry} material={gltf.materials.r35_interior} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_seat_FR_2017_r35_leather_perf_0.geometry}
-          material={gltf.materials.r35_leather_perf}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_seat_FR_2017_r35_leather_stitching_0.geometry}
-          material={gltf.materials.r35_leather_stitching}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_seat_FL_2017_mirror_0.geometry} material={gltf.materials.mirror} />
-        <T.Mesh geometry={gltf.nodes.r35_seat_FL_2017_r35_leather_0.geometry} material={gltf.materials.r35_leather} />
-        <T.Mesh geometry={gltf.nodes.r35_seat_FL_2017_r35_plastic_0.geometry} material={gltf.materials.r35_plastic} />
-        <T.Mesh geometry={gltf.nodes.r35_seat_FL_2017_r35_interior_0.geometry} material={gltf.materials.r35_interior} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_seat_FL_2017_r35_leather_perf_0.geometry}
-          material={gltf.materials.r35_leather_perf}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_seat_FL_2017_r35_leather_stitching_0.geometry}
-          material={gltf.materials.r35_leather_stitching}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh
-          geometry={gltf.nodes.r35_taillight_L_2017_r35_taillight_2017_0.geometry}
-          material={gltf.materials.r35_taillight_2017}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_taillight_L_2017_r35_signal_R_2017_0.geometry}
-          material={gltf.materials.r35_signal_R_2017}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_dash_2017_r35_cf_0.geometry} material={gltf.materials.r35_cf} />
-        <T.Mesh geometry={gltf.nodes.r35_dash_2017_r35_leather_0.geometry} material={gltf.materials.r35_leather} />
-        <T.Mesh geometry={gltf.nodes.r35_dash_2017_r35_plastic_0.geometry} material={gltf.materials.r35_plastic} />
-        <T.Mesh geometry={gltf.nodes.r35_dash_2017_r35_interior_0.geometry} material={gltf.materials.r35_interior} />
-        <T.Mesh geometry={gltf.nodes.r35_dash_2017_r35_mesh_0.geometry} material={gltf.materials.r35_mesh} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_dash_2017_r35_leather_perf_0.geometry}
-          material={gltf.materials.r35_leather_perf}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_dash_2017_r35_leather_stitching_0.geometry}
-          material={gltf.materials.r35_leather_stitching}
-        />
-        <T.Mesh geometry={gltf.nodes.r35_dash_2017_r35_screen_0.geometry} material={gltf.materials.r35_screen} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_dash_2017_r35_symbols_2017_0.geometry}
-          material={gltf.materials.r35_symbols_2017}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh
-          geometry={gltf.nodes.r35_taillight_R_2017_r35_taillight_2017_0.geometry}
-          material={gltf.materials.r35_taillight_2017}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_taillight_R_2017_r35_signal_R_2017_0.geometry}
-          material={gltf.materials.r35_signal_R_2017}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_headlight_R_2012_r35_lights_0.geometry} material={gltf.materials.r35_lights} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_headlight_R_2012_r35_highbeam_0.geometry}
-          material={gltf.materials.r35_highbeam}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_headlight_L_2012_r35_lights_0.geometry} material={gltf.materials.r35_lights} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_headlight_L_2012_r35_highbeam_0.geometry}
-          material={gltf.materials.r35_highbeam}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_bumper_F_specv_r35_misc_0.geometry} material={gltf.materials.r35_misc} />
-        <T.Mesh geometry={gltf.nodes.r35_bumper_F_specv_r35_cf_0.geometry} material={gltf.materials.r35_cf} />
-        <T.Mesh geometry={gltf.nodes.r35_bumper_F_specv_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-        <T.Mesh geometry={gltf.nodes.r35_bumper_F_specv_r35_badges_0.geometry} material={gltf.materials.r35_badges} />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_hood_race_r35_misc_0.geometry} material={gltf.materials.r35_misc} />
-        <T.Mesh geometry={gltf.nodes.r35_hood_race_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_seats_R_2017_r35_leather_0.geometry} material={gltf.materials.r35_leather} />
-        <T.Mesh geometry={gltf.nodes.r35_seats_R_2017_r35_plastic_0.geometry} material={gltf.materials.r35_plastic} />
-        <T.Mesh geometry={gltf.nodes.r35_seats_R_2017_r35_interior_0.geometry} material={gltf.materials.r35_interior} />
-        <T.Mesh geometry={gltf.nodes.r35_seats_R_2017_r35_cloth_0.geometry} material={gltf.materials.r35_cloth} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_seats_R_2017_r35_leather_perf_0.geometry}
-          material={gltf.materials.r35_leather_perf}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_seats_R_2017_r35_leather_stitching_0.geometry}
-          material={gltf.materials.r35_leather_stitching}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_intmirror_mirror_0.geometry} material={gltf.materials.mirror} />
-        <T.Mesh geometry={gltf.nodes.r35_intmirror_r35_interior_0.geometry} material={gltf.materials.r35_interior} />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_headlight_R_r35_lights_0.geometry} material={gltf.materials.r35_lights} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_headlight_R_r35_headlight_0.geometry}
-          material={gltf.materials.r35_headlight}
-        />
-        <T.Mesh geometry={gltf.nodes.r35_headlight_R_r35_highbeam_0.geometry} material={gltf.materials.r35_highbeam} />
-        <T.Mesh geometry={gltf.nodes.r35_headlight_R_r35_signal_R_0.geometry} material={gltf.materials.r35_signal_R} />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh
-          geometry={gltf.nodes.r35_gauges_r35_plastic_grey_0.geometry}
-          material={gltf.materials.r35_plastic_grey}
-        />
-        <T.Mesh geometry={gltf.nodes.r35_gauges_r35_display_0.geometry} material={gltf.materials.r35_display} />
-        <T.Mesh geometry={gltf.nodes.r35_gauges_r35_interior_0.geometry} material={gltf.materials.r35_interior} />
-        <T.Mesh geometry={gltf.nodes.r35_gauges_r35_gauges_0.geometry} material={gltf.materials.r35_gauges} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_gauges_r35_display_segment_lowerleft_0.geometry}
-          material={gltf.materials.r35_display_segment_lowerleft}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_gauges_r35_display_segment_lowerright_0.geometry}
-          material={gltf.materials.r35_display_segment_lowerright}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_gauges_r35_display_segment_center_0.geometry}
-          material={gltf.materials.r35_display_segment_center}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_gauges_r35_display_segment_bottom_0.geometry}
-          material={gltf.materials.r35_display_segment_bottom}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_gauges_r35_display_segment_top_0.geometry}
-          material={gltf.materials.r35_display_segment_top}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_gauges_r35_display_segment_upperleft_0.geometry}
-          material={gltf.materials.r35_display_segment_upperleft}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_gauges_r35_display_segment_upperright_0.geometry}
-          material={gltf.materials.r35_display_segment_upperright}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_doorpanel_R_be_r35_leather_0.geometry} material={gltf.materials.r35_leather} />
-        <T.Mesh geometry={gltf.nodes.r35_doorpanel_R_be_r35_plastic_0.geometry} material={gltf.materials.r35_plastic} />
-        <T.Mesh geometry={gltf.nodes.r35_doorpanel_R_be_r35_carpet_0.geometry} material={gltf.materials.r35_carpet} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_doorpanel_R_be_r35_interior_0.geometry}
-          material={gltf.materials.r35_interior}
-        />
-        <T.Mesh geometry={gltf.nodes.r35_doorpanel_R_be_r35_mesh_0.geometry} material={gltf.materials.r35_mesh} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_doorpanel_R_be_r35_leather_stitching_0.geometry}
-          material={gltf.materials.r35_leather_stitching}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_doorpanel_R_be_r35_leather_perf_0.geometry}
-          material={gltf.materials.r35_leather_perf}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_doorpanel_L_be_r35_leather_0.geometry} material={gltf.materials.r35_leather} />
-        <T.Mesh geometry={gltf.nodes.r35_doorpanel_L_be_r35_plastic_0.geometry} material={gltf.materials.r35_plastic} />
-        <T.Mesh geometry={gltf.nodes.r35_doorpanel_L_be_r35_carpet_0.geometry} material={gltf.materials.r35_carpet} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_doorpanel_L_be_r35_interior_0.geometry}
-          material={gltf.materials.r35_interior}
-        />
-        <T.Mesh geometry={gltf.nodes.r35_doorpanel_L_be_r35_mesh_0.geometry} material={gltf.materials.r35_mesh} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_doorpanel_L_be_r35_leather_stitching_0.geometry}
-          material={gltf.materials.r35_leather_stitching}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_doorpanel_L_be_r35_leather_perf_0.geometry}
-          material={gltf.materials.r35_leather_perf}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_door_R_r35_misc_0.geometry} material={gltf.materials.r35_misc} />
-        <T.Mesh geometry={gltf.nodes.r35_door_R_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-        <T.Mesh geometry={gltf.nodes.r35_door_R_r35_badges_0.geometry} material={gltf.materials.r35_badges} />
-        <T.Mesh geometry={gltf.nodes.r35_door_R_r35_leather_0.geometry} material={gltf.materials.r35_leather} />
-        <T.Mesh geometry={gltf.nodes.r35_door_R_r35_plastic_0.geometry} material={gltf.materials.r35_plastic} />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_body_r35_misc_0.geometry} material={gltf.materials.r35_misc} />
-        <T.Mesh geometry={gltf.nodes.r35_body_r35_chassis_0.geometry} material={gltf.materials.r35_chassis} />
-        <T.Mesh geometry={gltf.nodes.r35_body_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-        <T.Mesh geometry={gltf.nodes.r35_body_mirror_0.geometry} material={gltf.materials.mirror} />
-        <T.Mesh geometry={gltf.nodes.r35_body_r35_badges_0.geometry} material={gltf.materials.r35_badges} />
-        <T.Mesh geometry={gltf.nodes.r35_body_r35_leather_0.geometry} material={gltf.materials.r35_leather} />
-        <T.Mesh geometry={gltf.nodes.r35_body_r35_plastic_0.geometry} material={gltf.materials.r35_plastic} />
-        <T.Mesh geometry={gltf.nodes.r35_body_r35_carpet_0.geometry} material={gltf.materials.r35_carpet} />
-        <T.Mesh geometry={gltf.nodes.r35_body_r35_interior_0.geometry} material={gltf.materials.r35_interior} />
-        <T.Mesh geometry={gltf.nodes.r35_body_r35_mesh_0.geometry} material={gltf.materials.r35_mesh} />
-        <T.Mesh geometry={gltf.nodes.r35_body_r35_cloth_0.geometry} material={gltf.materials.r35_cloth} />
-        <T.Mesh geometry={gltf.nodes.r35_body_r35_engine_0.geometry} material={gltf.materials.r35_engine} />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_engbaycrap_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_engbaycrap_Meo_turbo_black_0.geometry}
-          material={gltf.materials.Meo_turbo_black}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_engbaycrap_Meo_turbo_Gray_0.geometry}
-          material={gltf.materials.Meo_turbo_Gray}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_engbaycrap_Meo_turbo_chrome_0.geometry}
-          material={gltf.materials.Meo_turbo_chrome}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_engbaycrap_Meo_turbo_gold_0.geometry}
-          material={gltf.materials.Meo_turbo_gold}
-        />
-        <T.Mesh
-          geometry={gltf.nodes.r35_engbaycrap_Meo_turbo_matblack_0.geometry}
-          material={gltf.materials.Meo_turbo_matblack}
-        />
-        <T.Mesh geometry={gltf.nodes.r35_engbaycrap_Meo_turbo_red_0.geometry} material={gltf.materials.Meo_turbo_red} />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_engine_Meo_turbo_black_0.geometry} material={gltf.materials.Meo_turbo_black} />
-        <T.Mesh geometry={gltf.nodes.r35_engine_Meo_turbo_Gray_0.geometry} material={gltf.materials.Meo_turbo_Gray} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_engine_Meo_turbo_chrome_0.geometry}
-          material={gltf.materials.Meo_turbo_chrome}
-        />
-        <T.Mesh geometry={gltf.nodes.r35_engine_Meo_turbo_gold_0.geometry} material={gltf.materials.Meo_turbo_gold} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_engine_Meo_turbo_matblack_0.geometry}
-          material={gltf.materials.Meo_turbo_matblack}
-        />
-        <T.Mesh geometry={gltf.nodes.r35_engine_Meo_turbo_red_0.geometry} material={gltf.materials.Meo_turbo_red} />
-        <T.Mesh geometry={gltf.nodes.r35_engine_r35_engines_0.geometry} material={gltf.materials.r35_engines} />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_trunk_cf_r35_misc_0.geometry} material={gltf.materials.r35_misc} />
-        <T.Mesh geometry={gltf.nodes.r35_trunk_cf_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-        <T.Mesh geometry={gltf.nodes.r35_trunk_cf_r35_badges_0.geometry} material={gltf.materials.r35_badges} />
-        <T.Mesh geometry={gltf.nodes.r35_trunk_cf_r35_leather_0.geometry} material={gltf.materials.r35_leather} />
-        <T.Mesh
-          geometry={gltf.nodes.r35_trunk_cf_r35_plastic_grey_0.geometry}
-          material={gltf.materials.r35_plastic_grey}
-        />
-        <T.Mesh geometry={gltf.nodes.r35_trunk_cf_r35_plastic_0.geometry} material={gltf.materials.r35_plastic} />
-        <T.Mesh geometry={gltf.nodes.r35_trunk_cf_r35_carpet_0.geometry} material={gltf.materials.r35_carpet} />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_fender_L_cf_r35_misc_0.geometry} material={gltf.materials.r35_misc} />
-        <T.Mesh geometry={gltf.nodes.r35_fender_L_cf_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-        <T.Mesh geometry={gltf.nodes.r35_fender_L_cf_r35_badges_0.geometry} material={gltf.materials.r35_badges} />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_fender_R_cf_r35_misc_0.geometry} material={gltf.materials.r35_misc} />
-        <T.Mesh geometry={gltf.nodes.r35_fender_R_cf_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-        <T.Mesh geometry={gltf.nodes.r35_fender_R_cf_r35_badges_0.geometry} material={gltf.materials.r35_badges} />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_mirror_R_cf_r35_misc_0.geometry} material={gltf.materials.r35_misc} />
-        <T.Mesh geometry={gltf.nodes.r35_mirror_R_cf_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-        <T.Mesh geometry={gltf.nodes.r35_mirror_R_cf_mirror_0.geometry} material={gltf.materials.mirror} />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_mirror_L_cf_r35_misc_0.geometry} material={gltf.materials.r35_misc} />
-        <T.Mesh geometry={gltf.nodes.r35_mirror_L_cf_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-        <T.Mesh geometry={gltf.nodes.r35_mirror_L_cf_mirror_0.geometry} material={gltf.materials.mirror} />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh
-          geometry={gltf.nodes['3_Wheel001_amdb11_brake002_0'].geometry}
-          material={gltf.materials['amdb11_brake.002']}
-        />
-        <T.Mesh
-          geometry={gltf.nodes['3_Wheel001_amdb11_misc_chrome002_0'].geometry}
-          material={gltf.materials['amdb11_misc_chrome.002']}
-        />
-        <T.Mesh
-          geometry={gltf.nodes['3_Wheel001_amdb11_misc002_0'].geometry}
-          material={gltf.materials['amdb11_misc.002']}
-        />
-        <T.Mesh
-          geometry={gltf.nodes['3_Wheel001_amdb11_caliper002_0'].geometry}
-          material={gltf.materials['amdb11_caliper.002']}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh
-          geometry={gltf.nodes['3_Wheel003_amdb11_brake002_0'].geometry}
-          material={gltf.materials['amdb11_brake.002']}
-        />
-        <T.Mesh
-          geometry={gltf.nodes['3_Wheel003_amdb11_misc_chrome002_0'].geometry}
-          material={gltf.materials['amdb11_misc_chrome.002']}
-        />
-        <T.Mesh
-          geometry={gltf.nodes['3_Wheel003_amdb11_misc002_0'].geometry}
-          material={gltf.materials['amdb11_misc.002']}
-        />
-        <T.Mesh
-          geometry={gltf.nodes['3_Wheel003_amdb11_caliper002_0'].geometry}
-          material={gltf.materials['amdb11_caliper.002']}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh
-          geometry={gltf.nodes['3_Wheel005_amdb11_brake002_0'].geometry}
-          material={gltf.materials['amdb11_brake.002']}
-        />
-        <T.Mesh
-          geometry={gltf.nodes['3_Wheel005_amdb11_misc_chrome002_0'].geometry}
-          material={gltf.materials['amdb11_misc_chrome.002']}
-        />
-        <T.Mesh
-          geometry={gltf.nodes['3_Wheel005_amdb11_misc002_0'].geometry}
-          material={gltf.materials['amdb11_misc.002']}
-        />
-        <T.Mesh
-          geometry={gltf.nodes['3_Wheel005_amdb11_caliper002_0'].geometry}
-          material={gltf.materials['amdb11_caliper.002']}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh
-          geometry={gltf.nodes['3_Wheel007_amdb11_brake002_0'].geometry}
-          material={gltf.materials['amdb11_brake.002']}
-        />
-        <T.Mesh
-          geometry={gltf.nodes['3_Wheel007_amdb11_misc_chrome002_0'].geometry}
-          material={gltf.materials['amdb11_misc_chrome.002']}
-        />
-        <T.Mesh
-          geometry={gltf.nodes['3_Wheel007_amdb11_misc002_0'].geometry}
-          material={gltf.materials['amdb11_misc.002']}
-        />
-        <T.Mesh
-          geometry={gltf.nodes['3_Wheel007_amdb11_caliper002_0'].geometry}
-          material={gltf.materials['amdb11_caliper.002']}
-        />
-      </T.Group>
-      <T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-        <T.Mesh geometry={gltf.nodes.r35_door_R001_r35_misc_0.geometry} material={gltf.materials.r35_misc} />
-        <T.Mesh geometry={gltf.nodes.r35_door_R001_r35_paint_0.geometry} material={gltf.materials.r35_paint} />
-        <T.Mesh geometry={gltf.nodes.r35_door_R001_r35_badges_0.geometry} material={gltf.materials.r35_badges} />
-        <T.Mesh geometry={gltf.nodes.r35_door_R001_r35_leather_0.geometry} material={gltf.materials.r35_leather} />
-        <T.Mesh geometry={gltf.nodes.r35_door_R001_r35_plastic_0.geometry} material={gltf.materials.r35_plastic} />
-      </T.Group>
-      <T.Mesh
-        geometry={gltf.nodes.r35_transmission_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_transfercase_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_tierod_F_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_driveshaft_F_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_driveshaft_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_bumperbar_F_r35_chassis_0.geometry}
-        material={gltf.materials.r35_chassis}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_tierod_R_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_swaybar_R_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_subframe_R_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_spring_R_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_shock_R_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_lowerarm_R_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_hub_R_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_halfshaft_R_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_diff_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_swaybar_F_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_lowerarm_F_b_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_steeringbox_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_hub_F_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_halfshaft_F_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_diff_F_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_strut_F_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_subframe_F_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_radiator_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_signalstalk_r35_interior_0.geometry}
-        material={gltf.materials.r35_interior}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_needle_fuel_r35_gauges_0.geometry}
-        material={gltf.materials.r35_gauges}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_needle_temp_r35_gauges_0.geometry}
-        material={gltf.materials.r35_gauges}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_needle_tacho_r35_gauges_0.geometry}
-        material={gltf.materials.r35_gauges}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_needle_speedo_r35_gauges_0.geometry}
-        material={gltf.materials.r35_gauges}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_lettering_nismo_r35_paint_0.geometry}
-        material={gltf.materials.r35_paint}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_wheel_05a_20x11_r35_wheel_05a_0.geometry}
-        material={gltf.materials.r35_wheel_05a}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_windshield_r35_glass_0.geometry}
-        material={gltf.materials.r35_glass}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_taillightglass_R_r35_glass001_0.geometry}
-        material={gltf.materials['r35_glass.001']}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_taillightglass_L_r35_glass001_0.geometry}
-        material={gltf.materials['r35_glass.001']}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_sideskirts_cf_r35_paint_0.geometry}
-        material={gltf.materials.r35_paint}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_sideglass_R_r35_glass_0.geometry}
-        material={gltf.materials.r35_glass}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_sideglass_L_r35_glass_0.geometry}
-        material={gltf.materials.r35_glass}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_rollcage_r35_misc_0.geometry}
-        material={gltf.materials.r35_misc}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_logo_R_r35_badges_0.geometry}
-        material={gltf.materials.r35_badges}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_lettering_specv_r35_badges_0.geometry}
-        material={gltf.materials.r35_badges}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_lettering_gtr_r35_badges_0.geometry}
-        material={gltf.materials.r35_badges}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_headlightglass_R_r35_glass_0.geometry}
-        material={gltf.materials.r35_glass}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_headlightglass_L_r35_glass_0.geometry}
-        material={gltf.materials.r35_glass}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_doorglass_R_r35_glass_0.geometry}
-        material={gltf.materials.r35_glass}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_doorglass_L_r35_glass_0.geometry}
-        material={gltf.materials.r35_glass}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_backlight_r35_glass_0.geometry}
-        material={gltf.materials.r35_glass}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_speedunit_r35_display_0.geometry}
-        material={gltf.materials.r35_display}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_speedunit_2012_r35_display_0.geometry}
-        material={gltf.materials.r35_display}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_gaspedal_r35_0.geometry}
-        material={gltf.materials.material}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_brakepedal_gtr_interior_0.geometry}
-        material={gltf.materials.gtr_interior}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_roof_cf_r35_paint_0.geometry}
-        material={gltf.materials.r35_paint}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_tubs_r35_chassis_0.geometry}
-        material={gltf.materials.r35_chassis}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes['3_Wheel_Scene_-_Root002_0'].geometry}
-        material={gltf.materials['Scene_-_Root.002']}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_wheel_05a_20x11001_r35_wheel_05a_0.geometry}
-        material={gltf.materials.r35_wheel_05a}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes['3_Wheel002_Scene_-_Root002_0'].geometry}
-        material={gltf.materials['Scene_-_Root.002']}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_wheel_05a_20x11002_r35_wheel_05a_0.geometry}
-        material={gltf.materials.r35_wheel_05a}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes['3_Wheel004_Scene_-_Root002_0'].geometry}
-        material={gltf.materials['Scene_-_Root.002']}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes.r35_wheel_05a_20x11003_r35_wheel_05a_0.geometry}
-        material={gltf.materials.r35_wheel_05a}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-      <T.Mesh
-        geometry={gltf.nodes['3_Wheel006_Scene_-_Root002_0'].geometry}
-        material={gltf.materials['Scene_-_Root.002']}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={100}
-      />
-    </T.Group>
-  {:catch error}
-    <slot name="error" {error} />
-  {/await}
+	{#await gltf}
+		<slot name="fallback" />
+	{:then gltf}
+		<T.Group scale={0.01}>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_turbos_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_turbos_Meo_turbo_black_0.geometry}
+					material={gltf.materials.Meo_turbo_black}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_turbos_Meo_turbo_Gray_0.geometry}
+					material={gltf.materials.Meo_turbo_Gray}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_turbos_Meo_turbo_chrome_0.geometry}
+					material={gltf.materials.Meo_turbo_chrome}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_turbos_Meo_turbo_gold_0.geometry}
+					material={gltf.materials.Meo_turbo_gold}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_turbos_Meo_turbo_matblack_0.geometry}
+					material={gltf.materials.Meo_turbo_matblack}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_bumper_R_2017_r35_signal_R_2017001_0.geometry}
+					material={gltf.materials['r35_signal_R_2017.001']}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_bumper_R_2017_r35_cf_0.geometry}
+					material={gltf.materials.r35_cf}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_bumper_R_2017_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_bumper_R_2017_r35_badges_0.geometry}
+					material={gltf.materials.r35_badges}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_bumper_R_2017_grille_0.geometry}
+					material={gltf.materials.grille}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_signalstalk_2017_r35_plastic_0.geometry}
+					material={gltf.materials.r35_plastic}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_signalstalk_2017_r35_interior_0.geometry}
+					material={gltf.materials.r35_interior}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_signalstalk_2017_r35_symbols_2017_0.geometry}
+					material={gltf.materials.r35_symbols_2017}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_parkingbrake_2017_r35_leather_0.geometry}
+					material={gltf.materials.r35_leather}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_parkingbrake_2017_r35_plastic_0.geometry}
+					material={gltf.materials.r35_plastic}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_parkingbrake_2017_r35_leather_perf_0.geometry}
+					material={gltf.materials.r35_leather_perf}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_parkingbrake_2017_r35_leather_stitching_0.geometry}
+					material={gltf.materials.r35_leather_stitching}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_steer_2017_r35_plastic_0.geometry}
+					material={gltf.materials.r35_plastic}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_steer_2017_r35_leather_stitching_0.geometry}
+					material={gltf.materials.r35_leather_stitching}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_steer_2017_r35_symbols_2017_0.geometry}
+					material={gltf.materials.r35_symbols_2017}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_steer_2017_r35_steeringwheel_0.geometry}
+					material={gltf.materials.r35_steeringwheel}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_fenderflare_RR_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_fenderflare_RR_Meo_turbo_Gray_0.geometry}
+					material={gltf.materials.Meo_turbo_Gray}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_fenderflare_FL_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_fenderflare_FL_Meo_turbo_Gray_0.geometry}
+					material={gltf.materials.Meo_turbo_Gray}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_fenderflare_FR_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_fenderflare_FR_Meo_turbo_Gray_0.geometry}
+					material={gltf.materials.Meo_turbo_Gray}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_fenderflare_RL_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_fenderflare_RL_Meo_turbo_Gray_0.geometry}
+					material={gltf.materials.Meo_turbo_Gray}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_intercooler_Meo_turbo_Gray_0.geometry}
+					material={gltf.materials.Meo_turbo_Gray}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_intercooler_Meo_turbo_chrome_0.geometry}
+					material={gltf.materials.Meo_turbo_chrome}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_spoiler_LW_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_spoiler_LW_Meo_turbo_Gray_0.geometry}
+					material={gltf.materials.Meo_turbo_Gray}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_spoiler_LW_Meo_turbo_chrome_0.geometry}
+					material={gltf.materials.Meo_turbo_chrome}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_exhaust_LW_Meo_turbo_black_0.geometry}
+					material={gltf.materials.Meo_turbo_black}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_exhaust_LW_Meo_turbo_chrome_0.geometry}
+					material={gltf.materials.Meo_turbo_chrome}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seat_FR_2017_mirror_0.geometry}
+					material={gltf.materials.mirror}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seat_FR_2017_r35_leather_0.geometry}
+					material={gltf.materials.r35_leather}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seat_FR_2017_r35_plastic_0.geometry}
+					material={gltf.materials.r35_plastic}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seat_FR_2017_r35_interior_0.geometry}
+					material={gltf.materials.r35_interior}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seat_FR_2017_r35_leather_perf_0.geometry}
+					material={gltf.materials.r35_leather_perf}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seat_FR_2017_r35_leather_stitching_0.geometry}
+					material={gltf.materials.r35_leather_stitching}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seat_FL_2017_mirror_0.geometry}
+					material={gltf.materials.mirror}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seat_FL_2017_r35_leather_0.geometry}
+					material={gltf.materials.r35_leather}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seat_FL_2017_r35_plastic_0.geometry}
+					material={gltf.materials.r35_plastic}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seat_FL_2017_r35_interior_0.geometry}
+					material={gltf.materials.r35_interior}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seat_FL_2017_r35_leather_perf_0.geometry}
+					material={gltf.materials.r35_leather_perf}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seat_FL_2017_r35_leather_stitching_0.geometry}
+					material={gltf.materials.r35_leather_stitching}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_taillight_L_2017_r35_taillight_2017_0.geometry}
+					material={gltf.materials.r35_taillight_2017}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_taillight_L_2017_r35_signal_R_2017_0.geometry}
+					material={gltf.materials.r35_signal_R_2017}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_dash_2017_r35_cf_0.geometry}
+					material={gltf.materials.r35_cf}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_dash_2017_r35_leather_0.geometry}
+					material={gltf.materials.r35_leather}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_dash_2017_r35_plastic_0.geometry}
+					material={gltf.materials.r35_plastic}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_dash_2017_r35_interior_0.geometry}
+					material={gltf.materials.r35_interior}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_dash_2017_r35_mesh_0.geometry}
+					material={gltf.materials.r35_mesh}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_dash_2017_r35_leather_perf_0.geometry}
+					material={gltf.materials.r35_leather_perf}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_dash_2017_r35_leather_stitching_0.geometry}
+					material={gltf.materials.r35_leather_stitching}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_dash_2017_r35_screen_0.geometry}
+					material={gltf.materials.r35_screen}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_dash_2017_r35_symbols_2017_0.geometry}
+					material={gltf.materials.r35_symbols_2017}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_taillight_R_2017_r35_taillight_2017_0.geometry}
+					material={gltf.materials.r35_taillight_2017}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_taillight_R_2017_r35_signal_R_2017_0.geometry}
+					material={gltf.materials.r35_signal_R_2017}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_headlight_R_2012_r35_lights_0.geometry}
+					material={gltf.materials.r35_lights}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_headlight_R_2012_r35_highbeam_0.geometry}
+					material={gltf.materials.r35_highbeam}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_headlight_L_2012_r35_lights_0.geometry}
+					material={gltf.materials.r35_lights}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_headlight_L_2012_r35_highbeam_0.geometry}
+					material={gltf.materials.r35_highbeam}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_bumper_F_specv_r35_misc_0.geometry}
+					material={gltf.materials.r35_misc}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_bumper_F_specv_r35_cf_0.geometry}
+					material={gltf.materials.r35_cf}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_bumper_F_specv_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_bumper_F_specv_r35_badges_0.geometry}
+					material={gltf.materials.r35_badges}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_hood_race_r35_misc_0.geometry}
+					material={gltf.materials.r35_misc}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_hood_race_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seats_R_2017_r35_leather_0.geometry}
+					material={gltf.materials.r35_leather}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seats_R_2017_r35_plastic_0.geometry}
+					material={gltf.materials.r35_plastic}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seats_R_2017_r35_interior_0.geometry}
+					material={gltf.materials.r35_interior}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seats_R_2017_r35_cloth_0.geometry}
+					material={gltf.materials.r35_cloth}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seats_R_2017_r35_leather_perf_0.geometry}
+					material={gltf.materials.r35_leather_perf}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_seats_R_2017_r35_leather_stitching_0.geometry}
+					material={gltf.materials.r35_leather_stitching}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_intmirror_mirror_0.geometry}
+					material={gltf.materials.mirror}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_intmirror_r35_interior_0.geometry}
+					material={gltf.materials.r35_interior}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_headlight_R_r35_lights_0.geometry}
+					material={gltf.materials.r35_lights}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_headlight_R_r35_headlight_0.geometry}
+					material={gltf.materials.r35_headlight}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_headlight_R_r35_highbeam_0.geometry}
+					material={gltf.materials.r35_highbeam}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_headlight_R_r35_signal_R_0.geometry}
+					material={gltf.materials.r35_signal_R}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_gauges_r35_plastic_grey_0.geometry}
+					material={gltf.materials.r35_plastic_grey}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_gauges_r35_display_0.geometry}
+					material={gltf.materials.r35_display}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_gauges_r35_interior_0.geometry}
+					material={gltf.materials.r35_interior}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_gauges_r35_gauges_0.geometry}
+					material={gltf.materials.r35_gauges}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_gauges_r35_display_segment_lowerleft_0.geometry}
+					material={gltf.materials.r35_display_segment_lowerleft}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_gauges_r35_display_segment_lowerright_0.geometry}
+					material={gltf.materials.r35_display_segment_lowerright}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_gauges_r35_display_segment_center_0.geometry}
+					material={gltf.materials.r35_display_segment_center}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_gauges_r35_display_segment_bottom_0.geometry}
+					material={gltf.materials.r35_display_segment_bottom}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_gauges_r35_display_segment_top_0.geometry}
+					material={gltf.materials.r35_display_segment_top}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_gauges_r35_display_segment_upperleft_0.geometry}
+					material={gltf.materials.r35_display_segment_upperleft}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_gauges_r35_display_segment_upperright_0.geometry}
+					material={gltf.materials.r35_display_segment_upperright}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_doorpanel_R_be_r35_leather_0.geometry}
+					material={gltf.materials.r35_leather}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_doorpanel_R_be_r35_plastic_0.geometry}
+					material={gltf.materials.r35_plastic}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_doorpanel_R_be_r35_carpet_0.geometry}
+					material={gltf.materials.r35_carpet}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_doorpanel_R_be_r35_interior_0.geometry}
+					material={gltf.materials.r35_interior}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_doorpanel_R_be_r35_mesh_0.geometry}
+					material={gltf.materials.r35_mesh}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_doorpanel_R_be_r35_leather_stitching_0.geometry}
+					material={gltf.materials.r35_leather_stitching}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_doorpanel_R_be_r35_leather_perf_0.geometry}
+					material={gltf.materials.r35_leather_perf}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_doorpanel_L_be_r35_leather_0.geometry}
+					material={gltf.materials.r35_leather}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_doorpanel_L_be_r35_plastic_0.geometry}
+					material={gltf.materials.r35_plastic}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_doorpanel_L_be_r35_carpet_0.geometry}
+					material={gltf.materials.r35_carpet}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_doorpanel_L_be_r35_interior_0.geometry}
+					material={gltf.materials.r35_interior}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_doorpanel_L_be_r35_mesh_0.geometry}
+					material={gltf.materials.r35_mesh}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_doorpanel_L_be_r35_leather_stitching_0.geometry}
+					material={gltf.materials.r35_leather_stitching}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_doorpanel_L_be_r35_leather_perf_0.geometry}
+					material={gltf.materials.r35_leather_perf}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_door_R_r35_misc_0.geometry}
+					material={gltf.materials.r35_misc}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_door_R_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_door_R_r35_badges_0.geometry}
+					material={gltf.materials.r35_badges}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_door_R_r35_leather_0.geometry}
+					material={gltf.materials.r35_leather}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_door_R_r35_plastic_0.geometry}
+					material={gltf.materials.r35_plastic}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_body_r35_misc_0.geometry}
+					material={gltf.materials.r35_misc}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_body_r35_chassis_0.geometry}
+					material={gltf.materials.r35_chassis}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_body_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+				<T.Mesh geometry={gltf.nodes.r35_body_mirror_0.geometry} material={gltf.materials.mirror} />
+				<T.Mesh
+					geometry={gltf.nodes.r35_body_r35_badges_0.geometry}
+					material={gltf.materials.r35_badges}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_body_r35_leather_0.geometry}
+					material={gltf.materials.r35_leather}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_body_r35_plastic_0.geometry}
+					material={gltf.materials.r35_plastic}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_body_r35_carpet_0.geometry}
+					material={gltf.materials.r35_carpet}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_body_r35_interior_0.geometry}
+					material={gltf.materials.r35_interior}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_body_r35_mesh_0.geometry}
+					material={gltf.materials.r35_mesh}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_body_r35_cloth_0.geometry}
+					material={gltf.materials.r35_cloth}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_body_r35_engine_0.geometry}
+					material={gltf.materials.r35_engine}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_engbaycrap_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_engbaycrap_Meo_turbo_black_0.geometry}
+					material={gltf.materials.Meo_turbo_black}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_engbaycrap_Meo_turbo_Gray_0.geometry}
+					material={gltf.materials.Meo_turbo_Gray}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_engbaycrap_Meo_turbo_chrome_0.geometry}
+					material={gltf.materials.Meo_turbo_chrome}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_engbaycrap_Meo_turbo_gold_0.geometry}
+					material={gltf.materials.Meo_turbo_gold}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_engbaycrap_Meo_turbo_matblack_0.geometry}
+					material={gltf.materials.Meo_turbo_matblack}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_engbaycrap_Meo_turbo_red_0.geometry}
+					material={gltf.materials.Meo_turbo_red}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_engine_Meo_turbo_black_0.geometry}
+					material={gltf.materials.Meo_turbo_black}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_engine_Meo_turbo_Gray_0.geometry}
+					material={gltf.materials.Meo_turbo_Gray}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_engine_Meo_turbo_chrome_0.geometry}
+					material={gltf.materials.Meo_turbo_chrome}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_engine_Meo_turbo_gold_0.geometry}
+					material={gltf.materials.Meo_turbo_gold}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_engine_Meo_turbo_matblack_0.geometry}
+					material={gltf.materials.Meo_turbo_matblack}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_engine_Meo_turbo_red_0.geometry}
+					material={gltf.materials.Meo_turbo_red}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_engine_r35_engines_0.geometry}
+					material={gltf.materials.r35_engines}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_trunk_cf_r35_misc_0.geometry}
+					material={gltf.materials.r35_misc}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_trunk_cf_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_trunk_cf_r35_badges_0.geometry}
+					material={gltf.materials.r35_badges}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_trunk_cf_r35_leather_0.geometry}
+					material={gltf.materials.r35_leather}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_trunk_cf_r35_plastic_grey_0.geometry}
+					material={gltf.materials.r35_plastic_grey}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_trunk_cf_r35_plastic_0.geometry}
+					material={gltf.materials.r35_plastic}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_trunk_cf_r35_carpet_0.geometry}
+					material={gltf.materials.r35_carpet}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_fender_L_cf_r35_misc_0.geometry}
+					material={gltf.materials.r35_misc}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_fender_L_cf_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_fender_L_cf_r35_badges_0.geometry}
+					material={gltf.materials.r35_badges}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_fender_R_cf_r35_misc_0.geometry}
+					material={gltf.materials.r35_misc}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_fender_R_cf_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_fender_R_cf_r35_badges_0.geometry}
+					material={gltf.materials.r35_badges}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_mirror_R_cf_r35_misc_0.geometry}
+					material={gltf.materials.r35_misc}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_mirror_R_cf_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_mirror_R_cf_mirror_0.geometry}
+					material={gltf.materials.mirror}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_mirror_L_cf_r35_misc_0.geometry}
+					material={gltf.materials.r35_misc}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_mirror_L_cf_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_mirror_L_cf_mirror_0.geometry}
+					material={gltf.materials.mirror}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes['3_Wheel001_amdb11_brake002_0'].geometry}
+					material={gltf.materials['amdb11_brake.002']}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes['3_Wheel001_amdb11_misc_chrome002_0'].geometry}
+					material={gltf.materials['amdb11_misc_chrome.002']}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes['3_Wheel001_amdb11_misc002_0'].geometry}
+					material={gltf.materials['amdb11_misc.002']}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes['3_Wheel001_amdb11_caliper002_0'].geometry}
+					material={gltf.materials['amdb11_caliper.002']}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes['3_Wheel003_amdb11_brake002_0'].geometry}
+					material={gltf.materials['amdb11_brake.002']}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes['3_Wheel003_amdb11_misc_chrome002_0'].geometry}
+					material={gltf.materials['amdb11_misc_chrome.002']}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes['3_Wheel003_amdb11_misc002_0'].geometry}
+					material={gltf.materials['amdb11_misc.002']}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes['3_Wheel003_amdb11_caliper002_0'].geometry}
+					material={gltf.materials['amdb11_caliper.002']}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes['3_Wheel005_amdb11_brake002_0'].geometry}
+					material={gltf.materials['amdb11_brake.002']}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes['3_Wheel005_amdb11_misc_chrome002_0'].geometry}
+					material={gltf.materials['amdb11_misc_chrome.002']}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes['3_Wheel005_amdb11_misc002_0'].geometry}
+					material={gltf.materials['amdb11_misc.002']}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes['3_Wheel005_amdb11_caliper002_0'].geometry}
+					material={gltf.materials['amdb11_caliper.002']}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes['3_Wheel007_amdb11_brake002_0'].geometry}
+					material={gltf.materials['amdb11_brake.002']}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes['3_Wheel007_amdb11_misc_chrome002_0'].geometry}
+					material={gltf.materials['amdb11_misc_chrome.002']}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes['3_Wheel007_amdb11_misc002_0'].geometry}
+					material={gltf.materials['amdb11_misc.002']}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes['3_Wheel007_amdb11_caliper002_0'].geometry}
+					material={gltf.materials['amdb11_caliper.002']}
+				/>
+			</T.Group>
+			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
+				<T.Mesh
+					geometry={gltf.nodes.r35_door_R001_r35_misc_0.geometry}
+					material={gltf.materials.r35_misc}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_door_R001_r35_paint_0.geometry}
+					material={gltf.materials.r35_paint}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_door_R001_r35_badges_0.geometry}
+					material={gltf.materials.r35_badges}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_door_R001_r35_leather_0.geometry}
+					material={gltf.materials.r35_leather}
+				/>
+				<T.Mesh
+					geometry={gltf.nodes.r35_door_R001_r35_plastic_0.geometry}
+					material={gltf.materials.r35_plastic}
+				/>
+			</T.Group>
+			<T.Mesh
+				geometry={gltf.nodes.r35_transmission_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_transfercase_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_tierod_F_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_driveshaft_F_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_driveshaft_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_bumperbar_F_r35_chassis_0.geometry}
+				material={gltf.materials.r35_chassis}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_tierod_R_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_swaybar_R_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_subframe_R_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_spring_R_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_shock_R_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_lowerarm_R_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_hub_R_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_halfshaft_R_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_diff_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_swaybar_F_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_lowerarm_F_b_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_steeringbox_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_hub_F_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_halfshaft_F_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_diff_F_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_strut_F_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_subframe_F_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_radiator_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_signalstalk_r35_interior_0.geometry}
+				material={gltf.materials.r35_interior}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_needle_fuel_r35_gauges_0.geometry}
+				material={gltf.materials.r35_gauges}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_needle_temp_r35_gauges_0.geometry}
+				material={gltf.materials.r35_gauges}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_needle_tacho_r35_gauges_0.geometry}
+				material={gltf.materials.r35_gauges}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_needle_speedo_r35_gauges_0.geometry}
+				material={gltf.materials.r35_gauges}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_lettering_nismo_r35_paint_0.geometry}
+				material={gltf.materials.r35_paint}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_wheel_05a_20x11_r35_wheel_05a_0.geometry}
+				material={gltf.materials.r35_wheel_05a}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_windshield_r35_glass_0.geometry}
+				material={gltf.materials.r35_glass}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_taillightglass_R_r35_glass001_0.geometry}
+				material={gltf.materials['r35_glass.001']}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_taillightglass_L_r35_glass001_0.geometry}
+				material={gltf.materials['r35_glass.001']}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_sideskirts_cf_r35_paint_0.geometry}
+				material={gltf.materials.r35_paint}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_sideglass_R_r35_glass_0.geometry}
+				material={gltf.materials.r35_glass}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_sideglass_L_r35_glass_0.geometry}
+				material={gltf.materials.r35_glass}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_rollcage_r35_misc_0.geometry}
+				material={gltf.materials.r35_misc}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_logo_R_r35_badges_0.geometry}
+				material={gltf.materials.r35_badges}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_lettering_specv_r35_badges_0.geometry}
+				material={gltf.materials.r35_badges}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_lettering_gtr_r35_badges_0.geometry}
+				material={gltf.materials.r35_badges}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_headlightglass_R_r35_glass_0.geometry}
+				material={gltf.materials.r35_glass}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_headlightglass_L_r35_glass_0.geometry}
+				material={gltf.materials.r35_glass}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_doorglass_R_r35_glass_0.geometry}
+				material={gltf.materials.r35_glass}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_doorglass_L_r35_glass_0.geometry}
+				material={gltf.materials.r35_glass}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_backlight_r35_glass_0.geometry}
+				material={gltf.materials.r35_glass}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_speedunit_r35_display_0.geometry}
+				material={gltf.materials.r35_display}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_speedunit_2012_r35_display_0.geometry}
+				material={gltf.materials.r35_display}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_gaspedal_r35_0.geometry}
+				material={gltf.materials.material}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_brakepedal_gtr_interior_0.geometry}
+				material={gltf.materials.gtr_interior}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_roof_cf_r35_paint_0.geometry}
+				material={gltf.materials.r35_paint}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_tubs_r35_chassis_0.geometry}
+				material={gltf.materials.r35_chassis}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes['3_Wheel_Scene_-_Root002_0'].geometry}
+				material={gltf.materials['Scene_-_Root.002']}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_wheel_05a_20x11001_r35_wheel_05a_0.geometry}
+				material={gltf.materials.r35_wheel_05a}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes['3_Wheel002_Scene_-_Root002_0'].geometry}
+				material={gltf.materials['Scene_-_Root.002']}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_wheel_05a_20x11002_r35_wheel_05a_0.geometry}
+				material={gltf.materials.r35_wheel_05a}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes['3_Wheel004_Scene_-_Root002_0'].geometry}
+				material={gltf.materials['Scene_-_Root.002']}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes.r35_wheel_05a_20x11003_r35_wheel_05a_0.geometry}
+				material={gltf.materials.r35_wheel_05a}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+			<T.Mesh
+				geometry={gltf.nodes['3_Wheel006_Scene_-_Root002_0'].geometry}
+				material={gltf.materials['Scene_-_Root.002']}
+				rotation={[-Math.PI / 2, 0, 0]}
+				scale={100}
+			/>
+		</T.Group>
+	{:catch error}
+		<slot name="error" {error} />
+	{/await}
 
-  <slot {ref} />
+	<slot {ref} />
 </T>
