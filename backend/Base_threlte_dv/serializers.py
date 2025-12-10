@@ -29,10 +29,17 @@ class GeometrySerializer(serializers.ModelSerializer):
         # Créer l'instance Geometry sans le fichier pour l'instant
         geometry_instance = Geometry.objects.create(**validated_data)
 
-        if model_file:
+if model_file:
             # Assigner le fichier à l'instance, ce qui déclenche l'upload Cloudinary
             geometry_instance.model_file = model_file
             geometry_instance.save() # Sauvegarde pour que model_file soit traité
+
+            # Debug: Check what attributes are available
+            print(f"DEBUG: model_file = {geometry_instance.model_file}")
+            print(f"DEBUG: hasattr public_id: {hasattr(geometry_instance.model_file, 'public_id')}")
+            print(f"DEBUG: hasattr url: {hasattr(geometry_instance.model_file, 'url')}")
+            if hasattr(geometry_instance.model_file, 'url'):
+                print(f"DEBUG: url = {geometry_instance.model_file.url}")
 
             # Après la sauvegarde, model_file.public_id et .url sont disponibles
             if hasattr(geometry_instance.model_file, 'public_id'):
