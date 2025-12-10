@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import GeometryViewSet, TypeView
+from . import storage_views
 
 
 def debug_env(request):
@@ -27,5 +28,19 @@ router.register("geometries", GeometryViewSet, basename="geometries")
 urlpatterns = [
     path("types/", TypeView.as_view(), name="types"),
     path("debug-env/", debug_env, name="debug-env"),
+    path(
+        "storage/",
+        include(
+            [
+                path("info/", storage_views.storage_info, name="storage-info"),
+                path(
+                    "backends/", storage_views.storage_backends, name="storage-backends"
+                ),
+                path("switch/", storage_views.storage_switch, name="storage-switch"),
+                path("test/", storage_views.storage_test, name="storage-test"),
+                path("status/", storage_views.storage_status, name="storage-status"),
+            ]
+        ),
+    ),
     path("", include(router.urls)),
 ]
