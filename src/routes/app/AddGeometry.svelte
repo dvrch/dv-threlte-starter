@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, createEventDispatcher } from 'svelte';
 	import { addToast } from '$lib/stores/toasts';
-	import { API_ENDPOINTS } from '$lib/config';
+	import { ENDPOINTS } from '$lib/config';
 
 	const { selectedGeometry = null } = $props();
 
@@ -38,31 +38,17 @@
 
 	const loadTypes = async () => {
 		try {
-			console.log('Fetching from:', API_ENDPOINTS.TYPES);
-			const response = await fetch(API_ENDPOINTS.TYPES, {
+			const response = await fetch(ENDPOINTS.TYPES, {
 				headers: { Accept: 'application/json' }
 			});
-
-			console.log('Response status (Types):', response.status);
-			const text = await response.text();
-			console.log('Response text (Types, first 500 chars):', text.substring(0, 500));
-
-			if (!response.ok) {
-				throw new Error(`HTTP ${response.status}: ${text}`);
-			}
-
-			const data = JSON.parse(text);
-			console.log('Parsed data (Types):', data);
-
+			if (!response.ok) throw new Error(`HTTP ${response.status}`);
+			const data = await response.json();
 			if (Array.isArray(data)) {
 				types = data.map((type) => type.id);
-			} else {
-				console.error('Expected array for types but got:', data);
-				types = [];
 			}
 		} catch (error) {
 			console.error('Error loading types:', error);
-			addToast('Failed to load types. Please try again.', 'error');
+			addToast('Failed to load types.', 'error');
 		}
 	};
 
@@ -99,125 +85,69 @@
 
 	const loadGeometries = async () => {
 		try {
-			console.log('Fetching from:', API_ENDPOINTS.GEOMETRIES);
-			const response = await fetch(API_ENDPOINTS.GEOMETRIES, {
+			const response = await fetch(ENDPOINTS.GEOMETRIES, {
 				headers: { Accept: 'application/json' }
 			});
-
-			console.log('Response status (Geometries):', response.status);
-			const text = await response.text();
-			console.log('Response text (Geometries, first 500 chars):', text.substring(0, 500));
-
-			if (!response.ok) {
-				throw new Error(`HTTP ${response.status}: ${text}`);
-			}
-
-			const data = JSON.parse(text);
-			console.log('Parsed data (Geometries):', data);
-
+			if (!response.ok) throw new Error(`HTTP ${response.status}`);
+			const data = await response.json();
 			if (data.results && Array.isArray(data.results)) {
 				geometries = data.results;
 			} else if (Array.isArray(data)) {
 				geometries = data;
-			} else {
-				console.error('Unexpected data format for geometries:', data);
-				geometries = [];
 			}
 		} catch (error) {
 			console.error('Error loading geometries:', error);
-			addToast('Failed to load geometries. Please try again.', 'error');
+			addToast('Failed to load geometries.', 'error');
 		}
 	};
-
-	// import { upload } from '@vercel/blob/client';
 
 	const handleSubmit = async () => {
 		isLoading = true;
 		try {
-			let modelUrl = '';
-
-			// 1. Client-side Upload to Vercel Blob
-			// 1. Upload to Backend (Cloudinary via Django)
-			if (file) {
-				const formData = new FormData();
-				formData.append('file', file);
-
-				// Assuming the backend has an upload endpoint that returns { url: '...' }
-				// We use API_ENDPOINTS.UPLOAD_BLOB or fallback to a standard upload path
-				const uploadUrl = API_ENDPOINTS.UPLOAD_BLOB || `${API_ENDPOINTS.GEOMETRIES}upload/`;
-
-				console.log('Uploading file to:', uploadUrl);
-				const uploadResponse = await fetch(uploadUrl, {
-					method: 'POST',
-					body: formData
-				});
-
-				if (!uploadResponse.ok) {
-					const errText = await uploadResponse.text();
-					throw new Error(`Upload failed: ${uploadResponse.status} ${errText}`);
-				}
-
-				const uploadData = await uploadResponse.json();
-				modelUrl = uploadData.url || uploadData.file || uploadData.link;
-				if (!modelUrl) throw new Error('No URL returned from upload endpoint');
-
-				addToast('File uploaded successfully!', 'success');
-			}
-
-			// 2. Submit Metadata to Django
+			const formData = new FormData();
+			
 			const randomId = Math.random().toString(36).substring(2, 7);
-			const uniqueName = isEditing ? name : `${name || (file ? file.name : 'geo')}-${randomId}`;
+			const uniqueName = isEditing ? name : `${name || (file ? file.name.split('.')[0] : 'geo')}-${randomId}`;
 
-			const geometryData: any = {
-				name: uniqueName,
-				type: type,
-				color: color,
-				position: position, // JSON automatically serialized
-				rotation: rotation,
-				model_url: modelUrl || undefined
-			};
+			formData.append('name', uniqueName);
+			formData.append('color', color);
+			formData.append('position', JSON.stringify(position));
+			formData.append('rotation', JSON.stringify(rotation));
 
-			// Si on edit et qu'on a pas changé le fichier, on ne met pas model_url (ou on garde l'ancien)
-			// Mais ici on simplifie: si modelUrl est vide, le backend garde l'ancien si PATCH/PUT partiel?
-			// Attention: pour PUT il faut tout envoyer. Pour PATCH c'est partiel.
-			// Ici on utilise PUT pour update complet ou POST pour create.
-
-			// Si c'est un upload de fichier, on force le type 'gltf_model' pour le backend
 			if (file) {
-				geometryData.type = 'gltf_model';
+				formData.append('model_file', file);
+				formData.append('type', 'gltf_model');
 				const ext = file.name.split('.').pop()?.toLowerCase();
-				if (ext) geometryData.model_type = ext;
+				if (ext) formData.append('model_type', ext);
+			} else {
+				formData.append('type', type);
 			}
 
-			let url = API_ENDPOINTS.GEOMETRIES;
+			let url = ENDPOINTS.GEOMETRIES;
 			let method = 'POST';
 
 			if (isEditing && selectedGeometryId) {
 				url = `${url}${selectedGeometryId}/`;
-				method = 'PUT'; // Ou PATCH si on veut
+				method = 'PUT'; // PUT pour une mise à jour complète
 			}
 
-			// Envoi JSON uniquement ! Plus de FormData pour le fichier vers Django
 			const response = await fetch(url, {
 				method,
-				headers: {
-					'Content-Type': 'application/json',
-					Accept: 'application/json'
-				},
-				body: JSON.stringify(geometryData)
+				body: formData
+				// Pas de 'Content-Type', le navigateur le définit correctement pour FormData
 			});
 
 			if (!response.ok) {
-				const errorData = await response.json().catch(() => ({}));
-				throw new Error(errorData.name?.[0] || errorData.detail || 'Save failed');
+				const errorData = await response.json().catch(() => ({ detail: 'Save failed' }));
+				throw new Error(errorData.name?.[0] || errorData.detail);
 			}
 
 			addToast(isEditing ? 'Geometry updated!' : 'Geometry added!', 'success');
 
-			// Après succès, rafraîchir et notifier
 			if (!isEditing) resetForm();
 			dispatch('geometryChanged');
 			window.dispatchEvent(new Event('modelAdded'));
+			await loadGeometries(); // Recharger la liste
 		} catch (error) {
 			console.error('Submit error:', error);
 			addToast(error.message, 'error');
@@ -240,7 +170,7 @@
 	const deleteGeometry = async () => {
 		if (!selectedGeometryId) return;
 		try {
-			const response = await fetch(`${API_ENDPOINTS.GEOMETRIES}${selectedGeometryId}/`, {
+			const response = await fetch(`${ENDPOINTS.GEOMETRIES}${selectedGeometryId}/`, {
 				method: 'DELETE'
 			});
 			if (!response.ok) throw new Error('Failed to delete geometry');
@@ -248,6 +178,7 @@
 			resetForm();
 			dispatch('geometryChanged');
 			window.dispatchEvent(new Event('modelAdded'));
+			await loadGeometries(); // Recharger la liste
 		} catch (error) {
 			console.error('Error deleting geometry:', error);
 			addToast('Failed to delete geometry', 'error');
@@ -256,7 +187,7 @@
 
 	const loadGeometryDetails = async (id: string) => {
 		try {
-			const response = await fetch(`${API_ENDPOINTS.GEOMETRIES}${id}/`);
+			const response = await fetch(`${ENDPOINTS.GEOMETRIES}${id}/`);
 			if (!response.ok) throw new Error('Failed to fetch geometry details');
 			const geometry = await response.json();
 			name = geometry.name;
