@@ -1,7 +1,7 @@
 <script>
 	import { FilmStore } from '../../film-store';
 	import { onMount } from 'svelte';
-	import { API_ENDPOINTS } from '$lib/config';
+	import { ENDPOINTS } from '$lib/config';
 
 	let tags = $state([]);
 	let selectedTag = $state('');
@@ -22,7 +22,7 @@
 
 	onMount(async function () {
 		if (!$FilmStore.length) {
-			const endpoint = API_ENDPOINTS.FILMS;
+			const endpoint = ENDPOINTS.FILMS;
 			try {
 				const response = await fetch(endpoint);
 				if (!response.ok) {
@@ -38,7 +38,7 @@
 	});
 
 	let handleDelete = (id) => {
-		const endpoint = `${API_ENDPOINTS.FILMS}${id}/`;
+		const endpoint = `${ENDPOINTS.FILMS}${id}/`;
 		fetch(endpoint, { method: 'DELETE' }).then((response) => {
 			if (response.status == 204) {
 				FilmStore.update((prev) => prev.filter((film) => film.id != id));
