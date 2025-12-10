@@ -4,7 +4,7 @@
 	import Dynamic3DModel from '$lib/components/Dynamic3DModel.svelte';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
-	import { API_ENDPOINTS } from '$lib/config';
+	import { ENDPOINTS } from '$lib/config';
 
 	let geometries = $state([]);
 	let loading = $state(true);
@@ -13,7 +13,7 @@
 	// Function to fetch geometries
 	const fetchGeometries = async () => {
 		try {
-			const apiUrl = API_ENDPOINTS.GEOMETRIES;
+			const apiUrl = ENDPOINTS.GEOMETRIES;
 			console.log('Fetching geometries from:', apiUrl);
 			const response = await fetch(apiUrl);
 
