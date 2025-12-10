@@ -10,7 +10,7 @@ Command: npx @threlte/gltf@2.0.3 /home/ubt/DpDIST/Web_site_3D_anime_By_DV/static
 
   export const ref = new Group()
 
-  const gltf = useGltf('/models/DcYcU.glb')
+  const gltf = useGltf('https://f001.backblazeb2.com/file/43dvcapp/models/DcYcU.glb')
 
   const component = forwardEventHandlers()
 </script>

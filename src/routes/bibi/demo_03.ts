@@ -5,9 +5,9 @@ const scene = new THREE.Scene()
 
 const camera = new THREE.PerspectiveCamera(70, iw / ih)
 
-const geometry = await GLTFLoader.loadGeometry('mario.glb')
+const geometry = await GLTFLoader.loadGeometry('https://f001.backblazeb2.com/file/43dvcapp/models/mario.glb')
 
-const texture = new THREE.TextureLoader().load('mario.png')
+const texture = new THREE.TextureLoader().load('https://f001.backblazeb2.com/file/43dvcapp/textures/mario.png')
 const material = new THREE.MeshPhongMaterial({ map:texture,shininess:0})
 
 const mesh = new THREE.Mesh(geometry, material)

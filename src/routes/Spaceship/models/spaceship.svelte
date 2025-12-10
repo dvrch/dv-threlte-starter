@@ -13,8 +13,8 @@
 
   onMount(() => {
     if (browser) {
-      gltf = useGltf('/models/spaceship.glb');
-      map = useTexture('/textures/energy-beam-opacity.png');
+      gltf = useGltf('https://f001.backblazeb2.com/file/43dvcapp/models/spaceship.glb');
+      map = useTexture('https://f001.backblazeb2.com/file/43dvcapp/textures/energy-beam-opacity.png');
     }
   });
 

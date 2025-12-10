@@ -7,7 +7,7 @@
 	let colors = ['#fcaa67', '#C75D59', '#ffffc7', '#8CC5C6', '#A5898C'];
 	let stars = [];
 	// src/routes/Spaceship/star.png
-	const map = useTexture('/textures/star.png'); // Modifié pour le chemin correct
+	const map = useTexture('https://f001.backblazeb2.com/file/43dvcapp/textures/star.png'); // Modifié pour le chemin correct
 	function r(min, max) {
 		let diff = Math.random() * (max - min);
 		return min + diff;

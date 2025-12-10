@@ -39,6 +39,11 @@ urlpatterns = [
                 path("switch/", storage_views.storage_switch, name="storage-switch"),
                 path("test/", storage_views.storage_test, name="storage-test"),
                 path("status/", storage_views.storage_status, name="storage-status"),
+                path(
+                    "b2/<str:asset_name>/",
+                    storage_views.b2_asset_proxy,
+                    name="b2-asset-proxy",
+                ),
             ]
         ),
     ),

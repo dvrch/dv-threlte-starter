@@ -5,9 +5,9 @@ const scene = new THREE.Scene()
 
 const camera = new THREE.PerspectiveCamera(70, window.innerWidth * 0.89 / window.innerHeight * 0.89)
 
-const geometry = await GLTFLoader.load('bibi.glb')
+const geometry = await GLTFLoader.load('https://f001.backblazeb2.com/file/43dvcapp/models/bibi.glb')
 
-const texture = new THREE.TextureLoader().load('bibi.png')
+const texture = new THREE.TextureLoader().load('https://f001.backblazeb2.com/file/43dvcapp/textures/bibi.png')
 const material = new THREE.MeshPhongMaterial({ map:texture,shininess:0})
 
 const mesh = new THREE.Mesh(geometry, material)

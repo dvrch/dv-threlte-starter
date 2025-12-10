@@ -10,7 +10,7 @@ Command: npx @threlte/gltf@2.0.0 C:\Users\Utente\Desktop\Trasferimento-PC\Projec
 
   export const ref = new Group()
 
-  const gltf = useGltf('/models/threlte.glb')
+  const gltf = useGltf('https://f001.backblazeb2.com/file/43dvcapp/models/threlte.glb')
 
   const component = forwardEventHandlers()
 </script>
