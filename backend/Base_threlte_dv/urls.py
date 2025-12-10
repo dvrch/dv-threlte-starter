@@ -41,7 +41,7 @@ urlpatterns = [
                 path("test/", storage_views.storage_test, name="storage-test"),
                 path("status/", storage_views.storage_status, name="storage-status"),
                 path(
-                    "b2/<str:asset_name>/",
+                    "b2/upload/<str:asset_name>/",
                     storage_views.b2_upload,
                     name="b2-upload",
                 ),
