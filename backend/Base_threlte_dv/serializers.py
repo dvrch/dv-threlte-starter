@@ -36,7 +36,7 @@ class GeometrySerializer(serializers.ModelSerializer):
 
             # Après la sauvegarde, model_file.public_id et .url sont disponibles
             if hasattr(geometry_instance.model_file, 'public_id'):
-                asset, created = CloudinaryAsset.objects.update_or_create(
+asset, created = CloudinaryAsset.objects.update_or_create(
                     public_id=geometry_instance.model_file.public_id,
                     defaults={
                         'asset_id': getattr(geometry_instance.model_file, 'asset_id', None),

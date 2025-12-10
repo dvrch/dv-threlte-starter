@@ -1,5 +1,5 @@
 import random
-import cloudinary # Added import for cloudinary
+import cloudinary  # Added import for cloudinary
 from cloudinary_storage.storage import RawMediaCloudinaryStorage
 
 from django.db import models
@@ -25,16 +25,15 @@ class Geometry(models.Model):
         blank=True,
         null=True,
         help_text="Fichier 3D local (.glb, .gltf)",
-        storage=RawMediaCloudinaryStorage(),
     )
 
     # Remplacé par une ForeignKey pour une source de vérité unique
     asset = models.ForeignKey(
-        'CloudinaryAsset',
+        "CloudinaryAsset",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        help_text="Lien vers l'asset Cloudinary correspondant"
+        help_text="Lien vers l'asset Cloudinary correspondant",
     )
 
     # Type de fichier 3D
@@ -67,11 +66,14 @@ class BlobLog(models.Model):
     Journal des fichiers uploadés sur Vercel Blob.
     Permet de garder une trace locale (en DB Neon) de ce qui est dans le Cloud.
     """
+
     filename = models.CharField(max_length=255)
     url = models.URLField(max_length=1024)
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    file_size = models.PositiveIntegerField(null=True, blank=True, help_text="Taille en octets")
-    
+    file_size = models.PositiveIntegerField(
+        null=True, blank=True, help_text="Taille en octets"
+    )
+
     class Meta:
         ordering = ["-uploaded_at"]
 
@@ -80,15 +82,34 @@ class BlobLog(models.Model):
 
 
 class CloudinaryAsset(models.Model):
-    asset_id = models.CharField(max_length=255, blank=True, null=True, help_text="Cloudinary Asset ID (unique, non-editable)")
-    public_id = models.CharField(max_length=255, unique=True, help_text="Cloudinary Public ID")
+    asset_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Cloudinary Asset ID (unique, non-editable)",
+    )
+    public_id = models.CharField(
+        max_length=255, unique=True, help_text="Cloudinary Public ID"
+    )
     url = models.URLField(max_length=1024, help_text="URL de l'asset sur Cloudinary")
-    asset_type = models.CharField(max_length=50, help_text="Type d'asset (image, video, raw, etc.)")
-    file_name = models.CharField(max_length=255, blank=True, null=True, help_text="Nom original du fichier")
-    format = models.CharField(max_length=50, blank=True, help_text="Format du fichier (ex: glb, png)")
-    file_size = models.PositiveIntegerField(null=True, blank=True, help_text="Taille du fichier en octets")
-    tags = models.JSONField(default=list, blank=True, help_text="Tags associés à l'asset")
-    metadata = models.JSONField(default=dict, blank=True, help_text="Métadonnées additionnelles de Cloudinary")
+    asset_type = models.CharField(
+        max_length=50, help_text="Type d'asset (image, video, raw, etc.)"
+    )
+    file_name = models.CharField(
+        max_length=255, blank=True, null=True, help_text="Nom original du fichier"
+    )
+    format = models.CharField(
+        max_length=50, blank=True, help_text="Format du fichier (ex: glb, png)"
+    )
+    file_size = models.PositiveIntegerField(
+        null=True, blank=True, help_text="Taille du fichier en octets"
+    )
+    tags = models.JSONField(
+        default=list, blank=True, help_text="Tags associés à l'asset"
+    )
+    metadata = models.JSONField(
+        default=dict, blank=True, help_text="Métadonnées additionnelles de Cloudinary"
+    )
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
