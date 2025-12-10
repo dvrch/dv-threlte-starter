@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 # Diagnostic view
 def health_check(request):
-    """Health check endpoint for debugging - v2"""
+    """Health check endpoint for debugging - v3"""
     response_data = {
         "status": "ok",
         "debug": settings.DEBUG,
