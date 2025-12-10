@@ -1,7 +1,7 @@
 <script>
 	import { FilmStore } from '../../../film-store';
 	import { onMount } from 'svelte';
-	import { API_ENDPOINTS } from '$lib/config';
+	import { ENDPOINTS } from '$lib/config';
 
 	// Mode runes : récupération des props via $props()
 	let { data } = $props();

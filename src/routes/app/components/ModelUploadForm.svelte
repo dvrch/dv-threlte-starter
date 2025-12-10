@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import { notification } from '$lib/stores/notification';
-	import { API_ENDPOINTS } from '$lib/config';
+	import { ENDPOINTS } from '$lib/config';
 
 	let file: File | null = null;
 	let isUploading = false;

@@ -2,7 +2,7 @@
 	import { FilmStore } from '../../../../film-store';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import { API_ENDPOINTS } from '$lib/config';
+	import { ENDPOINTS } from '$lib/config';
 
 	// Runes : récupération des props
 	let { data } = $props();

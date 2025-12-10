@@ -1,7 +1,7 @@
 <script>
 	import { FilmStore } from '../../../film-store';
 	import { goto } from '$app/navigation';
-	import { API_ENDPOINTS } from '$lib/config';
+	import { ENDPOINTS } from '$lib/config';
 
 	let name = $state('');
 	let director = $state('');
