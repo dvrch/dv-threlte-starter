@@ -28,11 +28,13 @@ class Geometry(models.Model):
         storage=RawMediaCloudinaryStorage(),
     )
 
-    # URL du modèle 3D (sera rempli automatiquement)
-    model_url = models.URLField(
-        max_length=1024,
+    # Remplacé par une ForeignKey pour une source de vérité unique
+    asset = models.ForeignKey(
+        'CloudinaryAsset',
+        on_delete=models.SET_NULL,
+        null=True,
         blank=True,
-        help_text="URL du fichier 3D (rempli automatiquement depuis model_file)",
+        help_text="Lien vers l'asset Cloudinary correspondant"
     )
 
     # Type de fichier 3D
@@ -45,48 +47,6 @@ class Geometry(models.Model):
     position = models.JSONField(default=get_default_position)
     rotation = models.JSONField(default=get_default_rotation)
     color = models.CharField(max_length=7, blank=True, default="#000000")  # Couleur
-
-    def save(self, *args, **kwargs):
-        # First, save the instance to handle the file upload via RawMediaCloudinaryStorage.
-        # The `super().save()` call will trigger the upload and populate `self.model_file`
-        # with Cloudinary details like .url and .public_id.
-        super().save(*args, **kwargs)
-
-        # After the save, check if a file was uploaded to Cloudinary.
-        # We can verify this by checking for the `public_id` attribute, which is added
-        # by the cloudinary_storage backend.
-        if self.model_file and hasattr(self.model_file, 'public_id'):
-            
-            # The URL from the storage is the source of truth.
-            correct_url = self.model_file.url
-            
-            # Update the Geometry instance's own model_url field if it's not correct.
-            if self.model_url != correct_url:
-                self.model_url = correct_url
-                # Save again, but only update this one field to prevent an infinite loop.
-                super().save(update_fields=['model_url'])
-
-            # Now, create or update our asset tracking table with the correct info.
-            # This logic no longer makes a second API call. It trusts the upload result.
-            CloudinaryAsset.objects.update_or_create(
-                public_id=self.model_file.public_id,
-                defaults={
-                    'asset_id': getattr(self.model_file, 'asset_id', None),
-                    'url': correct_url,
-                    'asset_type': 'raw',  # We know it's 'raw' because we use RawMediaCloudinaryStorage
-                    'file_name': self.model_file.name,
-                    'file_size': self.model_file.size,
-                }
-            )
-        
-        # This part handles the case where the model_file is cleared in the admin.
-        elif not self.model_file and self.model_url:
-            # If the file is removed, we should also clear our local URL.
-            self.model_url = ""
-            super().save(update_fields=['model_url'])
-            # A more advanced implementation could also delete the CloudinaryAsset entry
-            # or the file on Cloudinary, but that can be dangerous. For now, we just clear the URL.
-
 
     def clean(self):
         if hasattr(self, "color") and self.color and not self.color.startswith("#"):

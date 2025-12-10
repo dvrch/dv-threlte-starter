@@ -1,15 +1,23 @@
-import { dev } from '$app/environment';
+// src/lib/config.ts
 
-export const CONFIG = {
-    API_URL: import.meta.env.VITE_API_URL || import.meta.env.PUBLIC_API_URL || 'http://localhost:8000',
-    CLOUDINARY_CLOUD_NAME: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'drcok7moc',
-    IS_DEV: dev,
+// Récupère l'URL de base de l'API depuis les variables d'environnement de Vite.
+// Le préfixe VITE_ est requis par Vite pour exposer les variables au code client.
+const API_URL = import.meta.env.VITE_PUBLIC_API_URL;
+
+// Vérification pour s'assurer que la variable est définie.
+if (!API_URL) {
+  console.error(
+    "VITE_PUBLIC_API_URL is not defined. Please check your .env file or Vercel project settings."
+  );
+}
+
+// Centralisation de tous les endpoints de l'API.
+export const ENDPOINTS = {
+  GEOMETRIES: `${API_URL}/api/geometries/`,
+  TYPES: `${API_URL}/api/types/`,
+  // Ajoutez d'autres endpoints ici au besoin.
 };
-// Backward compatibility for components using direct fetch
-export const API_ENDPOINTS = {
-    GEOMETRIES: `${CONFIG.API_URL}/api/geometries/`,
-    TYPES: `${CONFIG.API_URL}/api/types/`,
-    FILMS: `${CONFIG.API_URL}/api/films/`,
-    UPLOAD_BLOB: `${CONFIG.API_URL}/api/upload-blob/`,
-    HANDLE_UPLOAD: `${CONFIG.API_URL}/api/handle-upload/`
-};
+
+// Exportation de l'URL de base pour d'autres usages si nécessaire.
+export { API_URL };
+

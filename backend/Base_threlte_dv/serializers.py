@@ -1,28 +1,17 @@
 from rest_framework import serializers
-from .models import Geometry
+from .models import Geometry, CloudinaryAsset
 
 class GeometrySerializer(serializers.ModelSerializer):
-    color_picker = serializers.CharField(required=False)  # Champ pour le color picker
-    model_file = serializers.FileField(write_only=True, required=False)
+    model_file = serializers.FileField(write_only=True, required=False, allow_null=True)
+    # model_url est maintenant un champ en lecture seule qui expose l'URL de l'asset lié.
+    model_url = serializers.URLField(source='asset.url', read_only=True)
 
     class Meta:
         model = Geometry
-        fields = '__all__'
-        extra_kwargs = {
-            'color': {'required': False},  # Rendre le champ 'color' non requis
-            'color_picker': {'required': False},  # Rendre le champ 'color_picker' non requis
-        }
-
-    def validate_color(self, value):
-        if not value.startswith('#'):
-            value = '#' + value  # Ajoute '#' si absent
-        return value
-
-    def create(self, validated_data):
-        # Retirer model_file qui n'est pas un champ du modèle Geometry
-        validated_data.pop('model_file', None)
-        # Si 'color_picker' est fourni, utilisez-le pour définir la couleur
-        if 'color_picker' in validated_data:
-            validated_data['color'] = validated_data.pop('color_picker')
-        return super().create(validated_data)  # Appel à la méthode de création par défaut
+        # On expose 'model_url' qui est maintenant en lecture seule
+        fields = [
+            'id', 'type', 'name', 'model_file', 'model_url', 'model_type', 
+            'position', 'rotation', 'color', 'asset'
+        ]
+        read_only_fields = ['asset'] # Le champ 'asset' sera géré par la vue, pas directement par le client.
 
