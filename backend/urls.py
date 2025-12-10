@@ -1,4 +1,5 @@
 import logging
+import os
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -18,7 +19,7 @@ def health_check(request):
         "debug": settings.DEBUG,
         "secret_key_set": bool(settings.SECRET_KEY),
         "allowed_hosts": settings.ALLOWED_HOSTS,
-        "use_cloudinary": getattr(settings, "USE_CLOUDINARY", False),
+        "use_cloudinary": os.environ.get("USE_CLOUDINARY", "False") == "True",
         "cloudinary_config": {
             "cloud_name": getattr(settings, "CLOUDINARY_STORAGE", {}).get(
                 "CLOUD_NAME", None
