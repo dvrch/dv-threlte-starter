@@ -244,10 +244,11 @@ if USE_B2_STORAGE:
     AWS_S3_ENDPOINT_URL = os.environ.get("B2_ENDPOINT_URL")
     AWS_S3_REGION_NAME = os.environ.get("B2_REGION", "eu-central-003")
 
-    # URL des médias
+    # URL des médias - utiliser l'URL friendly B2 pour accès public
+    B2_FRIENDLY_URL = "https://f003.backblazeb2.com/file"
     MEDIA_URL = (
-        f"{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/"
-        if AWS_S3_ENDPOINT_URL and AWS_STORAGE_BUCKET_NAME
+        f"{B2_FRIENDLY_URL}/{AWS_STORAGE_BUCKET_NAME}/"
+        if AWS_STORAGE_BUCKET_NAME
         else "/media/"
     )
 
