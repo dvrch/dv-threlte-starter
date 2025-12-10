@@ -3,7 +3,7 @@
 	import { useGltf } from '@threlte/extras';
 	import * as THREE from 'three';
 	import { browser } from '$app/environment';
-	import { getModelUrlByName } from '$lib/utils/geometry-loader';
+	import { getModelUrlByType } from '$lib/utils/geometry-loader';
 
 	let {
 		position = [0, 0, 0],
@@ -20,7 +20,7 @@
 	let gltf: any = $state(null);
 
 	// Find the model URL from API
-	getModelUrlByName('bibi').then((url) => {
+	getModelUrlByType('bibigame').then((url) => {
 		modelUrl = url;
 	});
 

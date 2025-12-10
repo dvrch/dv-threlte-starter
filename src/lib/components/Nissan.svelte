@@ -12,7 +12,7 @@ Title: Nissan Skyline GTR r35
 	import { T, forwardEventHandlers } from '@threlte/core';
 	import { useGltf } from '@threlte/extras';
 	import { browser } from '$app/environment';
-	import { getModelUrlByName } from '$lib/utils/geometry-loader';
+	import { getModelUrlByType } from '$lib/utils/geometry-loader';
 
 	import { AddEquation, CustomBlending, Group, LessEqualDepth, OneFactor } from 'three';
 
@@ -21,7 +21,7 @@ Title: Nissan Skyline GTR r35
 	let modelUrl = $state<string | null>(null);
 
 	// Find model URL from API
-	getModelUrlByName('nissan').then((url) => {
+	getModelUrlByType('nissangame').then((url) => {
 		modelUrl = url;
 	});
 
