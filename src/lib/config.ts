@@ -20,7 +20,9 @@ const ASSET_STORAGE = import.meta.env.VITE_ASSET_STORAGE || 'b2'; // 'b2', 'loca
 export const ENDPOINTS = {
 	GEOMETRIES: `${API_URL}/api/geometries/`,
 	TYPES: `${API_URL}/api/types/`,
-	STORAGE_B2: `${API_URL}/api/storage/b2/` // Proxy B2 endpoint
+	STORAGE_B2: `${API_URL}/api/storage/b2/`, // Proxy B2 endpoint
+	B2_ASSETS: `${API_URL}/api/b2-assets/`,
+	UPLOAD_B2: `${API_URL}/api/storage/b2/upload/` // B2 upload endpoint
 	// Ajoutez d'autres endpoints ici au besoin.
 };
 

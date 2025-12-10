@@ -3,11 +3,15 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import JsonResponse, HttpResponse, Http404
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from .storage_manager import storage_manager
 from .models import B2Asset
 import json
 import requests
 import os
+import uuid
+from datetime import datetime
 
 
 @api_view(["GET"])
@@ -186,5 +190,75 @@ def b2_asset_proxy(request, asset_name):
                 "error": str(e),
                 "message": "Erreur lors de la récupération de l'asset B2",
             },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@csrf_exempt
+def b2_upload(request):
+    """API endpoint pour uploader des fichiers vers B2"""
+    try:
+        if "file" not in request.FILES:
+            return Response(
+                {"error": "No file provided", "message": "Veuillez fournir un fichier"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        file = request.FILES["file"]
+
+        # Validation du fichier
+        if not file.name.endswith((".glb", ".gltf", ".png", ".jpg", ".jpeg", ".webp")):
+            return Response(
+                {
+                    "error": "Invalid file type",
+                    "message": "Format de fichier non supporté",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Utiliser le storage manager pour uploader
+        result = storage_manager.upload_file(file, file.name)
+
+        if result["success"]:
+            # Créer une entrée B2Asset dans la base de données
+            b2_asset = B2Asset.objects.create(
+                b2_file_id=result.get("file_id", str(uuid.uuid4())),
+                file_name=result["file_name"],
+                original_name=file.name,
+                url=result["url"],
+                bucket_name=result.get("bucket_name", "43dvcapp"),
+                content_type=file.content_type or "application/octet-stream",
+                file_size=file.size,
+                upload_timestamp=datetime.now(),
+            )
+
+            return Response(
+                {
+                    "success": True,
+                    "message": "Fichier uploadé avec succès",
+                    "file": {
+                        "id": b2_asset.id,
+                        "name": b2_asset.original_name,
+                        "url": b2_asset.url,
+                        "size": b2_asset.file_size,
+                        "content_type": b2_asset.content_type,
+                    },
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            return Response(
+                {
+                    "error": "Upload failed",
+                    "message": result.get("error", "Erreur lors de l'upload"),
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    except Exception as e:
+        return Response(
+            {"error": str(e), "message": "Erreur lors de l'upload vers B2"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )

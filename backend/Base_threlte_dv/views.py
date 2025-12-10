@@ -1,5 +1,4 @@
 import logging
-import logging
 import os
 import re
 
@@ -9,8 +8,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .dv_config import TYPE_CHOICES
-from .models import Geometry, BlobLog
-from .serializers import GeometrySerializer
+from .models import Geometry, BlobLog, B2Asset
+from .serializers import GeometrySerializer, B2AssetSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -29,30 +28,20 @@ class GeometryViewSet(viewsets.ModelViewSet):
     pagination_class = None
 
     def perform_create(self, serializer):
-        # La sauvegarde initiale gère l'upload du fichier grâce à `django-cloudinary-storage`
+        # La sauvegarde initiale gère l'upload du fichier grâce au storage manager
         geometry_instance = serializer.save()
-
-        # Si un fichier a été uploadé, `model_file` sera présent sur l'instance
-        if geometry_instance.model_file and hasattr(geometry_instance.model_file, 'public_id'):
-            # Créer ou mettre à jour l'enregistrement de l'asset
-            asset, created = CloudinaryAsset.objects.update_or_create(
-                public_id=geometry_instance.model_file.public_id,
-                defaults={
-                    'asset_id': getattr(geometry_instance.model_file, 'asset_id', None),
-                    'url': geometry_instance.model_file.url,
-                    'asset_type': 'raw',
-                    'file_name': geometry_instance.model_file.name,
-                    'file_size': geometry_instance.model_file.size,
-                }
-            )
-            # Lier l'asset à l'instance de géométrie et sauvegarder
-            geometry_instance.asset = asset
-            geometry_instance.save()
+        # Le B2Asset est maintenant créé via l'endpoint d'upload B2 séparé
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class B2AssetViewSet(viewsets.ModelViewSet):
+    queryset = B2Asset.objects.all()
+    serializer_class = B2AssetSerializer
+    pagination_class = None
 
 
 class TypeView(APIView):

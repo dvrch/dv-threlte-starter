@@ -151,6 +151,39 @@ class StorageManager:
             "restart_required": True,
         }
 
+    def upload_file(self, file, filename=None):
+        """Upload un fichier vers le backend actuel"""
+        try:
+            if filename is None:
+                filename = file.name
+
+            # Utiliser le stockage Django par défaut
+            if hasattr(file, "name"):
+                # Pour les fichiers uploadés
+                file_path = default_storage.save(filename, file)
+                file_url = default_storage.url(file_path)
+
+                return {
+                    "success": True,
+                    "file_name": file_path,
+                    "url": file_url,
+                    "backend": self.current_backend,
+                    "bucket_name": getattr(
+                        settings, "AWS_STORAGE_BUCKET_NAME", "43dvcapp"
+                    ),
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": "Invalid file object",
+                }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+            }
+
 
 # Instance globale du gestionnaire
 storage_manager = StorageManager()

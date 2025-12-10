@@ -44,7 +44,7 @@
 		formData.append('file', file);
 
 		try {
-			const response = await fetch(API_ENDPOINTS.UPLOAD_BLOB, {
+			const response = await fetch(ENDPOINTS.UPLOAD_B2, {
 				method: 'POST',
 				body: formData
 			});

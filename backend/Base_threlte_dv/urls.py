@@ -3,7 +3,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import GeometryViewSet, TypeView
+from .views import GeometryViewSet, TypeView, B2AssetViewSet
 from . import storage_views
 
 
@@ -24,6 +24,7 @@ def debug_env(request):
 
 router = DefaultRouter()
 router.register("geometries", GeometryViewSet, basename="geometries")
+router.register("b2-assets", B2AssetViewSet, basename="b2-assets")
 
 urlpatterns = [
     path("types/", TypeView.as_view(), name="types"),
@@ -39,6 +40,11 @@ urlpatterns = [
                 path("switch/", storage_views.storage_switch, name="storage-switch"),
                 path("test/", storage_views.storage_test, name="storage-test"),
                 path("status/", storage_views.storage_status, name="storage-status"),
+                path(
+                    "b2/upload/",
+                    storage_views.b2_upload,
+                    name="b2-upload",
+                ),
                 path(
                     "b2/<str:asset_name>/",
                     storage_views.b2_asset_proxy,

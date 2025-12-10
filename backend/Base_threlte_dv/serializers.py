@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from .models import Geometry, CloudinaryAsset
+from .models import Geometry, CloudinaryAsset, B2Asset
 
 
 class GeometrySerializer(serializers.ModelSerializer):
     model_file = serializers.FileField(write_only=True, required=False, allow_null=True)
-    model_url = serializers.URLField(source="asset.url", read_only=True)
+    model_url = serializers.SerializerMethodField(read_only=True)
     color_picker = serializers.CharField(
         write_only=True, required=False
     )  # Réintroduit le champ color_picker
@@ -21,10 +21,21 @@ class GeometrySerializer(serializers.ModelSerializer):
             "position",
             "rotation",
             "color",
-            "asset",
+            "cloudinary_asset",
+            "b2_asset",
             "color_picker",  # Ajout de color_picker
         ]
-        read_only_fields = ["asset"]
+        read_only_fields = ["cloudinary_asset", "b2_asset"]
+
+    def get_model_url(self, obj):
+        """Return the appropriate URL based on available asset"""
+        if obj.b2_asset:
+            return obj.b2_asset.url
+        elif obj.cloudinary_asset:
+            return obj.cloudinary_asset.url
+        elif obj.model_file:
+            return obj.model_file.url
+        return None
 
     def validate_color(self, value):  # Réintroduit la validation de couleur
         if value and not value.startswith("#"):
@@ -39,6 +50,8 @@ class GeometrySerializer(serializers.ModelSerializer):
             validated_data["color"] = color_picker
 
         # Créer l'instance Geometry sans le fichier pour l'instant
+        from .models import Geometry
+
         geometry_instance = Geometry.objects.create(**validated_data)
 
         if model_file:
@@ -46,23 +59,10 @@ class GeometrySerializer(serializers.ModelSerializer):
             geometry_instance.model_file = model_file
             geometry_instance.save()  # Sauvegarde pour que model_file soit traité
 
-            # Debug: Check what attributes are available
-            import os
-
-            print(f"DEBUG: USE_CLOUDINARY env = {os.environ.get('USE_CLOUDINARY')}")
-            print(
-                f"DEBUG: DEFAULT_FILE_STORAGE = {geometry_instance.__class__._meta.app_config}"
-            )
-            print(f"DEBUG: model_file = {geometry_instance.model_file}")
-            print(
-                f"DEBUG: hasattr public_id: {hasattr(geometry_instance.model_file, 'public_id')}"
-            )
-            print(f"DEBUG: hasattr url: {hasattr(geometry_instance.model_file, 'url')}")
-            if hasattr(geometry_instance.model_file, "url"):
-                print(f"DEBUG: url = {geometry_instance.model_file.url}")
-
             # Après la sauvegarde, model_file.public_id et .url sont disponibles
             if hasattr(geometry_instance.model_file, "public_id"):
+                from .models import CloudinaryAsset
+
                 asset, created = CloudinaryAsset.objects.update_or_create(
                     public_id=geometry_instance.model_file.public_id,
                     defaults={
@@ -75,9 +75,9 @@ class GeometrySerializer(serializers.ModelSerializer):
                         "file_size": geometry_instance.model_file.size,
                     },
                 )
-                geometry_instance.asset = asset
+                geometry_instance.cloudinary_asset = asset
                 geometry_instance.save(
-                    update_fields=["asset"]
+                    update_fields=["cloudinary_asset"]
                 )  # Sauvegarder la liaison
 
         return geometry_instance
@@ -98,6 +98,8 @@ class GeometrySerializer(serializers.ModelSerializer):
             instance.save()  # Sauvegarde pour que model_file soit traité
 
             if hasattr(instance.model_file, "public_id"):
+                from .models import CloudinaryAsset
+
                 asset, created = CloudinaryAsset.objects.update_or_create(
                     public_id=instance.model_file.public_id,
                     defaults={
@@ -108,9 +110,15 @@ class GeometrySerializer(serializers.ModelSerializer):
                         "file_size": instance.model_file.size,
                     },
                 )
-                instance.asset = asset
-                instance.save(update_fields=["asset"])
+                instance.cloudinary_asset = asset
+                instance.save(update_fields=["cloudinary_asset"])
         else:
             instance.save()  # Sauvegarder les autres modifications si pas de fichier
 
         return instance
+
+
+class B2AssetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = B2Asset
+        fields = "__all__"
