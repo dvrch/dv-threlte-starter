@@ -47,6 +47,12 @@ class GeometrySerializer(serializers.ModelSerializer):
             geometry_instance.save()  # Sauvegarde pour que model_file soit traité
 
             # Debug: Check what attributes are available
+            import os
+
+            print(f"DEBUG: USE_CLOUDINARY env = {os.environ.get('USE_CLOUDINARY')}")
+            print(
+                f"DEBUG: DEFAULT_FILE_STORAGE = {geometry_instance.__class__._meta.app_config}"
+            )
             print(f"DEBUG: model_file = {geometry_instance.model_file}")
             print(
                 f"DEBUG: hasattr public_id: {hasattr(geometry_instance.model_file, 'public_id')}"
