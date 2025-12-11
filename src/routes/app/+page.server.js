@@ -53,18 +53,16 @@ export async function load({ fetch }) {
       return true;
     });
 
-    // Préfixer les model_url avec l'URL du Blob si elle est définie
-    if (PUBLIC_STATIC_URL) {
-      geometries = geometries.map(geom => {
-        // Vérifie si model_url existe et n'est pas déjà une URL complète
-        if (geom.model_url && !geom.model_url.startsWith('http')) {
-          // Construit l'URL complète vers le Vercel Blob
-          // geom.model_url est le chemin relatif du fichier, ex: 'models/my_model.glb'
-          return { ...geom, model_url: `${PUBLIC_STATIC_URL}/${geom.model_url}` };
-        }
-        return geom;
-      });
-    }
+    const CLOUDINARY_BASE_URL = 'https://res.cloudinary.com/drcok7moc/raw/upload/dv-threlte';
+
+    geometries = geometries.map(geom => {
+      if (geom.model_url && !geom.model_url.startsWith('http')) {
+        // Remove leading slash from model_url if it exists
+        const modelPath = geom.model_url.startsWith('/') ? geom.model_url.substring(1) : geom.model_url;
+        return { ...geom, model_url: `${CLOUDINARY_BASE_URL}/${modelPath}` };
+      }
+      return geom;
+    });
 
     return {
       geometries,
