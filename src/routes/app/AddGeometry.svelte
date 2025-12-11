@@ -394,21 +394,25 @@
 	}
 
 	.reset-button {
-		background: rgba(100, 200, 150, 0.15);
-		border: 1px solid rgba(100, 200, 150, 0.3);
-		color: #aaa;
-		font-size: 0.65rem;
-		padding: 3px 6px;
-		margin-top: 6px;
+		background: linear-gradient(135deg, #4db6ac, #80cbc4);
+		border: 1px solid #4db6ac;
+		color: black;
+		font-size: 0.7rem;
+		font-weight: 600;
+		padding: 6px 10px;
+		margin-top: 8px;
 		cursor: pointer;
 		align-self: flex-end;
 		width: auto;
-		border-radius: 3px;
+		border-radius: 4px;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+		transition: all 0.2s ease;
 	}
 
 	.reset-button:hover {
-		background: rgba(100, 200, 150, 0.25);
-		border-color: rgba(100, 200, 150, 0.4);
-		color: #ccc;
+		background: linear-gradient(135deg, #80cbc4, #4db6ac);
+		border-color: #80cbc4;
+		transform: translateY(-1px);
+		box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 	}
 </style>
