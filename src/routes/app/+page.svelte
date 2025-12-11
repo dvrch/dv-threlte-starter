@@ -8,7 +8,7 @@
 
 	let geometries = $state([]);
 	let loading = $state(true);
-	let error = $state(null);
+	let error = $state<string | null>(null);
 
 	// Function to fetch geometries
 	const fetchGeometries = async () => {
