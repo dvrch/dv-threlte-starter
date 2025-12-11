@@ -39,6 +39,9 @@
 		} finally {
 			loading = false;
 		}
+
+		// Debug: log final state
+		console.log('Final state:', { loading, error, geometriesCount: geometries.length });
 	};
 
 	onMount(async () => {
