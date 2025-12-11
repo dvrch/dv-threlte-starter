@@ -6,9 +6,9 @@
 	import { onMount } from 'svelte';
 	import { ENDPOINTS } from '$lib/config';
 
-	let geometries = $state([]);
-	let loading = $state(true);
-	let error = $state<string | null>(null);
+	let geometries = [];
+	let loading = true;
+	let error = null;
 
 	// Function to fetch geometries
 	const fetchGeometries = async () => {

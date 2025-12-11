@@ -1,98 +1,110 @@
-<script>
-  import { onMount } from 'svelte';
-  import { BloomEffect, EffectComposer, EffectPass, KernelSize, RenderPass, SMAAEffect, SMAAPreset } from 'postprocessing'
-  
-  import { useThrelte, useTask } from '@threlte/core'
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import {
+		BloomEffect,
+		EffectComposer,
+		EffectPass,
+		KernelSize,
+		RenderPass,
+		SMAAEffect,
+		SMAAPreset
+	} from 'postprocessing';
+	import { T } from '@threlte/core';
+	import { OrbitControls } from '@threlte/extras';
+	import Stars from '$lib/components/Stars.svelte';
+	import Spaceship from '$lib/components/models/spaceship.svelte';
+	import Nissan from '$lib/components/Nissan.svelte';
 
-  const { renderer, scene, camera } = useThrelte(); // Get renderer, scene, and camera from useThrelte
+	import { useThrelte, useTask } from '@threlte/core';
 
-  let composer; // Declare composer here
+	const { renderer, scene, camera } = useThrelte(); // Get renderer, scene, and camera from useThrelte
 
-  const setupEffectComposer = () => {
-    if (!renderer || !scene || !camera.current) return; // Ensure they are defined
+	let composer: EffectComposer | null = null; // Declare composer here
+	let spaceShipRef: any = null;
+	let translY = 0;
+	let angleZ = 0;
+	const cleanupFunctions: (() => void)[] = [];
 
-    if (!composer) { // Initialize composer only once
-      composer = new EffectComposer(renderer);
-      composer.setSize(window.innerWidth, window.innerHeight);
-    }
+	const setupEffectComposer = () => {
+		if (!renderer || !scene || !camera.current) return; // Ensure they are defined
 
-    composer.removeAllPasses()
-    composer.addPass(new RenderPass(scene, camera.current))
-    composer.addPass(
-      new EffectPass(
-        camera.current,
-        new BloomEffect({
-          intensity: 0.8,
-          luminanceThreshold: 0,
-          height: 512, 
-          width: 512,
-          luminanceSmoothing: 0,
-          mipmapBlur: true,
-          kernelSize: KernelSize.MEDIUM
-        })
-      )
-    )
-    composer.addPass(
-      new EffectPass(
-        camera.current,
-        new SMAAEffect({
-          preset: SMAAPreset.LOW
-        })
-      )
-    )
-  }
+		if (!composer) {
+			// Initialize composer only once
+			composer = new EffectComposer(renderer);
+			composer.setSize(window.innerWidth, window.innerHeight);
+		}
 
+		composer.removeAllPasses();
+		composer.addPass(new RenderPass(scene, camera.current));
+		composer.addPass(
+			new EffectPass(
+				camera.current,
+				new BloomEffect({
+					intensity: 0.8,
+					luminanceThreshold: 0,
+					height: 512,
+					width: 512,
+					luminanceSmoothing: 0,
+					mipmapBlur: true,
+					kernelSize: KernelSize.MEDIUM
+				})
+			)
+		);
+		composer.addPass(
+			new EffectPass(
+				camera.current,
+				new SMAAEffect({
+					preset: SMAAPreset.LOW
+				})
+			)
+		);
+	};
 
-  useTask((_, delta) => {
-    // Mettre à jour l'environnement et le rendu
-    setupEnvironmentMapping() // Assuming this function is defined elsewhere
-    if (composer) { // Only render if composer is initialized
-      composer.render(delta)
-    }
-  })
+	const setupEnvironmentMapping = () => {
+		// Placeholder for environment mapping setup
+		// This function was referenced but not defined
+	};
 
-  onMount(() => {
-    setupEffectComposer()
-    setupEnvironmentMapping() // Assuming this function is defined elsewhere
-    
-    const interval = setInterval(() => {
-      setupEnvironmentMapping()
-    }, 1000)
-    
-    // Assuming cleanupFunctions is defined elsewhere
-    cleanupFunctions.push(() => {
-      clearInterval(interval)
-      if (composer) {
-        composer.dispose()
-      }
-    })
-  })
+	useTask((delta: number) => {
+		// Mettre à jour l'environnement et le rendu
+		setupEnvironmentMapping();
+		if (composer) {
+			// Only render if composer is initialized
+			composer.render(delta);
+		}
+	});
+
+	onMount(() => {
+		setupEffectComposer();
+		setupEnvironmentMapping();
+
+		const interval = setInterval(() => {
+			setupEnvironmentMapping();
+		}, 1000);
+
+		cleanupFunctions.push(() => {
+			clearInterval(interval);
+			if (composer) {
+				composer.dispose();
+			}
+		});
+
+		return () => {
+			cleanupFunctions.forEach((fn) => fn());
+		};
+	});
 </script>
 
 <div class="div">
-  <T.PerspectiveCamera makeDefault position={[-5, 6, 10]} fov={25}>
-    <OrbitControls enableDamping target={[0, 0, 0]} />
-  </T.PerspectiveCamera>
-  
-  <T.DirectionalLight intensity={1.8} position={[0, 10, 0]} castShadow shadow.bias={-0.0001} />
+	<T.PerspectiveCamera makeDefault position={[-5, 6, 10]} fov={25}>
+		<OrbitControls enableDamping target={[0, 0, 0]} />
+	</T.PerspectiveCamera>
 
-  <Spaceship
-    bind:ref={spaceShipRef}
-    position={[0, translY, 0]}
-    rotation={[angleZ, 0, angleZ, 'ZXY']}
-  />
+	<T.DirectionalLight intensity={1.8} position={[0, 10, 0]} castShadow shadow.bias={-0.0001} />
 
-  <Vague 
-    bind:ref={spaceShipRef}
-    position={[0, translY, 0]}
-    scale={6}
-  />
-  
-  <Stars />
-  
-  <Nissan
-    bind:ref={spaceShipRef}
-    position={[0, translY, 0]}
-    rotation={[angleZ, 80, angleZ, 'ZXY']}
-  />
-</div> 
+	<Spaceship ref={spaceShipRef} />
+
+	<Stars />
+
+	<Nissan ref={spaceShipRef} />
+</div>

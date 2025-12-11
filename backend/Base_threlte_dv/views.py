@@ -1,5 +1,4 @@
 import logging
-import logging
 import os
 import re
 
@@ -29,27 +28,34 @@ class GeometryViewSet(viewsets.ModelViewSet):
     pagination_class = None
 
     def perform_create(self, serializer):
-        # La sauvegarde initiale gère l'upload du fichier grâce à `django-cloudinary-storage`
+        # La sauvegarde initiale gère l'upload du fichier grâce au serializer
         geometry_instance = serializer.save()
 
-        # Si un fichier a été uploadé, `model_file` sera présent sur l'instance
-        if geometry_instance.model_file and hasattr(
-            geometry_instance.model_file, "public_id"
-        ):
-            # Créer ou mettre à jour l'enregistrement de l'asset
-            asset, created = CloudinaryAsset.objects.update_or_create(
-                public_id=geometry_instance.model_file.public_id,
-                defaults={
-                    "asset_id": getattr(geometry_instance.model_file, "asset_id", None),
-                    "url": geometry_instance.model_file.url,
-                    "asset_type": "raw",
-                    "file_name": geometry_instance.model_file.name,
-                    "file_size": geometry_instance.model_file.size,
-                },
-            )
-            # Lier l'asset à l'instance de géométrie et sauvegarder
-            geometry_instance.asset = asset
-            geometry_instance.save()
+        # Si une URL de modèle a été générée, créer l'enregistrement CloudinaryAsset
+        if geometry_instance.model_url:
+            # Extraire le public_id depuis l'URL Cloudinary
+            url_pattern = r"/dv-threlte/models/([^/]+)"
+            match = re.search(url_pattern, geometry_instance.model_url)
+
+            if match:
+                public_id = f"dv-threlte/models/{match.group(1)}"
+
+                # Créer ou mettre à jour l'enregistrement de l'asset
+                asset, created = CloudinaryAsset.objects.update_or_create(
+                    public_id=public_id,
+                    defaults={
+                        "url": geometry_instance.model_url,
+                        "asset_type": "raw",
+                        "file_name": geometry_instance.name or public_id.split("/")[-1],
+                        "file_size": 0,  # Size not available from URL
+                    },
+                )
+                logger.info(
+                    f"✅ {'Created' if created else 'Updated'} CloudinaryAsset: {public_id}"
+                )
+
+        logger.info(f"✅ Created geometry: {geometry_instance.name}")
+        return geometry_instance
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
