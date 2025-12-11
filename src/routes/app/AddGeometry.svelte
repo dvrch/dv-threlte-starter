@@ -394,20 +394,21 @@
 	}
 
 	.reset-button {
-		background: rgba(255, 255, 255, 0.02);
-		border: 1px solid rgba(255, 255, 255, 0.05);
-		color: #888;
-		font-size: 0.6rem;
-		padding: 2px 4px;
+		background: rgba(100, 200, 150, 0.15);
+		border: 1px solid rgba(100, 200, 150, 0.3);
+		color: #aaa;
+		font-size: 0.65rem;
+		padding: 3px 6px;
 		margin-top: 6px;
 		cursor: pointer;
 		align-self: flex-end;
 		width: auto;
+		border-radius: 3px;
 	}
 
 	.reset-button:hover {
-		background: rgba(255, 255, 255, 0.05);
-		border-color: rgba(255, 255, 255, 0.1);
-		color: #aaa;
+		background: rgba(100, 200, 150, 0.25);
+		border-color: rgba(100, 200, 150, 0.4);
+		color: #ccc;
 	}
 </style>
