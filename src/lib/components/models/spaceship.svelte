@@ -12,11 +12,12 @@ Title: Rusty Spaceship - Orange
 	import { T, forwardEventHandlers } from '@threlte/core';
 	import { useGltf } from '@threlte/extras';
 	import { useTexture } from '@threlte/extras';
+	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 	export const ref = new Group();
 
-	const gltf = useGltf('/models/spaceship.glb');
-	const map = useTexture('textures/energy-beam-opacity.png');
+	const gltf = useGltf(getCloudinaryAssetUrl('/models/spaceship.glb'));
+	const map = useTexture(getCloudinaryAssetUrl('/textures/energy-beam-opacity.png'));
 
 	gltf.then((model) => {
 		function alphaFix(material) {

@@ -18,10 +18,9 @@ Title: Nissan Skyline GTR r35
 	let { ...rest } = $props(); // Capture rest props
 
 	import { assets } from '$lib/services/assets';
+	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
-	// TODO: Replace with Cloudinary URL once asset is uploaded
-	console.warn('Using local nissan.glb - move to cloud storage');
-	const gltf = useGltf('/models/nissan.glb');
+	const gltf = useGltf(getCloudinaryAssetUrl('/models/nissan.glb'));
 
 	gltf
 		.then((model) => {

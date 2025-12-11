@@ -3,11 +3,13 @@
 	import { Instance, InstancedMesh, useTexture } from '@threlte/extras';
 	import { Color, DoubleSide, Vector3 } from 'three';
 
+	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
+
 	let STARS_COUNT = 350;
 	let colors = ['#fcaa67', '#C75D59', '#ffffc7', '#8CC5C6', '#A5898C'];
 	let stars = [];
 
-	const map = useTexture('textures/star.png');
+	const map = useTexture(getCloudinaryAssetUrl('/textures/star.png'));
 
 	function r(min, max) {
 		let diff = Math.random() * (max - min);

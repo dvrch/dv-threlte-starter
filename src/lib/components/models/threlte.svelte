@@ -7,10 +7,11 @@ Command: npx @threlte/gltf@2.0.0 C:\Users\Utente\Desktop\Trasferimento-PC\Projec
   import { Group } from 'three'
   import { T, forwardEventHandlers } from '@threlte/core'
   import { useGltf } from '@threlte/extras'
+  import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
   export const ref = new Group()
 
-  const gltf = useGltf('/models/threlte.glb')
+  const gltf = useGltf(getCloudinaryAssetUrl('/models/threlte.glb'))
 
   const component = forwardEventHandlers()
 </script>

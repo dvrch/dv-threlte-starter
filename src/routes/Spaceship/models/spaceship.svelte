@@ -4,6 +4,7 @@
   import { Group } from 'three';
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
+  import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
   // Runes syntax pour les props
   let { ref = new Group(), ...restProps } = $props();
@@ -13,8 +14,8 @@
 
   onMount(() => {
     if (browser) {
-      gltf = useGltf('/models/spaceship.glb');
-      map = useTexture('/textures/energy-beam-opacity.png');
+      gltf = useGltf(getCloudinaryAssetUrl('/models/spaceship.glb'));
+      map = useTexture(getCloudinaryAssetUrl('/textures/energy-beam-opacity.png'));
     }
   });
 
