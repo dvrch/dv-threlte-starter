@@ -87,6 +87,11 @@ def sync_cloudinary_assets():
         print(f"❌ Erreur synchronisation Cloudinary: {str(e)}")
         return False
 
+    except Exception as e:
+        print(f"❌ Erreur synchronisation Cloudinary: {str(e)}")
+        return False
+
+
 
 def clean_cloudinary_url(url):
     """

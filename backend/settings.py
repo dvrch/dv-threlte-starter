@@ -55,7 +55,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # Ajouter les domaines depuis les variables d'environnement Vercel
-VERCEL_URL = os.environ.get("VERCEL_URL")
+ ERCEL_URL = os.environ.get("VERCEL_URL")
 if VERCEL_URL and VERCEL_URL not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.insert(0, VERCEL_URL)
 
