@@ -105,9 +105,11 @@
 		isLoading = true;
 		try {
 			const formData = new FormData();
-			
+
 			const randomId = Math.random().toString(36).substring(2, 7);
-			const uniqueName = isEditing ? name : `${name || (file ? file.name.split('.')[0] : 'geo')}-${randomId}`;
+			const uniqueName = isEditing
+				? name
+				: `${name || (file ? file.name.split('.')[0] : 'geo')}-${randomId}`;
 
 			formData.append('name', uniqueName);
 			formData.append('color', color);
@@ -239,12 +241,26 @@
 				<input id="position-x" type="number" bind:value={position.x} placeholder="X" step="0.01" />
 				<input id="position-y" type="number" bind:value={position.y} placeholder="Y" step="0.01" />
 				<input id="position-z" type="number" bind:value={position.z} placeholder="Z" step="0.01" />
+				<button
+					type="button"
+					onclick={() => (position = { x: 0, y: 0, z: 0 })}
+					class="reset-button"
+				>
+					Reset Position
+				</button>
 			</div>
 			<div>
 				<label for="rotation-x">Rotation (X,Y,Z)</label>
 				<input id="rotation-x" type="number" bind:value={rotation.x} placeholder="X" step="0.01" />
 				<input id="rotation-y" type="number" bind:value={rotation.y} placeholder="Y" step="0.01" />
 				<input id="rotation-z" type="number" bind:value={rotation.z} placeholder="Z" step="0.01" />
+				<button
+					type="button"
+					onclick={() => (rotation = { x: 0, y: 0, z: 0 })}
+					class="reset-button"
+				>
+					Reset Rotation
+				</button>
 			</div>
 		</div>
 
@@ -283,13 +299,17 @@
 	.form-container {
 		font-family: 'Inter', sans-serif;
 		color: #fff;
-		font-size: 0.85rem;
+		font-size: 0.75rem;
 		width: 100%;
+		background: rgba(255, 255, 255, 0.03);
+		padding: 12px;
+		border-radius: 8px;
+		border: 1px solid rgba(255, 255, 255, 0.05);
 	}
 
 	h3 {
-		margin: 0 0 10px 0;
-		font-size: 1rem;
+		margin: 0 0 12px 0;
+		font-size: 0.85rem;
 		text-align: center;
 		color: #4db6ac;
 	}
@@ -297,18 +317,18 @@
 	form {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
+		gap: 6px;
 	}
 
 	input,
 	select,
 	button {
-		background: rgba(255, 255, 255, 0.1);
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		color: rgb(180, 175, 175);
-		padding: 6px;
-		border-radius: 4px;
-		font-size: 0.8rem;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		color: rgb(160, 155, 155);
+		padding: 4px 6px;
+		border-radius: 3px;
+		font-size: 0.7rem;
 		width: 100%;
 		box-sizing: border-box;
 	}
@@ -332,8 +352,8 @@
 	}
 
 	label {
-		font-size: 0.7rem;
-		color: #aaa;
+		font-size: 0.6rem;
+		color: #999;
 		margin-bottom: 2px;
 	}
 
@@ -371,5 +391,23 @@
 		background: #ef5350;
 		color: white;
 		width: 100%;
+	}
+
+	.reset-button {
+		background: rgba(255, 255, 255, 0.02);
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		color: #888;
+		font-size: 0.6rem;
+		padding: 2px 4px;
+		margin-top: 6px;
+		cursor: pointer;
+		align-self: flex-end;
+		width: auto;
+	}
+
+	.reset-button:hover {
+		background: rgba(255, 255, 255, 0.05);
+		border-color: rgba(255, 255, 255, 0.1);
+		color: #aaa;
 	}
 </style>
