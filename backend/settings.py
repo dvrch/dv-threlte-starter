@@ -41,6 +41,7 @@ DEBUG = os.environ.get("DEBUG", "False") == "True"
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
+    "testserver",  # For Django tests
     ".vercel.app",
     ".now.sh",  # For Vercel
     ".railway.app",  # For Railway deployment

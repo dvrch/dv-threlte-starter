@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .dv_config import TYPE_CHOICES
-from .models import Geometry, BlobLog
+from .models import Geometry, BlobLog, CloudinaryAsset
 from .serializers import GeometrySerializer
 
 logger = logging.getLogger(__name__)
@@ -33,17 +33,19 @@ class GeometryViewSet(viewsets.ModelViewSet):
         geometry_instance = serializer.save()
 
         # Si un fichier a été uploadé, `model_file` sera présent sur l'instance
-        if geometry_instance.model_file and hasattr(geometry_instance.model_file, 'public_id'):
+        if geometry_instance.model_file and hasattr(
+            geometry_instance.model_file, "public_id"
+        ):
             # Créer ou mettre à jour l'enregistrement de l'asset
             asset, created = CloudinaryAsset.objects.update_or_create(
                 public_id=geometry_instance.model_file.public_id,
                 defaults={
-                    'asset_id': getattr(geometry_instance.model_file, 'asset_id', None),
-                    'url': geometry_instance.model_file.url,
-                    'asset_type': 'raw',
-                    'file_name': geometry_instance.model_file.name,
-                    'file_size': geometry_instance.model_file.size,
-                }
+                    "asset_id": getattr(geometry_instance.model_file, "asset_id", None),
+                    "url": geometry_instance.model_file.url,
+                    "asset_type": "raw",
+                    "file_name": geometry_instance.model_file.name,
+                    "file_size": geometry_instance.model_file.size,
+                },
             )
             # Lier l'asset à l'instance de géométrie et sauvegarder
             geometry_instance.asset = asset
