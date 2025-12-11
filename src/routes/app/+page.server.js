@@ -53,16 +53,7 @@ export async function load({ fetch }) {
       return true;
     });
 
-    const CLOUDINARY_BASE_URL = 'https://res.cloudinary.com/drcok7moc/raw/upload/dv-threlte';
 
-    geometries = geometries.map(geom => {
-      if (geom.model_url && !geom.model_url.startsWith('http')) {
-        // Remove leading slash from model_url if it exists
-        const modelPath = geom.model_url.startsWith('/') ? geom.model_url.substring(1) : geom.model_url;
-        return { ...geom, model_url: `${CLOUDINARY_BASE_URL}/${modelPath}` };
-      }
-      return geom;
-    });
 
     return {
       geometries,

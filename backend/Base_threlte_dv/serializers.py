@@ -2,12 +2,19 @@ from rest_framework import serializers
 from .models import Geometry, CloudinaryAsset
 
 
+import cloudinary.uploader
+from rest_framework import serializers
+from .models import Geometry, CloudinaryAsset
+
+
 class GeometrySerializer(serializers.ModelSerializer):
     model_file = serializers.FileField(write_only=True, required=False, allow_null=True)
-    model_url = serializers.URLField(source="asset.url", read_only=True)
+    # model_url is now a direct field of the model, so no 'source' is needed.
+    # It will be read-only during serialization, but we'll set it manually in create/update.
+    model_url = serializers.URLField(read_only=True)
     color_picker = serializers.CharField(
         write_only=True, required=False
-    )  # Réintroduit le champ color_picker
+    )
 
     class Meta:
         model = Geometry
@@ -15,102 +22,61 @@ class GeometrySerializer(serializers.ModelSerializer):
             "id",
             "type",
             "name",
-            "model_file",
-            "model_url",
+            "model_file", # For upload
+            "model_url",  # For download/display
             "model_type",
             "position",
             "rotation",
             "color",
-            "asset",
-            "color_picker",  # Ajout de color_picker
+            "color_picker",
         ]
-        read_only_fields = ["asset"]
 
-    def validate_color(self, value):  # Réintroduit la validation de couleur
+    def validate_color(self, value):
         if value and not value.startswith("#"):
             value = "#" + value
         return value
 
     def create(self, validated_data):
         model_file = validated_data.pop("model_file", None)
-        color_picker = validated_data.pop("color_picker", None)  # Gérer color_picker
+        color_picker = validated_data.pop("color_picker", None)
 
         if color_picker:
             validated_data["color"] = color_picker
 
-        # Créer l'instance Geometry sans le fichier pour l'instant
-        geometry_instance = Geometry.objects.create(**validated_data)
-
         if model_file:
-            # Assigner le fichier à l'instance, ce qui déclenche l'upload Cloudinary
-            geometry_instance.model_file = model_file
-            geometry_instance.save()  # Sauvegarde pour que model_file soit traité
-
-            # Debug: Check what attributes are available
-            import os
-
-            print(f"DEBUG: USE_CLOUDINARY env = {os.environ.get('USE_CLOUDINARY')}")
-            print(
-                f"DEBUG: DEFAULT_FILE_STORAGE = {geometry_instance.__class__._meta.app_config}"
+            # Manually upload to Cloudinary
+            upload_result = cloudinary.uploader.upload(
+                model_file,
+                resource_type="raw",
+                folder="dv-threlte/models" # Specify the folder
             )
-            print(f"DEBUG: model_file = {geometry_instance.model_file}")
-            print(
-                f"DEBUG: hasattr public_id: {hasattr(geometry_instance.model_file, 'public_id')}"
-            )
-            print(f"DEBUG: hasattr url: {hasattr(geometry_instance.model_file, 'url')}")
-            if hasattr(geometry_instance.model_file, "url"):
-                print(f"DEBUG: url = {geometry_instance.model_file.url}")
+            # Add the full URL to the data to be saved
+            validated_data['model_url'] = upload_result['secure_url']
 
-            # Après la sauvegarde, model_file.public_id et .url sont disponibles
-            if hasattr(geometry_instance.model_file, "public_id"):
-                asset, created = CloudinaryAsset.objects.update_or_create(
-                    public_id=geometry_instance.model_file.public_id,
-                    defaults={
-                        "asset_id": getattr(
-                            geometry_instance.model_file, "asset_id", None
-                        ),
-                        "url": geometry_instance.model_file.url,
-                        "asset_type": "raw",
-                        "file_name": geometry_instance.model_file.name,
-                        "file_size": geometry_instance.model_file.size,
-                    },
-                )
-                geometry_instance.asset = asset
-                geometry_instance.save(
-                    update_fields=["asset"]
-                )  # Sauvegarder la liaison
-
+        # Create the Geometry instance
+        geometry_instance = Geometry.objects.create(**validated_data)
         return geometry_instance
 
     def update(self, instance, validated_data):
         model_file = validated_data.pop("model_file", None)
-        color_picker = validated_data.pop("color_picker", None)  # Gérer color_picker
+        color_picker = validated_data.pop("color_picker", None)
 
         if color_picker:
             validated_data["color"] = color_picker
 
-        # Mettre à jour les champs de l'instance Geometry
+        if model_file:
+            # If there's a new file, upload it
+            upload_result = cloudinary.uploader.upload(
+                model_file,
+                resource_type="raw",
+                folder="dv-threlte/models"
+            )
+            # Update the instance's model_url with the new URL
+            instance.model_url = upload_result['secure_url']
+
+        # Update other fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-
-        if model_file:
-            instance.model_file = model_file
-            instance.save()  # Sauvegarde pour que model_file soit traité
-
-            if hasattr(instance.model_file, "public_id"):
-                asset, created = CloudinaryAsset.objects.update_or_create(
-                    public_id=instance.model_file.public_id,
-                    defaults={
-                        "asset_id": getattr(instance.model_file, "asset_id", None),
-                        "url": instance.model_file.url,
-                        "asset_type": "raw",
-                        "file_name": instance.model_file.name,
-                        "file_size": instance.model_file.size,
-                    },
-                )
-                instance.asset = asset
-                instance.save(update_fields=["asset"])
-        else:
-            instance.save()  # Sauvegarder les autres modifications si pas de fichier
-
+        
+        instance.save()
         return instance

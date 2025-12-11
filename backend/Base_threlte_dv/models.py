@@ -19,21 +19,11 @@ class Geometry(models.Model):
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default="box")
     name = models.CharField(max_length=45, blank=True)
 
-    # Champ pour gérer le téléversement de fichiers locaux
-    model_file = models.FileField(
-        upload_to="models/",
+    model_url = models.URLField(
+        max_length=1024,
         blank=True,
         null=True,
-        help_text="Fichier 3D local (.glb, .gltf)",
-    )
-
-    # Remplacé par une ForeignKey pour une source de vérité unique
-    asset = models.ForeignKey(
-        "CloudinaryAsset",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        help_text="Lien vers l'asset Cloudinary correspondant",
+        help_text="URL du modèle 3D sur Cloudinary",
     )
 
     # Type de fichier 3D
