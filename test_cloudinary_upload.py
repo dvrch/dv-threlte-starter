@@ -12,25 +12,26 @@ from pathlib import Path
 # Configuration
 API_URL = "https://dv-threlte-starter-production.up.railway.app/api/geometries/"
 
-# Créer un fichier GLB de test
-test_file_path = "/tmp/test_upload.glb"
-test_content = b"glTF mock content for testing upload"
+# Utiliser un fichier GLB existant comme remplaçant pour cloth_sim.glb
+test_file_path = "/home/kd/Bureau/dv-threlte-starter/backend/bibi3.glb"
 
-with open(test_file_path, "wb") as f:
-    f.write(test_content)
+if not os.path.exists(test_file_path):
+    print(f"❌ Fichier introuvable : {test_file_path}")
+    exit(1)
 
-print(f"📁 Fichier de test créé : {test_file_path}")
-print(f"📏 Taille : {len(test_content)} bytes")
+file_size = os.path.getsize(test_file_path)
+print(f"📁 Fichier GLB utilisé : {test_file_path}")
+print(f"📏 Taille : {file_size} bytes")
 
 # Préparer l'upload
 with open(test_file_path, "rb") as f:
-    files = {"model_file": ("test_upload.glb", f, "model/gltf-binary")}
+    files = {"model_file": ("cloth_sim_replacement.glb", f, "model/gltf-binary")}
 
     data = {
-        "name": "test-cloudinary-upload",
+        "name": "cloth_sim_replacement",
         "type": "gltf_model",
         "model_type": "glb",
-        "color": "#ff0000",
+        "color": "#00ff00",
         "position": json.dumps({"x": 0, "y": 0, "z": 0}),
         "rotation": json.dumps({"x": 0, "y": 0, "z": 0}),
     }
@@ -62,6 +63,5 @@ with open(test_file_path, "rb") as f:
     except Exception as e:
         print(f"\n💥 Exception lors de l'upload : {e}")
 
-# Nettoyer
-os.remove(test_file_path)
-print(f"\n🧹 Fichier de test supprimé : {test_file_path}")
+# Pas de nettoyage nécessaire puisque nous utilisons un fichier existant
+print(f"\n✅ Upload terminé pour : {test_file_path}")

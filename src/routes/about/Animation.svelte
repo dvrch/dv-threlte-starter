@@ -1,27 +1,26 @@
 <script lang="ts">
-  import { useThrelte } from '@threlte/core';
-  import { onMount } from 'svelte';
-  import type { Object3D } from 'three';
+	import { useThrelte } from '@threlte/core';
+	import { onMount } from 'svelte';
+	import type { Object3D } from 'three';
 
-  let { mixer = useThrelte() }: { mixer?: THREE.AnimationMixer;
-  export let model: Object3D;
+	let { mixer, model }: { mixer?: THREE.AnimationMixer; model?: Object3D } = $props();
 
-  const { renderer, scene, camera } } = $props();
+	const { renderer, scene, camera } = useThrelte();
 
-  function animate() {
-    requestAnimationFrame(animate);
-    if (mixer) {
-      mixer.update(0.016);
-    }
-    if (model?.rotation) {
-      model.rotation.y += 0.01;
-    }
-    renderer.render(scene, camera.current);
-  }
+	function animate() {
+		requestAnimationFrame(animate);
+		if (mixer) {
+			mixer.update(0.016);
+		}
+		if (model?.rotation) {
+			model.rotation.y += 0.01;
+		}
+		renderer.render(scene, camera.current);
+	}
 
-  onMount(() => {
-    animate();
-  });
+	onMount(() => {
+		animate();
+	});
 </script>
 
 <!-- 
@@ -50,7 +49,7 @@
 
   onMount(async () => {
     try {
-      const gltf = await new GLTFLoader().loadAsync('/public/cloth_sim.glb');
+      const gltf = await new GLTFLoader().loadAsync('https://res.cloudinary.com/drcok7moc/raw/upload/v1765419051/dv-threlte/models/jaaezicvyjlywsw6lgwu.glb');
       const texture = await new THREE.TextureLoader().loadAsync('/public/zaki.png');
       const mesh = gltf.scene.children[0] as THREE.Mesh;
 

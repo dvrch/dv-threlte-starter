@@ -1,93 +1,80 @@
 <script lang="ts">
-  import { writable } from 'svelte/store';
-  import { T, Canvas } from '@threlte/core';
-  import { OrbitControls, Text } from '@threlte/extras';
-  import * as THREE from 'three';
-  import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-  import { onMount } from 'svelte';
-  import { navigate } from 'svelte-routing';
-  import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
+	import { writable } from 'svelte/store';
+	import { T, Canvas } from '@threlte/core';
+	import { OrbitControls, Text } from '@threlte/extras';
+	import * as THREE from 'three';
+	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+	import { onMount } from 'svelte';
+	import { navigate } from 'svelte-routing';
+	import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 
-  
+	// Props en mode runes
+	const clock = new THREE.Clock();
+	const model = writable<THREE.Object3D | null>(null);
+	let mixer: THREE.AnimationMixer;
 
-  // Props en mode runes
-const clock = new THREE.Clock();
-  const model = writable<THREE.Object3D | null>(null);
-  let mixer: THREE.AnimationMixer;
+	onMount(async () => {
+		try {
+			const gltf = await new GLTFLoader().loadAsync(
+				'https://res.cloudinary.com/drcok7moc/raw/upload/v1765419051/dv-threlte/models/jaaezicvyjlywsw6lgwu.glb'
+			);
+			const texture = await new THREE.TextureLoader().loadAsync('/public/zaki.png');
 
-  onMount(async () => {
-    try {
-      const gltf = await new GLTFLoader().loadAsync('/public/cloth_sim.glb');
-      const texture = await new THREE.TextureLoader().loadAsync('/public/zaki.png');
+			const mesh = gltf.scene.children[0] as THREE.Mesh;
+			if (mesh.material) {
+				mesh.material = new THREE.MeshPhongMaterial({ map: texture, shininess: 10 });
+			}
 
-      const mesh = gltf.scene.children[0] as THREE.Mesh;
-      if (mesh.material) {
-        mesh.material = new THREE.MeshPhongMaterial({ map: texture, shininess: 10 });
-      }
+			mixer = new THREE.AnimationMixer(gltf.scene);
+			gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
 
-      mixer = new THREE.AnimationMixer(gltf.scene);
-      gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
+			animate();
+			model.set(gltf.scene);
+		} catch (error) {
+			console.error('Error loading model or texture:', error);
+		}
+	});
 
-      animate();
-      model.set(gltf.scene);
-    } catch (error) {
-      console.error('Error loading model or texture:', error);
-    }
-  });
+	function animate() {
+		mixer?.update(clock.getDelta());
+		if ($model?.rotation) {
+			$model.rotation.y += 0.0; // Apply rotation directly
+		}
+		requestAnimationFrame(animate);
+	}
 
-  function animate() {
-    mixer?.update(clock.getDelta());
-    if ($model?.rotation ) {
-    $model.rotation.y += 0.0; // Apply rotation directly
-    };
-    requestAnimationFrame(animate);
-  }
-
-  function handleClick() {
-    navigate('/about/scene');
-  }
+	function handleClick() {
+		navigate('/about/scene');
+	}
 </script>
 
 <div class="scene-container">
-  <Canvas renderMode="always">
-    <h1>Model Viewer</h1>
-    <p>This is a simple model viewer that loads a 3D model and a texture.</p>
-    <T.AmbientLight intensity={0.5} />
-    <T.DirectionalLight position={[5, 10, 7.5]} intensity={1} />
-    <T.PerspectiveCamera makeDefault position={[0, 1.5, 5]} fov={75}>
-      <OrbitControls />
-    </T.PerspectiveCamera>
-    {#if $model}
-    <T is={$model} rotation? />
-    {/if}
-    <T.Text
-      position={[0, 2, 0]} 
-      fontSize={0.3}
-      color="#ffae00"
-      on:click={handleClick}
-      onClick={() => console.log('Clicked!')}
-    >
-      Model Viewer
-    </T.Text>
+	<Canvas renderMode="always">
+		<h1>Model Viewer</h1>
+		<p>This is a simple model viewer that loads a 3D model and a texture.</p>
+		<T.AmbientLight intensity={0.5} />
+		<T.DirectionalLight position={[5, 10, 7.5]} intensity={1} />
+		<T.PerspectiveCamera makeDefault position={[0, 1.5, 5]} fov={75}>
+			<OrbitControls />
+		</T.PerspectiveCamera>
+		{#if $model}
+			<T is={$model} rotation? />
+		{/if}
+		<T.Text
+			position={[0, 2, 0]}
+			fontSize={0.3}
+			color="#ffae00"
+			on:click={handleClick}
+			onClick={() => console.log('Clicked!')}
+		>
+			Model Viewer
+		</T.Text>
 
-    <T.Text
-      position={[0, 1.5, 0]} 
-      fontSize={0.15}
-      color="#ffffff"
-    >
-      This is a simple model viewer that loads a 3D model and a texture.
-    </T.Text>
-  </Canvas>
+		<T.Text position={[0, 1.5, 0]} fontSize={0.15} color="#ffffff">
+			This is a simple model viewer that loads a 3D model and a texture.
+		</T.Text>
+	</Canvas>
 </div>
-
-<style>
-  .scene-container {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-  }
-</style>
-
 
 <!-- <script lang="ts">
   import { writable } from 'svelte/store';
@@ -103,7 +90,7 @@ const clock = new THREE.Clock();
 
   onMount(async () => {
     try {
-      const gltf = await new GLTFLoader().loadAsync('/public/cloth_sim.glb');
+      const gltf = await new GLTFLoader().loadAsync('https://res.cloudinary.com/drcok7moc/raw/upload/v1765419051/dv-threlte/models/jaaezicvyjlywsw6lgwu.glb');
       const texture = await new THREE.TextureLoader().loadAsync('/public/zaki.png');
 
       const mesh = gltf.scene.children[0] as THREE.Mesh;
@@ -146,9 +133,6 @@ const clock = new THREE.Clock();
   </Canvas>
 </div> -->
 
-
-
-  
 <!-- <div class="scene-container">
   <Canvas>
     <T.PerspectiveCamera makeDefault position={[0, 5, 10]} fov={75}>
@@ -173,8 +157,6 @@ const clock = new THREE.Clock();
     height: 100vh;
   }
 </style> -->
-
-
 
 <!-- <script lang="ts">
   import { T, Canvas } from '@threlte/core';
@@ -219,7 +201,7 @@ const clock = new THREE.Clock();
   // Nouvelle fonction pour charger le modèle GLTF
   function loadModel() {
     const loader = new GLTFLoader();
-    loader.load('/public/cloth_sim.glb', (gltf) => {
+    loader.load('https://res.cloudinary.com/drcok7moc/raw/upload/v1765419051/dv-threlte/models/jaaezicvyjlywsw6lgwu.glb', (gltf) => {
       model = gltf.scene;
       mixer = new THREE.AnimationMixer(model);
       gltf.animations.forEach((clip: THREE.AnimationClip) => mixer.clipAction(clip).play());
@@ -293,7 +275,7 @@ const clock = new THREE.Clock();
     </T.PerspectiveCamera>
     <T.AmbientLight intensity={0.6} />
 
-    <GLTF bind:gltf={$gltf} url="/public/cloth_sim.glb" />
+    <GLTF bind:gltf={$gltf} url="https://res.cloudinary.com/drcok7moc/raw/upload/v1765419051/dv-threlte/models/jaaezicvyjlywsw6lgwu.glb" />
   </Canvas>
 </div>
 
@@ -304,3 +286,11 @@ const clock = new THREE.Clock();
     height: 100vh;
   }
 </style> -->
+
+<style>
+	.scene-container {
+		position: relative;
+		width: 100%;
+		height: 100vh;
+	}
+</style>

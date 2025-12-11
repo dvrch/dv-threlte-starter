@@ -1,54 +1,57 @@
 <script lang="ts">
-  import { T, useTask } from '@threlte/core';
-  import { useGltf } from '@threlte/extras';
-  import * as THREE from 'three';
+	import { T, useTask } from '@threlte/core';
+	import { useGltf } from '@threlte/extras';
+	import * as THREE from 'three';
+	import { browser } from '$app/environment';
 
-  let {
-    position = [0, 0, 0],
-    rotation = [0, 0, 0],
-    scale = 1
-  }: {
-    position?: [number, number, number];
-    rotation?: [number, number, number];
-    scale?: number | [number, number, number];
-  } = $props();
+	let {
+		position = [0, 0, 0],
+		rotation = [0, 0, 0],
+		scale = 1
+	}: {
+		position?: [number, number, number];
+		rotation?: [number, number, number];
+		scale?: number | [number, number, number];
+	} = $props();
 
-  import { assets } from '$lib/services/assets';
+	import { assets } from '$lib/services/assets';
 
-  // Use the useGltf hook to load the model
-  const gltf = useGltf<THREE.Group>('/public/cloth_sim.glb');
-  gltf.catch(err => console.error('Failed to load cloth_sim.glb', err));
+	// Use the useGltf hook to load the model
+	let gltf: any = $state(null);
+	let mixer: THREE.AnimationMixer | undefined;
 
-  // Animate the model using useTask
-  let mixer: THREE.AnimationMixer | undefined;
-  useTask((_, delta) => {
-    if (!mixer) return;
-    mixer.update(delta);
-  });
+	$effect(() => {
+		if (browser) {
+			const gltfStore = useGltf(
+				'https://res.cloudinary.com/drcok7moc/raw/upload/v1765419051/dv-threlte/models/jaaezicvyjlywsw6lgwu.glb'
+			);
+			gltfStore
+				.then((loaded) => {
+					gltf = loaded;
+					// Set up animation mixer when model is loaded
+					if (loaded && loaded.animations && loaded.animations.length > 0) {
+						mixer = new THREE.AnimationMixer(loaded.scene);
+						loaded.animations.forEach((clip: THREE.AnimationClip) => {
+							mixer?.clipAction(clip).play();
+						});
+					}
+				})
+				.catch((err) => {
+					console.error('Failed to load 3D model from Cloudinary', err);
+					gltf = null;
+				});
+		}
+	});
 
-  // When the model is loaded, set up the animation mixer
-  $effect(() => {
-    if (gltf) {
-      mixer = new THREE.AnimationMixer(gltf.scene);
-      gltf.animations.forEach((clip) => {
-        mixer?.clipAction(clip).play();
-      });
-    }
-  });
-
-    // Optional: Apply a texture if needed, assuming the model has a mesh
-    // const textureLoader = new THREE.TextureLoader();
-    // textureLoader.load('/public/zaki.png', (texture) => {
-    //   gltf.scene.traverse((child) => {
-    //     if (child instanceof THREE.Mesh) {
-    //       child.material = new THREE.MeshPhongMaterial({ map: texture, shininess: 10 });
-    //     }
-    //   });
-    // });
+	// Animate model using useTask
+	useTask((delta) => {
+		if (!mixer) return;
+		mixer.update(delta);
+	});
 </script>
 
-{#if gltf}
-  <T.Group {position} {rotation} {scale}>
-    <T is={gltf.scene} />
-  </T.Group>
+{#if browser && gltf}
+	<T.Group {position} {rotation} {scale}>
+		<T is={gltf.scene} />
+	</T.Group>
 {/if}
