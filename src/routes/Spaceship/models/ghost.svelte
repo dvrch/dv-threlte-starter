@@ -4,24 +4,31 @@ Command: npx @threlte/gltf@2.0.3 /home/ubt/DpDIST/Web_site_3D_anime_By_DV/static
 -->
 
 <script>
-  import { Group } from 'three'
-  import { T, forwardEventHandlers } from '@threlte/core'
-  import { useGltf } from '@threlte/extras'
-  import { getCloudinaryAssetUrl, dracoGltfLoader } from '$lib/utils/cloudinaryAssets';
+	import { Group } from 'three';
+	import { T, forwardEventHandlers } from '@threlte/core';
+	import { useGltf } from '@threlte/extras';
+	import { getCloudinaryAssetUrl, configureDracoLoader } from '$lib/utils/cloudinaryAssets';
+	import { onMount } from 'svelte';
 
-  export const ref = new Group()
+	export const ref = new Group();
+	let gltf;
+	let component;
 
-  const gltf = useGltf(getCloudinaryAssetUrl('/models/ghost.glb'), { loader: dracoGltfLoader })  const component = forwardEventHandlers()
+	onMount(() => {
+		configureDracoLoader();
+		gltf = useGltf(getCloudinaryAssetUrl('/models/ghost.glb'));
+		component = forwardEventHandlers();
+	});
 </script>
 
 <T is={ref} dispose={false} {...restProps} bind:this={$component}>
-  {#await gltf}
-    <slot name="fallback" />
-  {:then gltf}
-    <T.Mesh geometry={gltf.nodes.Ghost002.geometry} material={gltf.materials.Outline} />
-  {:catch error}
-    <slot name="error" {error} />
-  {/await}
+	{#await gltf}
+		<slot name="fallback" />
+	{:then gltf}
+		<T.Mesh geometry={gltf.nodes.Ghost002.geometry} material={gltf.materials.Outline} />
+	{:catch error}
+		<slot name="error" {error} />
+	{/await}
 
-  <slot {ref} />
+	<slot {ref} />
 </T>
