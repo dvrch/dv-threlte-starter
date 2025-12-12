@@ -12,6 +12,7 @@ Title: Japanese Bridge Garden
   import { T, forwardEventHandlers } from '@threlte/core'
   import { useGltf } from '@threlte/extras'
   import { browser } from '$app/environment';
+  import { getCloudinaryAssetUrl, dracoGltfLoader } from '$lib/utils/cloudinaryAssets';
 
   export const ref = new Group()
   export let url: string = '/models/garden.glb'; // Default to local path
@@ -22,20 +23,20 @@ Title: Japanese Bridge Garden
   $: if (url && browser) {
     // Attempt to load the model from the provided URL
     // If it fails, fall back to a default local path
-    fetch(url)
+    fetch(getCloudinaryAssetUrl(url)) // Use Cloudinary URL for initial fetch
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch model from provided URL');
         }
-        currentModelUrl = url; // Use the provided URL
+        currentModelUrl = getCloudinaryAssetUrl(url); // Use the provided URL
       })
       .catch(() => {
         console.warn(`Failed to load model from ${url}, falling back to /models/garden.glb`);
-        currentModelUrl = '/models/garden.glb'; // Fallback to local path
+        currentModelUrl = getCloudinaryAssetUrl('/models/garden.glb'); // Fallback to local path
       });
   }
 
-  const gltf = useGltf(currentModelUrl)
+  const gltf = useGltf(currentModelUrl, { loader: dracoGltfLoader })
 
   const component = forwardEventHandlers()
 </script>

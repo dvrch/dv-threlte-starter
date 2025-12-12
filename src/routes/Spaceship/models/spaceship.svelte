@@ -4,7 +4,7 @@
   import { Group } from 'three';
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
+  import { getCloudinaryAssetUrl, dracoGltfLoader } from '$lib/utils/cloudinaryAssets';
 
   // Runes syntax pour les props
   let { ref = new Group(), ...restProps } = $props();
@@ -14,11 +14,10 @@
 
   onMount(() => {
     if (browser) {
-      gltf = useGltf(getCloudinaryAssetUrl('/models/spaceship.glb'));
+      gltf = useGltf(getCloudinaryAssetUrl('/models/spaceship.glb'), { loader: dracoGltfLoader });
       map = useTexture(getCloudinaryAssetUrl('/textures/energy-beam-opacity.png'));
     }
   });
-
   gltf?.then(() => {
     // Point d'extension si tu veux faire des ajustements sur les matériaux plus tard
   });

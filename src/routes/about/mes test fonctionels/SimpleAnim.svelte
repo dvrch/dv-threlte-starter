@@ -4,9 +4,11 @@
   import { OrbitControls, Text } from '@threlte/extras';
   import * as THREE from 'three';
   import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+  import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
   import { onMount } from 'svelte';
   import { navigate } from 'svelte-routing';
   import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
+  import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
   
 
@@ -17,8 +19,13 @@ const clock = new THREE.Clock();
 
   onMount(async () => {
     try {
-      const gltf = await new GLTFLoader().loadAsync('/public/cloth_sim.glb');
-      const texture = await new THREE.TextureLoader().loadAsync('/public/zaki.png');
+      const gltfLoader = new GLTFLoader();
+      const dracoLoader = new DRACOLoader();
+      dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+      gltfLoader.setDRACOLoader(dracoLoader);
+
+      const gltf = await gltfLoader.loadAsync(getCloudinaryAssetUrl('/public/cloth_sim.glb'));
+      const texture = await new THREE.TextureLoader().loadAsync(getCloudinaryAssetUrl('/public/zaki.png'));
 
       const mesh = gltf.scene.children[0] as THREE.Mesh;
       if (mesh.material) {

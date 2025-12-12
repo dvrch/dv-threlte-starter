@@ -6,6 +6,7 @@
   import * as THREE from 'three';
   // Remplacer useGltf et useGltfAnimations par GLTFLoader pour éviter l'erreur de module
   import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+  import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
   import { assets } from '$lib/services/assets';
   
@@ -23,6 +24,9 @@
 
   // Charger le modèle GLTF
   const loader = new GLTFLoader();
+  const dracoLoader = new DRACOLoader();
+  dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+  loader.setDRACOLoader(dracoLoader);
   loader.load(assets.getUrl('/public/cloth_sim.glb'), (gltf) => {
     model = gltf.scene;
     mixer = new THREE.AnimationMixer(model);

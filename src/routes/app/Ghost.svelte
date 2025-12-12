@@ -1,10 +1,9 @@
 <script lang="ts">
     import { T } from '@threlte/core'
     import { useGltf } from '@threlte/extras'
-    import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
+    import { getCloudinaryAssetUrl, dracoGltfLoader } from '$lib/utils/cloudinaryAssets';
 
-    const gltf = useGltf(getCloudinaryAssetUrl('/ghost.glb'))
-</script>
+    const gltf = useGltf(getCloudinaryAssetUrl('/ghost.glb'), { loader: dracoGltfLoader })</script>
 
 <T.Group>
     {#if $gltf}

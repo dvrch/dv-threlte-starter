@@ -10,23 +10,10 @@ Title: Nissan Skyline GTR r35
 <script>
 	// import { Group } from 'three'
 	import { T, forwardEventHandlers } from '@threlte/core';
-	import { useGltf } from '@threlte/extras';
-	import { browser } from '$app/environment';
-	import { getModelUrlByType } from '$lib/utils/geometry-loader';
-
-	import { AddEquation, CustomBlending, Group, LessEqualDepth, OneFactor } from 'three';
-
-	export const ref = new Group();
-
-	let modelUrl = $state<string | null>(null);
-
-	// Find model URL from API
-	getModelUrlByType('nissangame').then((url) => {
-		modelUrl = url;
-	});
-
-	// Load GLTF model when URL is available
-	const gltf = $derived(modelUrl && browser ? useGltf(modelUrl) : null);
+import { useGltf } from '@threlte/extras';
+import { dracoGltfLoader } from '$lib/utils/cloudinaryAssets';
+// ...
+const gltf = $derived(modelUrl && browser ? useGltf(modelUrl, { loader: dracoGltfLoader }) : null);
 
 	gltf.then((model) => {
 		function alphaFix(material) {

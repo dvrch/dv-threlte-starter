@@ -24,7 +24,9 @@
 	let pmrem = new PMREMGenerator(renderer);
 	let envMapRT;
 
-	let ni = useGltf(`/assets/nissan.glb`);
+	import { dracoGltfLoader, getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
+
+	let ni = useGltf(getCloudinaryAssetUrl(`/assets/nissan.glb`), { loader: dracoGltfLoader });
 
 	const composer = new EffectComposer(renderer);
 	composer.setSize(innerWidth, innerHeight);
