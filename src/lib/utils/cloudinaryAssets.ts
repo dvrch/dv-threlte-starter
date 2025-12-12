@@ -6,17 +6,12 @@ export function getCloudinaryAssetUrl(relativePath: string): string {
 	return `${CLOUDINARY_BASE_URL}/${cleanedPath}`;
 }
 
-// Configure DRACOLoader for Draco-compressed models
-// This will be used by Threlte's useGltf automatically
-export const configureDracoLoader = () => {
-	if (typeof window === 'undefined') return; // Only on client-side
+// Simple DRACOLoader configuration for client-side use only
+export const createDracoLoader = async () => {
+	if (typeof window === 'undefined') return null;
 
-	import('three/examples/jsm/loaders/DRACOLoader.js').then(({ DRACOLoader }) => {
-		const dracoLoader = new DRACOLoader();
-		dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
-
-		// Make it available globally for Threlte
-		(window as any).THREE = (window as any).THREE || {};
-		(window as any).THREE.DRACOLoader = dracoLoader;
-	});
+	const { DRACOLoader } = await import('three/examples/jsm/loaders/DRACOLoader.js');
+	const dracoLoader = new DRACOLoader();
+	dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+	return dracoLoader;
 };
