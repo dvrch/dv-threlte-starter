@@ -35,6 +35,7 @@
 	let isEditing = $state(false);
 	let types = $state<string[]>([]);
 	let isLoading = $state(false);
+	let isFormOpen = $state(false);
 
 	const loadTypes = async () => {
 		try {
@@ -152,7 +153,7 @@
 			await loadGeometries(); // Recharger la liste
 		} catch (error) {
 			console.error('Submit error:', error);
-			addToast(error.message, 'error');
+			addToast(error instanceof Error ? error.message : 'Save failed', 'error');
 		} finally {
 			isLoading = false;
 		}
@@ -187,6 +188,21 @@
 		}
 	};
 
+	const toggleVisibility = async (id: number) => {
+		try {
+			const response = await fetch(ENDPOINTS.TOGGLE_VISIBILITY(id), {
+				method: 'PATCH'
+			});
+			if (!response.ok) throw new Error('Failed to toggle visibility');
+			const data = await response.json();
+			addToast(data.message, 'success');
+			await loadGeometries(); // Recharger la liste
+		} catch (error) {
+			console.error('Error toggling visibility:', error);
+			addToast(error instanceof Error ? error.message : 'Failed to toggle visibility', 'error');
+		}
+	};
+
 	const loadGeometryDetails = async (id: string) => {
 		try {
 			const response = await fetch(`${ENDPOINTS.GEOMETRIES}${id}/`);
@@ -207,93 +223,175 @@
 	};
 </script>
 
-<div class="form-container">
-	<form
-		onsubmit={(event) => {
-			event.preventDefault();
-			handleSubmit();
-		}}
-	>
-		<h3>{isEditing ? 'Update' : 'Add'} Geometry</h3>
+<div
+	class="form-wrapper"
+	class:is-open={isFormOpen}
+	onmouseenter={() => (isFormOpen = true)}
+	onmouseleave={() => (isFormOpen = false)}
+>
+	<div class="form-container">
+		<form
+			onsubmit={(event) => {
+				event.preventDefault();
+				handleSubmit();
+			}}
+		>
+			<h3>{isEditing ? 'Update' : 'Add'} Geometry</h3>
 
-		<select bind:value={selectedGeometryId} onchange={handleGeometrySelect} class="geometry-select">
-			<option value="">-- Add New Geometry --</option>
-			{#each geometries as geometry}
-				<option value={geometry.id}>{geometry.name}</option>
-			{/each}
-		</select>
-
-		<input type="text" bind:value={name} placeholder="Name" required />
-
-		{#if !file}
-			<select bind:value={type}>
-				{#each types as geometryType}
-					<option value={geometryType}>{geometryType}</option>
-				{/each}
-			</select>
-		{/if}
-
-		<input type="color" bind:value={color} />
-
-		<div class="position-rotation">
-			<div>
-				<label for="position-x">Position (X,Y,Z)</label>
-				<input id="position-x" type="number" bind:value={position.x} placeholder="X" step="0.01" />
-				<input id="position-y" type="number" bind:value={position.y} placeholder="Y" step="0.01" />
-				<input id="position-z" type="number" bind:value={position.z} placeholder="Z" step="0.01" />
-				<button
-					type="button"
-					onclick={() => (position = { x: 0, y: 0, z: 0 })}
-					class="reset-button"
+			<div class="geometry-list">
+				<select
+					bind:value={selectedGeometryId}
+					onchange={handleGeometrySelect}
+					class="geometry-select"
 				>
-					Reset Position
-				</button>
-			</div>
-			<div>
-				<label for="rotation-x">Rotation (X,Y,Z)</label>
-				<input id="rotation-x" type="number" bind:value={rotation.x} placeholder="X" step="0.01" />
-				<input id="rotation-y" type="number" bind:value={rotation.y} placeholder="Y" step="0.01" />
-				<input id="rotation-z" type="number" bind:value={rotation.z} placeholder="Z" step="0.01" />
-				<button
-					type="button"
-					onclick={() => (rotation = { x: 0, y: 0, z: 0 })}
-					class="reset-button"
-				>
-					Reset Rotation
-				</button>
-			</div>
-		</div>
+					<option value="">-- Add New Geometry --</option>
+					{#each geometries as geometry}
+						<option value={geometry.id}>
+							{geometry.name}
+							{geometry.visible ? '👁️' : '🚫'}
+						</option>
+					{/each}
+				</select>
 
-		<div class="file-upload-section">
-			<label for="file-upload">Or Upload a GLB/GLTF Model</label>
-			<input
-				id="file-upload"
-				type="file"
-				accept=".glb,.gltf"
-				onchange={(e) => {
-					const target = e.target as HTMLInputElement;
-					file = target.files?.[0] || null;
-				}}
-			/>
-			{#if file}
-				<p>Selected file: {file.name}</p>
+				<div class="geometry-actions">
+					{#each geometries as geometry}
+						<div class="geometry-item" class:selected={geometry.id === selectedGeometryId}>
+							<span class="geometry-name">{geometry.name}</span>
+							<div class="geometry-controls">
+								<button
+									class="visibility-toggle"
+									class:visible={geometry.visible}
+									class:hidden={!geometry.visible}
+									onclick={() => toggleVisibility(geometry.id)}
+									title={geometry.visible ? 'Hide geometry' : 'Show geometry'}
+								>
+									{geometry.visible ? '👁️' : '🚫'}
+								</button>
+								<button
+									class="select-geometry"
+									onclick={() => {
+										selectedGeometryId = geometry.id;
+										loadGeometryDetails(geometry.id);
+									}}
+									title="Select geometry for editing"
+								>
+									✏️
+								</button>
+							</div>
+						</div>
+					{/each}
+				</div>
+			</div>
+
+			<input type="text" bind:value={name} placeholder="Name" required />
+			{#if !file}
+				<select bind:value={type}>
+					{#each types as geometryType}
+						<option value={geometryType}>{geometryType}</option>
+					{/each}
+				</select>
 			{/if}
+
+			<input type="color" bind:value={color} />
+
+			<div class="position-rotation">
+				<div>
+					<label for="position-x">Position (X,Y,Z)</label>
+					<input
+						id="position-x"
+						type="number"
+						bind:value={position.x}
+						placeholder="X"
+						step="0.01"
+					/>
+					<input
+						id="position-y"
+						type="number"
+						bind:value={position.y}
+						placeholder="Y"
+						step="0.01"
+					/>
+					<input
+						id="position-z"
+						type="number"
+						bind:value={position.z}
+						placeholder="Z"
+						step="0.01"
+					/>
+					<button
+						type="button"
+						onclick={() => (position = { x: 0, y: 0, z: 0 })}
+						class="reset-button"
+					>
+						Reset Position
+					</button>
+				</div>
+				<div>
+					<label for="rotation-x">Rotation (X,Y,Z)</label>
+					<input
+						id="rotation-x"
+						type="number"
+						bind:value={rotation.x}
+						placeholder="X"
+						step="0.01"
+					/>
+					<input
+						id="rotation-y"
+						type="number"
+						bind:value={rotation.y}
+						placeholder="Y"
+						step="0.01"
+					/>
+					<input
+						id="rotation-z"
+						type="number"
+						bind:value={rotation.z}
+						placeholder="Z"
+						step="0.01"
+					/>
+					<button
+						type="button"
+						onclick={() => (rotation = { x: 0, y: 0, z: 0 })}
+						class="reset-button"
+					>
+						Reset Rotation
+					</button>
+				</div>
+			</div>
+
+			<div class="file-upload-section">
+				<label for="file-upload">Or Upload a GLB/GLTF Model</label>
+				<input
+					id="file-upload"
+					type="file"
+					accept=".glb,.gltf"
+					onchange={(e) => {
+						const target = e.target as HTMLInputElement;
+						file = target.files?.[0] || null;
+					}}
+				/>
+				{#if file}
+					<p>Selected file: {file.name}</p>
+				{/if}
+			</div>
+
+			<button type="submit" class={isEditing ? 'update-button' : 'add-button'} disabled={isLoading}>
+				{isLoading ? 'Saving...' : isEditing ? 'Update' : 'Add'}
+			</button>
+			{#if isEditing}
+				<button type="button" onclick={resetForm} class="cancel-button">Cancel</button>
+			{/if}
+		</form>
+
+		<div class="delete-section">
+			<button onclick={deleteGeometry} disabled={!selectedGeometryId} class="delete-button">
+				Delete Selected
+			</button>
 		</div>
-
-		<button type="submit" class={isEditing ? 'update-button' : 'add-button'} disabled={isLoading}>
-			{isLoading ? 'Saving...' : isEditing ? 'Update' : 'Add'}
-		</button>
-		{#if isEditing}
-			<button type="button" onclick={resetForm} class="cancel-button">Cancel</button>
-		{/if}
-	</form>
-
-	<div class="delete-section">
-		<button onclick={deleteGeometry} disabled={!selectedGeometryId} class="delete-button">
-			Delete Selected
-		</button>
 	</div>
 </div>
+
+<!-- Closing div for form-wrapper -->
 
 <style>
 	.form-container {
@@ -414,5 +512,85 @@
 		border-color: #80cbc4;
 		transform: translateY(-1px);
 		box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+	}
+
+	.geometry-list {
+		margin-bottom: 10px;
+	}
+
+	.geometry-actions {
+		max-height: 200px;
+		overflow-y: auto;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 4px;
+		margin-top: 5px;
+	}
+
+	.geometry-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 6px 8px;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+		transition: background-color 0.2s ease;
+	}
+
+	.geometry-item:last-child {
+		border-bottom: none;
+	}
+
+	.geometry-item.selected {
+		background: rgba(77, 182, 172, 0.2);
+	}
+
+	.geometry-name {
+		font-size: 0.7rem;
+		color: #ccc;
+		flex: 1;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.geometry-controls {
+		display: flex;
+		gap: 4px;
+	}
+
+	.visibility-toggle,
+	.select-geometry {
+		background: rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		color: #fff;
+		padding: 2px 6px;
+		border-radius: 3px;
+		font-size: 0.8rem;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		min-width: 24px;
+		height: 24px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.visibility-toggle.visible {
+		background: rgba(76, 175, 80, 0.3);
+		border-color: #4caf50;
+	}
+
+	.visibility-toggle.hidden {
+		background: rgba(244, 67, 54, 0.3);
+		border-color: #f44336;
+	}
+
+	.visibility-toggle:hover {
+		transform: scale(1.1);
+	}
+
+	.select-geometry:hover {
+		background: rgba(255, 152, 0, 0.3);
+		border-color: #ff9800;
+		transform: scale(1.1);
 	}
 </style>
