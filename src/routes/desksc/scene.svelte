@@ -42,10 +42,10 @@
 
 
 {#if browser}
-	import { dracoLoader } from '$lib/utils/draco';
+	
 
 {#await  Promise.all(
-			modelNames.map(name => useGltf(`${name}.glb`, { dracoLoader })))
+			modelNames.map(name => useGltf(`${name}.glb`
 	then results}
 		{#key results}
 			{#each results as result}

@@ -2,9 +2,9 @@
     import { T } from '@threlte/core'
     import { useGltf } from '@threlte/extras'
     import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
-    import { dracoLoader } from '$lib/utils/draco';
+    
 
-    const gltf = useGltf(getCloudinaryAssetUrl('/ghost.glb'), { dracoLoader })
+    const gltf = useGltf(getCloudinaryAssetUrl('/ghost.glb')
 <T.Group>
     {#if $gltf}
         <T.Primitive 

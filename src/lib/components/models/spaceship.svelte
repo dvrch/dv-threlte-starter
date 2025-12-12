@@ -13,11 +13,11 @@ Title: Rusty Spaceship - Orange
 	import { useGltf } from '@threlte/extras';
 	import { useTexture }T from '@threlte/extras';
 	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
-	import { dracoLoader } from '$lib/utils/draco';
+	
 
 	export const ref = new Group();
 
-	const gltf = useGltf(getCloudinaryAssetUrl('/models/spaceship.glb'), { dracoLoader });
+	const gltf = useGltf(getCloudinaryAssetUrl('/models/spaceship.glb')
 	const map = useTexture(getCloudinaryAssetUrl('/textures/energy-beam-opacity.png'));
 
 	gltf.then((model) => {

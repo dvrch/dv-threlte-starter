@@ -1,27 +1,26 @@
 <script lang="ts">
-	import { T, useTask } from '@threlte/core'
-	import { OrbitControls, useGltf } from '@threlte/extras'
-	import { AmbientLight, PointLight } from 'three' // Importer les lumières de Three.js
-	import { dracoLoader } from '$lib/utils/draco';
+	import { T, useTask } from '@threlte/core';
+	import { OrbitControls, useGltf } from '@threlte/extras';
+	import { AmbientLight, PointLight } from 'three'; // Importer les lumières de Three.js
 
 	const CLOUDINARY_BASE_URL = 'https://res.cloudinary.com/drcok7moc/raw/upload';
 
-	let y = $state(2)
-	let rotation = $state(0)
+	let y = $state(2);
+	let rotation = $state(0);
 
 	function levitate() {
-		const time = Date.now() / 1000
-		const speed = 1
-		const offset = 3
-		y = Math.sin(time * speed) + offset
-		requestAnimationFrame(levitate)
+		const time = Date.now() / 1000;
+		const speed = 1;
+		const offset = 3;
+		y = Math.sin(time * speed) + offset;
+		requestAnimationFrame(levitate);
 	}
 
 	useTask((_, delta) => {
-		rotation += delta * 0.4
-	})
+		rotation += delta * 0.4;
+	});
 
-	levitate()
+	levitate();
 </script>
 
 <!-- <Bloom /> -->
@@ -33,14 +32,14 @@
 <!-- <T.AmbientLight color="#8f00ff" intensity={1} /> -->
 <T.PointLight intensity={10} position={[1, 2, -4]} color="#76aac8" />
 
-{#await useGltf(`${CLOUDINARY_BASE_URL}/assets/ghost.glb`, { dracoLoader }) then ghost}
+{#await useGltf(`${CLOUDINARY_BASE_URL}/assets/ghost.glb`) then ghost}
 	<T is={ghost.scene} position={[0, y, 0]} scale={0.4} />
 {/await}
 
-{#await useGltf(`${CLOUDINARY_BASE_URL}/assets/garden.glb`, { dracoLoader }) then garden}
+{#await useGltf(`${CLOUDINARY_BASE_URL}/assets/garden.glb`) then garden}
 	<T is={garden.scene} rotation.y={rotation} />
 {/await}
 
-{#await useGltf(`${CLOUDINARY_BASE_URL}/public/nissan2.glb`, { dracoLoader }) then nissan}
+{#await useGltf(`${CLOUDINARY_BASE_URL}/public/nissan2.glb`) then nissan}
 	<T is={nissan.scene} position={[2, y, 1]} scale={0.4} />
 {/await}

@@ -6,7 +6,7 @@
 	import { Color, Mesh, PMREMGenerator, PlaneGeometry, Raycaster, Vector2, Vector3 } from 'three';
 	import { onMount, onDestroy } from 'svelte';
 	import Stars from './Stars.svelte';
-	import Nissan from './Nissan.svelte'; 
+	import Nissan from './Nissan.svelte';
 	import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 	import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 	import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
@@ -25,9 +25,7 @@
 	let envMapRT;
 
 	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
-	import { dracoLoader } from '$lib/utils/draco';
-
-	let ni = useGltf(getCloudinaryAssetUrl(`/assets/nissan.glb`), { dracoLoader });
+	let ni = useGltf(getCloudinaryAssetUrl(`/assets/nissan.glb`));
 
 	const composer = new EffectComposer(renderer);
 	composer.setSize(innerWidth, innerHeight);
@@ -47,10 +45,10 @@
 
 	const setupEnvironmentMapping = () => {
 		if (envMapRT) envMapRT.dispose();
-		
+
 		scene.background = null;
 		envMapRT = pmrem.fromScene(scene, 0, 0.1, 1000);
-		
+
 		const updateMaterials = (object) => {
 			object.traverse((child) => {
 				if (child?.material?.envMapIntensity) {
@@ -61,7 +59,7 @@
 				}
 			});
 		};
-		
+
 		if (spaceShipRef) updateMaterials(spaceShipRef);
 		const nissanRef = scene.getObjectByName('Nissan');
 		if (nissanRef) updateMaterials(nissanRef);
@@ -88,67 +86,56 @@
 
 	onMount(() => {
 		setupEffectComposer();
-		
+
 		setupEnvironmentMapping();
-		
+
 		const interval = setInterval(() => {
 			setupEnvironmentMapping();
 		}, 1000); // Rafraîchir l'environnement toutes les secondes
-		
+
 		cleanupFunctions.push(() => clearInterval(interval));
 	});
 
 	onDestroy(() => {
-		cleanupFunctions.forEach(fn => fn());
+		cleanupFunctions.forEach((fn) => fn());
 		if (envMapRT) envMapRT.dispose();
-		
 	});
-	
-	let canvas; 
+
+	let canvas;
 </script>
 
-
 <div class="div">
-	
 	<T.PerspectiveCamera makeDefault position={[-5, 6, 10]} fov={25}>
 		<OrbitControls enableDamping target={[0, 0, 0]} />
 	</T.PerspectiveCamera>
-	
+
 	<T.DirectionalLight intensity={1.8} position={[0, 10, 0]} castShadow shadow.bias={-0.0001} />
 	<!-- <T.AmbientLight intensity={0.5} /> -->
 
 	<Spaceship
-	bind:ref={spaceShipRef}
-	position={[0, translY, 0]}
-	rotation={[angleZ, 0, angleZ, 'ZXY']}
+		bind:ref={spaceShipRef}
+		position={[0, translY, 0]}
+		rotation={[angleZ, 0, angleZ, 'ZXY']}
 	/>
 
-	<Vague 
-	bind:ref={spaceShipRef}
-	position={[0, translY, 0]}
-	scale={6}
-	/>
-	
+	<Vague bind:ref={spaceShipRef} position={[0, translY, 0]} scale={6} />
+
 	<Stars />
-	
+
 	<Nissan
-	bind:ref={spaceShipRef}
-	position={[0, translY, 0]}
-	rotation={[angleZ, 80, angleZ, 'ZXY']}
+		bind:ref={spaceShipRef}
+		position={[0, translY, 0]}
+		rotation={[angleZ, 80, angleZ, 'ZXY']}
 	/>
-
-	
-
 </div>
 
-
 <style>
-	.div {position: absolute; 
-		top: 0; 
-		left: 0; 
-		width: 100%; 
-		height: 100%; 
+	.div {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
 		z-index: -2;
 	}
-
 </style>

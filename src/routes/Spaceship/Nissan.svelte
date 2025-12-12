@@ -15,7 +15,7 @@ Title: Nissan Skyline GTR r35
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
   import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
-  import { dracoLoader } from '$lib/utils/draco';
+  
 
   // Runes syntax pour les props, avec un ref par défaut et passage du reste des props
   let { ref = new Group(), ...restProps } = $props();
@@ -24,7 +24,7 @@ Title: Nissan Skyline GTR r35
 
   onMount(() => {
     if (browser) {
-      gltf = useGltf(getCloudinaryAssetUrl('/models/nissan.glb'), { dracoLoader });
+      gltf = useGltf(getCloudinaryAssetUrl('/models/nissan.glb')
 
       gltf?.then((model) => {
         function alphaFix(material) {

@@ -18,13 +18,13 @@ Title: Nissan Skyline GTR r35
 	let { ...rest } = $props(); // Capture rest props
 
 	import { assets } from '$lib/services/assets';
-	import { getCloudinaryAssetUrl, configureDracoLoader } from '$lib/utils/cloudinaryAssets';
+	import { getCloudinaryAssetUrl, 
 	import { onMount } from 'svelte';
 
 	// Configure DRACOLoader and load GLTF on client-side only
 	let gltf;
 	onMount(() => {
-		configureDracoLoader();
+		
 		gltf = useGltf(getCloudinaryAssetUrl('/models/nissan.glb'));
 	});
 

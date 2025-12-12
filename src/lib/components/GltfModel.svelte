@@ -3,7 +3,7 @@
 	import { useGltf } from '@threlte/extras';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
-	import { dracoLoader } from '$lib/utils/draco';
+	
 
 	let { url, ...restProps }: { url: string } = $props();
 
@@ -11,7 +11,7 @@
 	
 	$effect(() => {
 		if (browser && url) {
-			const gltfStore = useGltf(url, { dracoLoader });
+			const gltfStore = useGltf(url
 			// useGltf return a store that is also a promise
 			gltfStore.then((loaded) => {
 				gltf = loaded;

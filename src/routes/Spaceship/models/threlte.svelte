@@ -7,7 +7,7 @@ Command: npx @threlte/gltf@2.0.0 C:\Users\Utente\Desktop\Trasferimento-PC\Projec
 	import { Group } from 'three';
 	import { T, forwardEventHandlers } from '@threlte/core';
 	import { useGltf } from '@threlte/extras';
-	import { getCloudinaryAssetUrl, configureDracoLoader } from '$lib/utils/cloudinaryAssets';
+	import { getCloudinaryAssetUrl, 
 	import { onMount } from 'svelte';
 
 	export const ref = new Group();
@@ -15,7 +15,7 @@ Command: npx @threlte/gltf@2.0.0 C:\Users\Utente\Desktop\Trasferimento-PC\Projec
 	let component;
 
 	onMount(() => {
-		configureDracoLoader();
+		
 		gltf = useGltf(getCloudinaryAssetUrl('/models/threlte.glb'));
 		component = forwardEventHandlers();
 	});

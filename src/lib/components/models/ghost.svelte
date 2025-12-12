@@ -8,11 +8,11 @@ Command: npx @threlte/gltf@2.0.3 /home/ubt/DpDIST/Web_site_3D_anime_By_DV/static
   import { T, forwardEventHandlers } from '@threlte/core'
   import { useGltf } from '@threlte/extras'
   import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
-  import { dracoLoader } from '$lib/utils/draco';
+  
 
   export const ref = new Group()
 
-  const gltf = useGltf(getCloudinaryAssetUrl('/models/ghost.glb'), { dracoLoader })
+  const gltf = useGltf(getCloudinaryAssetUrl('/models/ghost.glb')
 </script>
 
 <T is={ref} dispose={false} {...restProps} bind:this={$component}>

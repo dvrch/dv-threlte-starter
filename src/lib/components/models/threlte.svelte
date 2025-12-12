@@ -8,11 +8,11 @@ Command: npx @threlte/gltf@2.0.0 C:\Users\Utente\Desktop\Trasferimento-PC\Projec
   import { T, forwardEventHandlers } from '@threlte/core'
   import { useGltf } from '@threlte/extras'
   import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
-  import { dracoLoader } from '$lib/utils/draco';
+  
 
   export const ref = new Group()
 
-  const gltf = useGltf(getCloudinaryAssetUrl('/models/threlte.glb'), { dracoLoader })  const component = forwardEventHandlers()
+  const gltf = useGltf(getCloudinaryAssetUrl('/models/threlte.glb')
 </script>
 
 <T is={ref} dispose={false} {...restProps} bind:this={$component}>

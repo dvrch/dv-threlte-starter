@@ -20,9 +20,6 @@ const clock = new THREE.Clock();
   onMount(async () => {
     try {
       const gltfLoader = new GLTFLoader();
-      const dracoLoader = new DRACOLoader();
-      dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
-      gltfLoader.setDRACOLoader(dracoLoader);
 
       const gltf = await gltfLoader.loadAsync(getCloudinaryAssetUrl('/public/cloth_sim.glb'));
       const texture = await new THREE.TextureLoader().loadAsync(getCloudinaryAssetUrl('/public/zaki.png'));
