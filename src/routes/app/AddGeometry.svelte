@@ -30,7 +30,18 @@
 	});
 	let file: File | null = $state(null); // State for the uploaded file
 
-	let geometries = $state<any[]>([]);
+	interface GeometryItem {
+		id: string;
+		name: string;
+		type: string;
+		color: string;
+		position: { x: number; y: number; z: number };
+		rotation: { x: number; y: number; z: number };
+		visible: boolean; // Add visible property
+		// Add other properties as needed
+	}
+
+	let geometries = $state<GeometryItem[]>([]);
 	let selectedGeometryId = $state('');
 	let isEditing = $state(false);
 	let types = $state<string[]>([]);
@@ -92,9 +103,9 @@
 			if (!response.ok) throw new Error(`HTTP ${response.status}`);
 			const data = await response.json();
 			if (data.results && Array.isArray(data.results)) {
-				geometries = data.results;
+				geometries = data.results.map((g: any) => ({ ...g, visible: true }));
 			} else if (Array.isArray(data)) {
-				geometries = data;
+				geometries = data.map((g: any) => ({ ...g, visible: true }));
 			}
 		} catch (error) {
 			console.error('Error loading geometries:', error);
@@ -221,6 +232,13 @@
 			addToast('Failed to load geometry details', 'error');
 		}
 	};
+
+	const toggleGeometryVisibility = (id: string) => {
+		geometries = geometries.map((g) =>
+			g.id === id ? { ...g, visible: !g.visible } : g
+		);
+		dispatch('geometryVisibilityChanged', { id, visible: geometries.find(g => g.id === id)?.visible });
+	};
 </script>
 
 <div
@@ -239,51 +257,30 @@
 			<h3>{isEditing ? 'Update' : 'Add'} Geometry</h3>
 
 			<div class="geometry-list">
-				<select
-					bind:value={selectedGeometryId}
-					onchange={handleGeometrySelect}
-					class="geometry-select"
-				>
-					<option value="">-- Add New Geometry --</option>
-					{#each geometries as geometry}
-						<option value={geometry.id}>
-							{geometry.name}
-							{geometry.visible ? '👁️' : '🚫'}
-						</option>
-					{/each}
-				</select>
+		<select bind:value={selectedGeometryId} onchange={handleGeometrySelect} class="geometry-select">
+			<option value="">-- Add New Geometry --</option>
+			{#each geometries as geometry}
+				<option value={geometry.id}>{geometry.name}</option>
+			{/each}
+		</select>
 
-				<div class="geometry-actions">
-					{#each geometries as geometry}
-						<div class="geometry-item" class:selected={geometry.id === selectedGeometryId}>
-							<span class="geometry-name">{geometry.name}</span>
-							<div class="geometry-controls">
-								<button
-									class="visibility-toggle"
-									class:visible={geometry.visible}
-									class:hidden={!geometry.visible}
-									onclick={() => toggleVisibility(geometry.id)}
-									title={geometry.visible ? 'Hide geometry' : 'Show geometry'}
-								>
-									{geometry.visible ? '👁️' : '🚫'}
-								</button>
-								<button
-									class="select-geometry"
-									onclick={() => {
-										selectedGeometryId = geometry.id;
-										loadGeometryDetails(geometry.id);
-									}}
-									title="Select geometry for editing"
-								>
-									✏️
-								</button>
-							</div>
-						</div>
-					{/each}
+		<div class="geometry-visibility-list">
+			<h4>Toggle Visibility</h4>
+			{#each geometries as geometry (geometry.id)}
+				<div class="geometry-item">
+					<span>{geometry.name}</span>
+					<button
+						type="button"
+						class:active={geometry.visible}
+						onclick={() => toggleGeometryVisibility(geometry.id)}
+					>
+						{geometry.visible ? 'Hide' : 'Show'}
+					</button>
 				</div>
-			</div>
+			{/each}
+		</div>
 
-			<input type="text" bind:value={name} placeholder="Name" required />
+		<input type="text" bind:value={name} placeholder="Name" required />
 			{#if !file}
 				<select bind:value={type}>
 					{#each types as geometryType}
@@ -592,5 +589,54 @@
 		background: rgba(255, 152, 0, 0.3);
 		border-color: #ff9800;
 		transform: scale(1.1);
+	}
+	.geometry-visibility-list {
+		margin-top: 10px;
+		padding-top: 10px;
+		border-top: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.geometry-visibility-list h4 {
+		margin: 0 0 8px 0;
+		font-size: 0.8rem;
+		color: #4db6ac;
+	}
+
+	.geometry-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 4px 0;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+	}
+
+	.geometry-item:last-child {
+		border-bottom: none;
+	}
+
+	.geometry-item span {
+		font-size: 0.7rem;
+		color: #ccc;
+	}
+
+	.geometry-item button {
+		width: auto;
+		padding: 2px 8px;
+		font-size: 0.65rem;
+		background: rgba(255, 255, 255, 0.1);
+		color: #ccc;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		cursor: pointer;
+	}
+
+	.geometry-item button.active {
+		background: #4db6ac;
+		color: black;
+		font-weight: bold;
+	}
+
+	.geometry-item button:hover {
+		background: #80cbc4;
+		color: black;
 	}
 </style>

@@ -59,8 +59,54 @@ class GeometryViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+
+        # Supprimer le fichier Cloudinary associé
+        if instance.model_url:
+            try:
+                # Extraire le public_id depuis l'URL
+                url_pattern = r"/dv-threlte/models/([^/]+)"
+                match = re.search(url_pattern, instance.model_url)
+
+                if match:
+                    public_id = f"dv-threlte/models/{match.group(1)}"
+
+                    # Supprimer l'asset de Cloudinary
+                    import cloudinary.uploader
+
+                    cloudinary.uploader.destroy(public_id, resource_type="raw")
+                    logger.info(f"✅ Deleted Cloudinary asset: {public_id}")
+
+                    # Supprimer l'enregistrement CloudinaryAsset correspondant
+                    from .models import CloudinaryAsset
+
+                    CloudinaryAsset.objects.filter(public_id=public_id).delete()
+                    logger.info(f"✅ Deleted CloudinaryAsset record: {public_id}")
+
+            except Exception as e:
+                logger.error(f"❌ Error deleting Cloudinary asset: {str(e)}")
+
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ToggleGeometryVisibilityView(APIView):
+    def patch(self, request, pk):
+        try:
+            geometry = Geometry.objects.get(pk=pk)
+            geometry.visible = not geometry.visible
+            geometry.save()
+
+            return Response(
+                {
+                    "id": geometry.id,
+                    "visible": geometry.visible,
+                    "message": f"Géométrie {'activée' if geometry.visible else 'désactivée'}",
+                }
+            )
+        except Geometry.DoesNotExist:
+            return Response(
+                {"error": "Géométrie non trouvée"}, status=status.HTTP_404_NOT_FOUND
+            )
 
 
 class TypeView(APIView):

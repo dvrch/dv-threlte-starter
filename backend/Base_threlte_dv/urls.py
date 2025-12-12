@@ -3,7 +3,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import GeometryViewSet, TypeView
+from .views import GeometryViewSet, TypeView, ToggleGeometryVisibilityView
 from . import storage_views
 
 
@@ -27,6 +27,11 @@ router.register("geometries", GeometryViewSet, basename="geometries")
 
 urlpatterns = [
     path("types/", TypeView.as_view(), name="types"),
+    path(
+        "geometries/<int:pk>/toggle-visibility/",
+        ToggleGeometryVisibilityView.as_view(),
+        name="toggle-geometry-visibility",
+    ),
     path("debug-env/", debug_env, name="debug-env"),
     path(
         "storage/",

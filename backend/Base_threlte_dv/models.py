@@ -36,6 +36,90 @@ class Geometry(models.Model):
     position = models.JSONField(default=get_default_position)
     rotation = models.JSONField(default=get_default_rotation)
     color = models.CharField(max_length=7, blank=True, default="#000000")  # Couleur
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
+    visible = models.BooleanField(
+        default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
+    )
 
     def clean(self):
         if self.color and not str(self.color).startswith("#"):
