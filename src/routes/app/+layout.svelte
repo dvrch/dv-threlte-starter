@@ -11,8 +11,7 @@
     import Bloom from './models/bloom.svelte';
 
     // UI state
-    const showForm = writable(false);
-    const toggleForm = () => showForm.update(v => !v);
+    let isFormHovered = $state(false);
 
     // Ensure normal scrolling for all routes
     onMount(() => {
@@ -40,15 +39,10 @@
             </Canvas>
         </div>
         <!-- UI Controls -->
-        <div class="ui-controls">
-            <button class="toggle-form" onclick={toggleForm} aria-label="Toggle Add Geometry Form">
-                {#if $showForm}✖ Close Form{:else}+ Add Geometry{/if}
-            </button>
-            {#if $showForm}
-                <div class="form-wrapper">
-                    <AddGeometry />
-                </div>
-            {/if}
+        <div class="ui-controls" onmouseenter={() => (isFormHovered = true)} onmouseleave={() => (isFormHovered = false)}>
+            <div class="form-wrapper" class:is-open={isFormHovered}>
+                <AddGeometry />
+            </div>
         </div>
     </main>
     {#if !$page.url.pathname.startsWith('/app') && !$page.url.pathname.startsWith('/vague')}
@@ -70,22 +64,13 @@
         height: 100vh; /* keep space for UI */
     }
     .ui-controls {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        z-index: 10;
+        position: fixed; /* Use fixed positioning for the controls */
+        top: 80px; /* Position it lower, below the header/ribbon */
+        right: 20px; /* Position it on the right side */
+        z-index: 1000; /* Ensure it's above other content */
         display: flex;
         flex-direction: column;
         align-items: flex-end;
-    }
-    .toggle-form {
-        background: #4db6ac;
-        color: #000;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-bottom: 0.5rem;
     }
     .form-wrapper {
         background: rgba(30, 30, 40, 0.6);
@@ -93,9 +78,14 @@
         padding: 1rem;
         border-radius: 8px;
         max-width: 320px;
-        max-height: 70vh;
-        overflow-y: auto;
+        max-height: 50px; /* Collapsed height */
+        overflow: hidden;
+        transition: max-height 0.3s ease-out, background 0.3s ease-out;
         box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .form-wrapper.is-open {
+        max-height: 70vh; /* Expanded height (adjust as needed) */
+        background: rgba(30, 30, 40, 0.8); /* More opaque when open */
     }
     @media (max-width: 600px) {
         .canvas-container {

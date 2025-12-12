@@ -6,9 +6,21 @@
 	import { onMount } from 'svelte';
 	import { ENDPOINTS } from '$lib/config';
 
-	let geometries = $state([]);
+	interface GeometryItem {
+		id: string;
+		name: string;
+		type: string;
+		color: string;
+		position: { x: number; y: number; z: number };
+		rotation: { x: number; y: number; z: number };
+		visible: boolean; // Add visible property
+		model_url?: string; // Assuming this exists for gltf_model types
+	}
+
+	let geometries = $state<GeometryItem[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
+	let isBloomEnabled = $state(false); // State to control Bloom effect
 
 	// Function to fetch geometries
 	const fetchGeometries = async () => {
@@ -26,12 +38,14 @@
 			const data = await response.json();
 			const results = Array.isArray(data) ? data : data.results || [];
 			// Filter out geometries that expect an URL but have none
-			geometries = results.filter((g: any) => {
-				if (g.type === 'gltf_model' || g.type === 'glb') {
-					return g.model_url && g.model_url.trim() !== '';
-				}
-				return true;
-			});
+			geometries = results
+				.filter((g: any) => {
+					if (g.type === 'gltf_model' || g.type === 'glb') {
+						return g.model_url && g.model_url.trim() !== '';
+					}
+					return true;
+				})
+				.map((g: any) => ({ ...g, visible: true })); // Initialize visible to true
 			console.log('✅ Loaded geometries:', geometries.length);
 		} catch (e) {
 			error = (e as Error).message;
@@ -47,8 +61,22 @@
 	onMount(async () => {
 		fetchGeometries();
 		window.addEventListener('modelAdded', fetchGeometries);
+
+		const handleVisibilityChange = (event: CustomEvent) => {
+			const { id, visible } = event.detail;
+			geometries = geometries.map((g) => (g.id === id ? { ...g, visible } : g));
+		};
+		window.addEventListener('geometryVisibilityChanged', handleVisibilityChange);
+
+		const handleToggleBloom = (event: CustomEvent) => {
+			isBloomEnabled = event.detail.enabled;
+		};
+		window.addEventListener('toggleBloomEffect', handleToggleBloom);
+
 		return () => {
 			window.removeEventListener('modelAdded', fetchGeometries);
+			window.removeEventListener('geometryVisibilityChanged', handleVisibilityChange);
+			window.removeEventListener('toggleBloomEffect', handleToggleBloom);
 		};
 	});
 </script>
@@ -71,15 +99,21 @@
 	<T.MeshStandardMaterial color="red" />
 </T.Mesh>
 
+{#if isBloomEnabled}
+	<BloomEffect />
+{/if}
+
 {#if geometries.length > 0}
 	{#each geometries as geometry (geometry.id)}
-		{#if browser}
-			<Float floatIntensity={1} floatingRange={[0, 1]}>
+		{#if geometry.visible}
+			{#if browser}
+				<Float floatIntensity={1} floatingRange={[0, 1]}>
+					<Dynamic3DModel {geometry} />
+				</Float>
+			{:else}
+				<!-- Fallback for SSR -->
 				<Dynamic3DModel {geometry} />
-			</Float>
-		{:else}
-			<!-- Fallback for SSR -->
-			<Dynamic3DModel {geometry} />
+			{/if}
 		{/if}
 	{/each}
 {/if}
