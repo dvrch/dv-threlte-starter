@@ -1,20 +1,19 @@
-<script>
+<script lang="ts">
 	import { T } from '@threlte/core';
 	import { useGltf, useTexture } from '@threlte/extras';
 	import { Group } from 'three';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import { getCloudinaryAssetUrl, 
+	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 	// Runes syntax pour les props
 	let { ref = new Group(), ...restProps } = $props();
 
-	let gltf;
-	let map;
+	let gltf: any;
+	let map: any;
 
 	onMount(() => {
 		if (browser) {
-			
 			gltf = useGltf(getCloudinaryAssetUrl('/models/spaceship.glb'));
 			map = useTexture(getCloudinaryAssetUrl('/textures/energy-beam-opacity.png'));
 		}

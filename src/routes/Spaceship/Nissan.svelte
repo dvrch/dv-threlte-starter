@@ -7,55 +7,54 @@ Source: https://sketchfab.com/3d-models/nissan-skyline-gtr-r35-7b142ea3376e4811a
 Title: Nissan Skyline GTR r35
 -->
 
-<script>
-  import { T } from '@threlte/core';
-  import { useGltf } from '@threlte/extras';
-  import { Group, LessEqualDepth } from 'three';
-  import Bloom from './bloom.svelte';
-  import { onMount } from 'svelte';
-  import { browser } from '$app/environment';
-  import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
-  
+<script lang="ts">
+	import { T } from '@threlte/core';
+	import { useGltf } from '@threlte/extras';
+	import { Group, LessEqualDepth } from 'three';
+	import Bloom from './bloom.svelte';
+	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
+	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
-  // Runes syntax pour les props, avec un ref par défaut et passage du reste des props
-  let { ref = new Group(), ...restProps } = $props();
+	// Runes syntax pour les props, avec un ref par défaut et passage du reste des props
+	let { ref = new Group(), ...restProps } = $props();
 
-  let gltf;
+	let gltf: any;
 
-  onMount(() => {
-    if (browser) {
-      gltf = useGltf(getCloudinaryAssetUrl('/models/nissan.glb')
+	onMount(() => {
+		if (browser) {
+			gltf = useGltf(getCloudinaryAssetUrl('/models/nissan.glb'));
 
-      gltf?.then((model) => {
-        function alphaFix(material) {
-          if (!material) return;
-          material.transparent = true;
-          material.alphaToCoverage = true;
-          material.depthFunc = LessEqualDepth;
-          material.depthTest = true;
-          material.depthWrite = true;
-        }
+			gltf?.then((model: any) => {
+				function alphaFix(material: any) {
+					if (!material) return;
+					material.transparent = true;
+					material.alphaToCoverage = true;
+					material.depthFunc = LessEqualDepth;
+					material.depthTest = true;
+					material.depthWrite = true;
+				}
 
-        model.scene.traverse((child) => {
-          if (child.isMesh) {
-            alphaFix(child.material);
-          }
-        });
-      });
-    }
-  });
+				model.scene.traverse((child: any) => {
+					if (child.isMesh) {
+						alphaFix(child.material);
+					}
+				});
+			});
+		}
+	});
 </script>
 
 {#if browser}
-  <Bloom />
+	<Bloom />
 {/if}
 
 <T is={ref} dispose={false} {...restProps}>
-  {#await gltf}
-    loading
-  {:then gltf}
-    <T.Mesh is={gltf.scene} />
-  {:catch error}
-    <p>Error loading model</p>
-  {/await}
+	{#await gltf}
+		loading
+	{:then gltf}
+		<T.Mesh is={gltf.scene} />
+	{:catch error}
+		<p>Error loading model</p>
+	{/await}
 </T>

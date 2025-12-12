@@ -3,7 +3,7 @@
 	import Scene from './Scene.svelte';
 	import './styles.css';
 
-	let sceneInstance: Scene;
+	let sceneInstance = $state<Scene | null>(null);
 </script>
 
 {#if browser}

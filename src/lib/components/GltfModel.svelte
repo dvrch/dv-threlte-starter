@@ -3,22 +3,23 @@
 	import { useGltf } from '@threlte/extras';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
-	
 
 	let { url, ...restProps }: { url: string } = $props();
 
 	let gltf: any = $state(null); // Declare gltf as a mutable variable
-	
+
 	$effect(() => {
 		if (browser && url) {
-			const gltfStore = useGltf(url
+			const gltfStore = useGltf(url);
 			// useGltf return a store that is also a promise
-			gltfStore.then((loaded) => {
-				gltf = loaded;
-			}).catch((err) => {
-				console.error("Failed to load GLTF:", url, err);
-				gltf = null;
-			});
+			gltfStore
+				.then((loaded) => {
+					gltf = loaded;
+				})
+				.catch((err) => {
+					console.error('Failed to load GLTF:', url, err);
+					gltf = null;
+				});
 		}
 	});
 </script>
@@ -26,5 +27,5 @@
 {#if browser && gltf}
 	<T is={gltf.scene} {...restProps} />
 {:else}
-	<!-- Fallback for SSR, maybe a placeholder or nothing -->	<T.Group />
+	<!-- Fallback for SSR, maybe a placeholder or nothing --> <T.Group />
 {/if}

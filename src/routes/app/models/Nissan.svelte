@@ -7,7 +7,7 @@ Source: https://sketchfab.com/3d-models/nissan-skyline-gtr-r35-7b142ea3376e4811a
 Title: Nissan Skyline GTR r35
 -->
 
-<script>
+<script lang="ts">
 	// import { Group } from 'three'
 	import { T } from '@threlte/core';
 	import { useGltf } from '@threlte/extras';
@@ -18,19 +18,18 @@ Title: Nissan Skyline GTR r35
 	let { ...rest } = $props(); // Capture rest props
 
 	import { assets } from '$lib/services/assets';
-	import { getCloudinaryAssetUrl, 
+	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 	import { onMount } from 'svelte';
 
 	// Configure DRACOLoader and load GLTF on client-side only
-	let gltf;
+	let gltf: any;
 	onMount(() => {
-		
 		gltf = useGltf(getCloudinaryAssetUrl('/models/nissan.glb'));
 	});
 
 	gltf
-		.then((model) => {
-			function alphaFix(material) {
+		.then((model: any) => {
+			function alphaFix(material: any) {
 				if (material) {
 					material.transparent = true;
 					material.alphaToCoverage = true;
@@ -70,7 +69,7 @@ Title: Nissan Skyline GTR r35
 				}
 			});
 		})
-		.catch((err) => {
+		.catch((err: any) => {
 			console.error('Failed to load Nissan Model', err);
 		});
 </script>
