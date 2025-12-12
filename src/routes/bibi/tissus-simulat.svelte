@@ -14,7 +14,6 @@
 	} = $props();
 
 	import { assets } from '$lib/services/assets';
-	import { dracoGltfLoader } from '$lib/utils/cloudinaryAssets';
 
 	const CLOUDINARY_BASE_URL = 'https://res.cloudinary.com/drcok7moc/raw/upload';
 	const CLOTH_SIM_GLB_URL = `${CLOUDINARY_BASE_URL}/public/cloth_sim.glb`;
@@ -22,7 +21,7 @@
 	// This component should be loaded dynamically via the database
 	// The cloth_sim model is available as geometry ID 71 in the database
 	console.warn('This component should be loaded via Dynamic3DModel with geometry ID 71');
-	const gltf = useGltf<THREE.Group>(CLOTH_SIM_GLB_URL, { loader: dracoGltfLoader });
+	const gltf = useGltf<THREE.Group>(CLOTH_SIM_GLB_URL);
 	gltf.catch((err) => console.error('Failed to load cloth_sim.glb - use database instead', err));
 
 	// Animate the model using useTask

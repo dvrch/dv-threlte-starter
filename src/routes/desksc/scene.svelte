@@ -42,10 +42,8 @@
 
 
 {#if browser}
-	import { dracoGltfLoader } from '$lib/utils/cloudinaryAssets';
-
 {#await  Promise.all(
-			modelNames.map(name => useGltf(`${name}.glb`, { loader: dracoGltfLoader })))
+			modelNames.map(name => useGltf(`${name}.glb`)))
 	then results}
 		{#key results}
 			{#each results as result}

@@ -24,12 +24,10 @@
 		modelUrl = url;
 	});
 
-	import { dracoGltfLoader } from '$lib/utils/cloudinaryAssets';
-
 	// Load the GLTF model when URL is available
 	$effect(() => {
 		if (browser && modelUrl) {
-			const gltfStore = useGltf(modelUrl, { loader: dracoGltfLoader });
+			const gltfStore = useGltf(modelUrl);
 			gltfStore
 				.then((loaded) => {
 					gltf = loaded;

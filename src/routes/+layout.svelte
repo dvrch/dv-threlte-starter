@@ -3,6 +3,14 @@
 	import Header from './Header.svelte';
 	import './../app.css';
 	import Toast from '$lib/components/Toast.svelte';
+	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+	import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+
+	// Configure DRACOLoader globally by patching GLTFLoader.
+	// This ensures any GLTFLoader instance created later will use this DRACOLoader.
+	const dracoLoader = new DRACOLoader();
+	dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+	GLTFLoader.setDRACOLoader(dracoLoader);
 
 	let { children } = $props();
 

@@ -11,7 +11,7 @@ Command: npx @threlte/gltf@2.0.3 /home/ubt/DpDIST/Web_site_3D_anime_By_DV/static
 
   export const ref = new Group()
 
-  const gltf = useGltf(getCloudinaryAssetUrl('/models/ghost.glb'), { loader: dracoGltfLoader })  const component = forwardEventHandlers()
+  const gltf = useGltf(getCloudinaryAssetUrl('/models/ghost.glb'))  const component = forwardEventHandlers()
 </script>
 
 <T is={ref} dispose={false} {...restProps} bind:this={$component}>
