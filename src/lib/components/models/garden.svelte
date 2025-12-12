@@ -12,7 +12,8 @@ Title: Japanese Bridge Garden
   import { T, forwardEventHandlers } from '@threlte/core'
   import { useGltf } from '@threlte/extras'
   import { browser } from '$app/environment';
-  import { getCloudinaryAssetUrl, dracoGltfLoader } from '$lib/utils/cloudinaryAssets';
+  import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
+  import { dracoLoader } from '$lib/utils/draco';
 
   export const ref = new Group()
   export let url: string = '/models/garden.glb'; // Default to local path
@@ -36,8 +37,7 @@ Title: Japanese Bridge Garden
       });
   }
 
-  const gltf = useGltf(currentModelUrl, { loader: dracoGltfLoader })
-
+  const gltf = useGltf(currentModelUrl, { dracoLoader })
   const component = forwardEventHandlers()
 </script>
 

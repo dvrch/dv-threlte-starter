@@ -25,8 +25,9 @@
 	let envMapRT;
 
 	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
+	import { dracoLoader } from '$lib/utils/draco';
 
-	let ni = useGltf(getCloudinaryAssetUrl(`/assets/nissan.glb`));
+	let ni = useGltf(getCloudinaryAssetUrl(`/assets/nissan.glb`), { dracoLoader });
 
 	const composer = new EffectComposer(renderer);
 	composer.setSize(innerWidth, innerHeight);

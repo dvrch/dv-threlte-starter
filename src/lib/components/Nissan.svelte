@@ -11,8 +11,9 @@ Title: Nissan Skyline GTR r35
 	// import { Group } from 'three'
 	import { T, forwardEventHandlers } from '@threlte/core';
 import { useGltf } from '@threlte/extras';
+import { dracoLoader } from '$lib/utils/draco';
 // ...
-const gltf = $derived(modelUrl && browser ? useGltf(modelUrl) : null);
+const gltf = $derived(modelUrl && browser ? useGltf(modelUrl, { dracoLoader }) : null);
 
 	gltf.then((model) => {
 		function alphaFix(material) {
