@@ -1,3 +1,6 @@
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+
 export const CLOUDINARY_BASE_URL = 'https://res.cloudinary.com/drcok7moc/raw/upload';
 
 export function getCloudinaryAssetUrl(relativePath: string): string {
@@ -6,12 +9,16 @@ export function getCloudinaryAssetUrl(relativePath: string): string {
 	return `${CLOUDINARY_BASE_URL}/${cleanedPath}`;
 }
 
-// Simple DRACOLoader configuration for client-side use only
-export const createDracoLoader = async () => {
-	if (typeof window === 'undefined') return null;
+// Create and configure a GLTFLoader with DRACOLoader
+export const dracoGltfLoader = (() => {
+	if (typeof window === 'undefined') {
+		// Return a dummy loader for SSR to prevent errors, it won't be used anyway
+		return new GLTFLoader();
+	}
 
-	const { DRACOLoader } = await import('three/examples/jsm/loaders/DRACOLoader.js');
+	const gltfLoader = new GLTFLoader();
 	const dracoLoader = new DRACOLoader();
 	dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
-	return dracoLoader;
-};
+	gltfLoader.setDRACOLoader(dracoLoader);
+	return gltfLoader;
+})();
