@@ -821,8 +821,7 @@ Title: Nissan Skyline GTR r35
 					material={gltf.materials['amdb11_caliper.002']}
 				/>
 			</T.Group>
-		</T.Group>
-	{/if}
+
 			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
 				<T.Mesh
 					geometry={gltf.nodes['3_Wheel005_amdb11_brake002_0'].geometry}
