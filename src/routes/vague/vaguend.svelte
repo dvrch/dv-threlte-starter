@@ -89,6 +89,6 @@
 <T.DirectionalLight position={[10, 10, 5]} />
 
 <!-- Le composant affiche simplement les points animés -->
-<T.Points {geometry} {position} {rotation} {scale} rotation.y={0.1 * t}>
+<T.Points {geometry} {position} {rotation} {scale} rotation.y={0.1 * t} rotation.z={0.1 * t}>
 	<T.PointsMaterial size={0.015} vertexColors={true} />
 </T.Points>
