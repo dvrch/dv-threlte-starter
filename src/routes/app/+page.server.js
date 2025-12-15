@@ -5,7 +5,9 @@ import * as publicEnv from '$env/static/public';
 export async function load({ fetch }) {
   const PUBLIC_STATIC_URL = publicEnv.PUBLIC_STATIC_URL || '';
   const PUBLIC_API_URL = publicEnv.PUBLIC_API_URL || '';
-  
+
+  console.log('DEBUG: PUBLIC_API_URL in +page.server.js:', PUBLIC_API_URL);
+
   try {
     // Si pas d'API_URL configurée, retourner un tableau vide au lieu de faire une requête
     // Cela évite les erreurs de connexion à localhost:8000 pendant le build
