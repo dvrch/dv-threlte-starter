@@ -62,21 +62,34 @@
 		window.addEventListener('modelAdded', fetchGeometries);
 
 		const handleVisibilityChange = async (event: CustomEvent) => {
-			const { id } = event.detail;
+			const { id, visible } = event.detail; // 'visible' is the NEW desired state
+			if (typeof visible !== 'boolean') return; // Safety check
+
 			try {
-				const response = await fetch(`${ENDPOINTS.GEOMETRIES}${id}/toggle-visibility/`, {
-					method: 'PATCH'
+				const response = await fetch(`${ENDPOINTS.GEOMETRIES}${id}/`, {
+					method: 'PATCH',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ visible: visible })
 				});
+
 				if (!response.ok) {
-					throw new Error('Failed to toggle visibility');
+					// Log the error for debugging
+					const errorData = await response.json().catch(() => ({ detail: 'API request failed' }));
+					console.error('Failed to update visibility:', response.status, errorData);
+					throw new Error('Failed to update visibility');
 				}
+
 				const updatedGeometry = await response.json();
+
+				// Update the local state with the confirmed state from the backend
 				geometries = geometries.map((g) =>
 					g.id === updatedGeometry.id ? { ...g, visible: updatedGeometry.visible } : g
 				);
 			} catch (err) {
 				console.error('Error toggling visibility:', err);
-				// Optionally, dispatch an event to show a toast notification
+				// Maybe show a toast to the user that it failed
 			}
 		};
 		window.addEventListener('geometryVisibilityChanged', handleVisibilityChange);
