@@ -199,21 +199,6 @@
 		}
 	};
 
-	const toggleVisibility = async (id: number) => {
-		try {
-			const response = await fetch(ENDPOINTS.TOGGLE_VISIBILITY(id), {
-				method: 'PATCH'
-			});
-			if (!response.ok) throw new Error('Failed to toggle visibility');
-			const data = await response.json();
-			addToast(data.message, 'success');
-			await loadGeometries(); // Recharger la liste
-		} catch (error) {
-			console.error('Error toggling visibility:', error);
-			addToast(error instanceof Error ? error.message : 'Failed to toggle visibility', 'error');
-		}
-	};
-
 	const loadGeometryDetails = async (id: string) => {
 		try {
 			const response = await fetch(`${ENDPOINTS.GEOMETRIES}${id}/`);
@@ -233,11 +218,63 @@
 		}
 	};
 
-	const toggleGeometryVisibility = (id: string) => {
-		geometries = geometries.map((g) =>
-			g.id === id ? { ...g, visible: !g.visible } : g
+	const toggleGeometryVisibility = async (id: string) => {
+		// Optimistic update: toggle locally first
+		const originalGeometries = [...geometries];
+		const geometry = geometries.find((g) => g.id === id);
+
+		if (!geometry) return;
+
+		const newVisibleState = !geometry.visible;
+
+		// Update UI immediately
+		geometries = geometries.map((g) => (g.id === id ? { ...g, visible: newVisibleState } : g));
+		// Dispatch event for other components (Scene)
+		window.dispatchEvent(
+			new CustomEvent('geometryVisibilityChanged', {
+				detail: { id, visible: newVisibleState }
+			})
 		);
-		dispatch('geometryVisibilityChanged', { id, visible: geometries.find(g => g.id === id)?.visible });
+		// Also dispatch Svelte event
+		dispatch('geometryVisibilityChanged', { id, visible: newVisibleState });
+
+		// Call backend to persist
+		try {
+			const response = await fetch(ENDPOINTS.TOGGLE_VISIBILITY(Number(id)), {
+				method: 'PATCH'
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to toggle visibility');
+			}
+
+			const data = await response.json();
+			// Optional: verify backend state matches local state
+			if (data.visible !== newVisibleState) {
+				// Correction if backend logic differs (unlikely)
+				geometries = geometries.map((g) => (g.id === id ? { ...g, visible: data.visible } : g));
+				window.dispatchEvent(
+					new CustomEvent('geometryVisibilityChanged', {
+						detail: { id, visible: data.visible }
+					})
+				);
+			}
+
+			// Trigger other components to refresh if needed (like the scene)
+			window.dispatchEvent(new Event('modelAdded'));
+
+			addToast(data.message, 'success');
+		} catch (error) {
+			console.error('Error toggling visibility:', error);
+			// Revert on error
+			geometries = originalGeometries;
+			window.dispatchEvent(
+				new CustomEvent('geometryVisibilityChanged', {
+					detail: { id, visible: !newVisibleState }
+				})
+			);
+			addToast(error instanceof Error ? error.message : 'Failed to toggle visibility', 'error');
+		}
 	};
 </script>
 
@@ -257,162 +294,171 @@
 			<h3>{isEditing ? 'Update' : 'Add'} Geometry</h3>
 
 			<div class="geometry-list">
-		<select bind:value={selectedGeometryId} onchange={handleGeometrySelect} class="geometry-select">
-			<option value="">-- Add New Geometry --</option>
-			{#each geometries as geometry}
-				<option value={geometry.id}>{geometry.name}</option>
-			{/each}
-		</select>
-
-		<div class="geometry-visibility-list">
-			<h4>Toggle Visibility</h4>
-			{#each geometries as geometry (geometry.id)}
-				<div class="geometry-item">
-					<span>{geometry.name}</span>
-					<button
-						type="button"
-						class="visibility-toggle"
-						class:visible={geometry.visible}
-						class:hidden={!geometry.visible}
-						onclick={() => toggleGeometryVisibility(geometry.id)}
-						aria-label={geometry.visible ? 'Hide' : 'Show'}
-					>
-						{#if geometry.visible}
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle
-									cx="12"
-									cy="12"
-									r="3"
-								/></svg
-							>
-						{:else}
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								><path
-									d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
-								/><line x1="1" y1="1" x2="23" y2="23" /></svg
-							>
-						{/if}
-					</button>
-				</div>
-			{/each}
-		</div>
-
-		<input type="text" bind:value={name} placeholder="Name" required />
-			{#if !file}
-				<select bind:value={type}>
-					{#each types as geometryType}
-						<option value={geometryType}>{geometryType}</option>
+				<select
+					bind:value={selectedGeometryId}
+					onchange={handleGeometrySelect}
+					class="geometry-select"
+				>
+					<option value="">-- Add New Geometry --</option>
+					{#each geometries as geometry}
+						<option value={geometry.id}>{geometry.name}</option>
 					{/each}
 				</select>
-			{/if}
 
-			<input type="color" bind:value={color} />
-
-			<div class="position-rotation">
-				<div>
-					<label for="position-x">Position (X,Y,Z)</label>
-					<input
-						id="position-x"
-						type="number"
-						bind:value={position.x}
-						placeholder="X"
-						step="0.01"
-					/>
-					<input
-						id="position-y"
-						type="number"
-						bind:value={position.y}
-						placeholder="Y"
-						step="0.01"
-					/>
-					<input
-						id="position-z"
-						type="number"
-						bind:value={position.z}
-						placeholder="Z"
-						step="0.01"
-					/>
-					<button
-						type="button"
-						onclick={() => (position = { x: 0, y: 0, z: 0 })}
-						class="reset-button"
-					>
-						Reset Position
-					</button>
+				<div class="geometry-visibility-list">
+					<h4>Toggle Visibility</h4>
+					{#each geometries as geometry (geometry.id)}
+						<div class="geometry-item">
+							<span>{geometry.name}</span>
+							<button
+								type="button"
+								class="visibility-toggle"
+								class:visible={geometry.visible}
+								class:hidden={!geometry.visible}
+								onclick={() => toggleGeometryVisibility(geometry.id)}
+								aria-label={geometry.visible ? 'Hide' : 'Show'}
+							>
+								{#if geometry.visible}
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="16"
+										height="16"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle
+											cx="12"
+											cy="12"
+											r="3"
+										/></svg
+									>
+								{:else}
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="16"
+										height="16"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										><path
+											d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
+										/><line x1="1" y1="1" x2="23" y2="23" /></svg
+									>
+								{/if}
+							</button>
+						</div>
+					{/each}
 				</div>
-				<div>
-					<label for="rotation-x">Rotation (X,Y,Z)</label>
-					<input
-						id="rotation-x"
-						type="number"
-						bind:value={rotation.x}
-						placeholder="X"
-						step="0.01"
-					/>
-					<input
-						id="rotation-y"
-						type="number"
-						bind:value={rotation.y}
-						placeholder="Y"
-						step="0.01"
-					/>
-					<input
-						id="rotation-z"
-						type="number"
-						bind:value={rotation.z}
-						placeholder="Z"
-						step="0.01"
-					/>
-					<button
-						type="button"
-						onclick={() => (rotation = { x: 0, y: 0, z: 0 })}
-						class="reset-button"
-					>
-						Reset Rotation
-					</button>
-				</div>
-			</div>
 
-			<div class="file-upload-section">
-				<label for="file-upload">Or Upload a GLB/GLTF Model</label>
-				<input
-					id="file-upload"
-					type="file"
-					accept=".glb,.gltf"
-					onchange={(e) => {
+				<input type="text" bind:value={name} placeholder="Name" required />
+				{#if !file}
+					<select bind:value={type}>
+						{#each types as geometryType}
+							<option value={geometryType}>{geometryType}</option>
+						{/each}
+					</select>
+				{/if}
+
+				<input type="color" bind:value={color} />
+
+				<div class="position-rotation">
+					<div>
+						<label for="position-x">Position (X,Y,Z)</label>
+						<input
+							id="position-x"
+							type="number"
+							bind:value={position.x}
+							placeholder="X"
+							step="0.01"
+						/>
+						<input
+							id="position-y"
+							type="number"
+							bind:value={position.y}
+							placeholder="Y"
+							step="0.01"
+						/>
+						<input
+							id="position-z"
+							type="number"
+							bind:value={position.z}
+							placeholder="Z"
+							step="0.01"
+						/>
+						<button
+							type="button"
+							onclick={() => (position = { x: 0, y: 0, z: 0 })}
+							class="reset-button"
+						>
+							Reset Position
+						</button>
+					</div>
+					<div>
+						<label for="rotation-x">Rotation (X,Y,Z)</label>
+						<input
+							id="rotation-x"
+							type="number"
+							bind:value={rotation.x}
+							placeholder="X"
+							step="0.01"
+						/>
+						<input
+							id="rotation-y"
+							type="number"
+							bind:value={rotation.y}
+							placeholder="Y"
+							step="0.01"
+						/>
+						<input
+							id="rotation-z"
+							type="number"
+							bind:value={rotation.z}
+							placeholder="Z"
+							step="0.01"
+						/>
+						<button
+							type="button"
+							onclick={() => (rotation = { x: 0, y: 0, z: 0 })}
+							class="reset-button"
+						>
+							Reset Rotation
+						</button>
+					</div>
+				</div>
+
+				<div class="file-upload-section">
+					<label for="file-upload">Or Upload a GLB/GLTF Model</label>
+					<input
+						id="file-upload"
+						type="file"
+						accept=".glb,.gltf"
+						onchange={(e) => {
 						const target = e.target as HTMLInputElement;
 						file = target.files?.[0] || null;
 					}}
-				/>
-				{#if file}
-					<p>Selected file: {file.name}</p>
+					/>
+					{#if file}
+						<p>Selected file: {file.name}</p>
+					{/if}
+				</div>
+
+				<button
+					type="submit"
+					class={isEditing ? 'update-button' : 'add-button'}
+					disabled={isLoading}
+				>
+					{isLoading ? 'Saving...' : isEditing ? 'Update' : 'Add'}
+				</button>
+				{#if isEditing}
+					<button type="button" onclick={resetForm} class="cancel-button">Cancel</button>
 				{/if}
 			</div>
-
-			<button type="submit" class={isEditing ? 'update-button' : 'add-button'} disabled={isLoading}>
-				{isLoading ? 'Saving...' : isEditing ? 'Update' : 'Add'}
-			</button>
-			{#if isEditing}
-				<button type="button" onclick={resetForm} class="cancel-button">Cancel</button>
-			{/if}
 		</form>
 
 		<div class="delete-section">

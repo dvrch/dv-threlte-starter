@@ -7,6 +7,7 @@
 	import { ENDPOINTS } from '$lib/config';
 
 	import { addToast } from '$lib/stores/toasts';
+	import Bloom from './models/bloom.svelte';
 
 	interface GeometryItem {
 		id: string;
@@ -40,13 +41,12 @@
 			const data = await response.json();
 			const results = Array.isArray(data) ? data : data.results || [];
 			// Filter out geometries that expect an URL but have none
-			geometries = results
-				.filter((g: any) => {
-					if (g.type === 'gltf_model' || g.type === 'glb') {
-						return g.model_url && g.model_url.trim() !== '';
-					}
-					return true;
-				})
+			geometries = results.filter((g: any) => {
+				if (g.type === 'gltf_model' || g.type === 'glb') {
+					return g.model_url && g.model_url.trim() !== '';
+				}
+				return true;
+			});
 			console.log('✅ Loaded geometries:', geometries.length);
 		} catch (e) {
 			error = (e as Error).message;
@@ -59,48 +59,23 @@
 		console.log('Final state:', { loading, error, geometriesCount: geometries.length });
 	};
 
-	onMount(async () => {
+	onMount(() => {
 		fetchGeometries();
 		window.addEventListener('modelAdded', fetchGeometries);
 
-		const handleVisibilityChange = async (event: CustomEvent) => {
-			const { id, visible } = event.detail; // 'visible' is the NEW desired state
+		const handleVisibilityChange = (event: Event) => {
+			const customEvent = event as CustomEvent;
+			const { id, visible } = customEvent.detail; // 'visible' is the NEW desired state
 			if (typeof visible !== 'boolean') return; // Safety check
 
-			try {
-				const response = await fetch(`${ENDPOINTS.GEOMETRIES}${id}/`, {
-					method: 'PATCH',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({ visible: visible })
-				});
-
-				if (!response.ok) {
-					const errorText = await response.text();
-					const errorDetail = `[${response.status} ${response.statusText}] ${errorText}`;
-					addToast(`Error: ${errorDetail}`, 'error');
-					console.error('Failed to update visibility:', errorDetail);
-					return; // Stop execution
-				}
-
-				const updatedGeometry = await response.json();
-
-				// Update the local state with the confirmed state from the backend
-				geometries = geometries.map((g) =>
-					g.id === updatedGeometry.id ? { ...g, visible: updatedGeometry.visible } : g
-				);
-				addToast('Visibility updated successfully!', 'success');
-			} catch (err) {
-				const errorMessage = err instanceof Error ? err.message : 'Unknown network error';
-				addToast(`Error: ${errorMessage}`, 'error');
-				console.error('Error toggling visibility:', err);
-			}
+			// Update local state without calling API (AddGeometry handles the API call)
+			geometries = geometries.map((g) => (g.id == id ? { ...g, visible: visible } : g));
 		};
 		window.addEventListener('geometryVisibilityChanged', handleVisibilityChange);
 
-		const handleToggleBloom = (event: CustomEvent) => {
-			isBloomEnabled = event.detail.enabled;
+		const handleToggleBloom = (event: Event) => {
+			const customEvent = event as CustomEvent;
+			isBloomEnabled = customEvent.detail.enabled;
 		};
 		window.addEventListener('toggleBloomEffect', handleToggleBloom);
 
@@ -131,7 +106,7 @@
 </T.Mesh>
 
 {#if isBloomEnabled}
-	<BloomEffect />
+	<Bloom />
 {/if}
 
 {#if geometries.length > 0}
