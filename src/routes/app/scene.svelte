@@ -6,6 +6,7 @@
 	import * as Three from 'three';
 	const { DEG2RAD } = Three.MathUtils;
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	// import Vague from '../vague/vague.svelte';
 	// import Bibi from '../bibi/+page.svelte';
 
@@ -103,6 +104,21 @@
 	position={[bibanimePosition.x, bibanimePosition.y, bibanimePosition.z]}
 	rotation={[bibanimeRotation.x, bibanimeRotation.y, bibanimeRotation.z]}
 />
+
+<T.PerspectiveCamera
+	makeDefault
+	position={[-10, 10, 10]}
+	fov={70}
+	aspect={browser ? ((window.innerWidth * 0.3) / window.innerHeight) * 0.3 : 1}
+>
+	<OrbitControls
+		autoRotate
+		enableZoom={true}
+		minDistance={0}
+		maxDistance={80}
+		target={[0, 1.5, 0]}
+	/>
+</T.PerspectiveCamera>
 
 <!-- Curve visualization -->
 
