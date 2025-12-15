@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Canvas } from '@threlte/core';
 	import { browser } from '$app/environment';
 	import Scene from './Scene.svelte';
 	import './styles.css';
@@ -7,7 +8,9 @@
 </script>
 
 {#if browser}
-	<Scene bind:this={sceneInstance} />
+	<Canvas>
+		<Scene bind:this={sceneInstance} />
+	</Canvas>
 
 	<div class="controls">
 		<button onclick={() => sceneInstance?.nextTexture()}>Change Texture</button>

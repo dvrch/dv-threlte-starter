@@ -22,62 +22,63 @@ Title: Nissan Skyline GTR r35
 	import { onMount } from 'svelte';
 
 	// Configure DRACOLoader and load GLTF on client-side only
-	let gltf: any;
+	let gltf = $state<any>(null); // Use state for reactivity
+
 	onMount(() => {
-		gltf = useGltf(getCloudinaryAssetUrl('/models/nissan.glb'));
-	});
+		const modelPromise = useGltf(getCloudinaryAssetUrl('/models/nissan.glb'));
 
-	gltf
-		.then((model: any) => {
-			function alphaFix(material: any) {
-				if (material) {
-					material.transparent = true;
-					material.alphaToCoverage = true;
-					material.depthFunc = LessEqualDepth;
-					material.depthTest = true;
-					material.depthWrite = true;
+		modelPromise
+			.then((model: any) => {
+				// Apply alpha fix
+				function alphaFix(material: any) {
+					if (material) {
+						material.transparent = true;
+						material.alphaToCoverage = true; // Note: complex alpha handling
+						material.depthWrite = true;
+					}
 				}
-			}
 
-			const materials = [
-				'r35_paint',
-				'Meo_turbo_black',
-				'Meo_turbo_Gray',
-				'Meo_turbo_chrome',
-				'Meo_turbo_gold',
-				'Meo_turbo_matblack',
-				'r35_badges',
-				'grille',
-				'r35_plastic',
-				'r35_interior',
-				'r35_symbols_2017',
-				'r35_leather',
-				'r35_lejather_perf',
-				'r35_leather_stitching',
-				'r35_steeringwheel',
-				'mirror',
-				'r35_cf',
-				'r35_taillight_2017',
-				'r35_signal_R_2017',
-				'r35_dash_2017_r35_cf',
-				'r35_leather'
-			];
+				const materials = [
+					'r35_paint',
+					'Meo_turbo_black',
+					'Meo_turbo_Gray',
+					'Meo_turbo_chrome',
+					'Meo_turbo_gold',
+					'Meo_turbo_matblack',
+					'r35_badges',
+					'grille',
+					'r35_plastic',
+					'r35_interior',
+					'r35_symbols_2017',
+					'r35_leather',
+					'r35_lejather_perf',
+					'r35_leather_stitching',
+					'r35_steeringwheel',
+					'mirror',
+					'r35_cf',
+					'r35_taillight_2017',
+					'r35_signal_R_2017',
+					'r35_dash_2017_r35_cf',
+					'r35_leather'
+				];
 
-			materials.forEach((materialName) => {
-				if (model.materials[materialName]) {
-					alphaFix(model.materials[materialName]);
-				}
+				materials.forEach((materialName) => {
+					if (model.materials[materialName]) {
+						alphaFix(model.materials[materialName]);
+					}
+				});
+
+				// Assign to state after modification
+				gltf = model;
+			})
+			.catch((err: any) => {
+				console.error('Failed to load Nissan Model', err);
 			});
-		})
-		.catch((err: any) => {
-			console.error('Failed to load Nissan Model', err);
-		});
+	});
 </script>
 
 <T is={ref} dispose={false} {...rest}>
-	{#await gltf}
-		<slot name="fallback" />
-	{:then gltf}
+	{#if gltf}
 		<T.Group scale={0.01}>
 			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
 				<T.Mesh
@@ -820,6 +821,8 @@ Title: Nissan Skyline GTR r35
 					material={gltf.materials['amdb11_caliper.002']}
 				/>
 			</T.Group>
+		</T.Group>
+	{/if}
 			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
 				<T.Mesh
 					geometry={gltf.nodes['3_Wheel005_amdb11_brake002_0'].geometry}
@@ -1233,9 +1236,7 @@ Title: Nissan Skyline GTR r35
 				scale={100}
 			/>
 		</T.Group>
-	{:catch error}
-		<slot name="error" {error} />
-	{/await}
+	{/if}
 
 	<slot {ref} />
 </T>

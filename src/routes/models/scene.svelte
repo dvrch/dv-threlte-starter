@@ -2,8 +2,7 @@
 	import { T, useTask } from '@threlte/core';
 	import { OrbitControls, useGltf } from '@threlte/extras';
 	import { AmbientLight, PointLight } from 'three'; // Importer les lumières de Three.js
-
-	const CLOUDINARY_BASE_URL = 'https://res.cloudinary.com/drcok7moc/raw/upload';
+	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 	let y = $state(2);
 	let rotation = $state(0);
@@ -32,14 +31,14 @@
 <!-- <T.AmbientLight color="#8f00ff" intensity={1} /> -->
 <T.PointLight intensity={10} position={[1, 2, -4]} color="#76aac8" />
 
-{#await useGltf(`${CLOUDINARY_BASE_URL}/assets/ghost.glb`) then ghost}
+{#await useGltf(getCloudinaryAssetUrl('ghost.glb')) then ghost}
 	<T is={ghost.scene} position={[0, y, 0]} scale={0.4} />
 {/await}
 
-{#await useGltf(`${CLOUDINARY_BASE_URL}/assets/garden.glb`) then garden}
+{#await useGltf(getCloudinaryAssetUrl('garden.glb')) then garden}
 	<T is={garden.scene} rotation.y={rotation} />
 {/await}
 
-{#await useGltf(`${CLOUDINARY_BASE_URL}/public/nissan2.glb`) then nissan}
+{#await useGltf(getCloudinaryAssetUrl('nissan2.glb')) then nissan}
 	<T is={nissan.scene} position={[2, y, 1]} scale={0.4} />
 {/await}

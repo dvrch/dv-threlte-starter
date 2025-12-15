@@ -10,7 +10,8 @@ Title: Nissan Skyline GTR r35
 <script>
 	// import { Group } from 'three'
 	import { T, forwardEventHandlers } from '@threlte/core';
-import { useGltf } from '@threlte/extras';
+	import { useGltf } from '@threlte/extras';
+	import { browser } from '$app/environment';
 
 // ...
 const gltf = $derived(modelUrl && browser ? useGltf(modelUrl

@@ -11,41 +11,37 @@ Title: Japanese Bridge Garden
 	import { Group } from 'three';
 	import { T } from '@threlte/core';
 	import { useGltf } from '@threlte/extras';
+	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 	export const ref = new Group();
 	let { url = '/models/garden.glb', ...rest } = $props(); // Default to local path
 
-	let currentModelUrl = url; // Start with the provided URL
+	let gltf = $state<any>(null);
 
-	// Reactive statement to handle fallback if the initial URL fails
-	$effect(() => {
-		if (url && browser) {
-			// Attempt to load the model from the provided URL
-			// If it fails, fall back to a default local path
-			fetch(getCloudinaryAssetUrl(url))
-				.then((response) => {
-					if (!response.ok) {
-						throw new Error('Failed to fetch model from provided URL');
-					}
-					currentModelUrl = getCloudinaryAssetUrl(url); // Use the provided URL
-				})
-				.catch(() => {
-					console.warn(`Failed to load model from ${url}, falling back to /models/garden.glb`);
-					currentModelUrl = getCloudinaryAssetUrl('/models/garden.glb'); // Fallback to local path
-				});
-		}
+	onMount(() => {
+		const targetUrl =
+			url && browser ? getCloudinaryAssetUrl(url) : getCloudinaryAssetUrl('/models/garden.glb');
+
+		const loadModel = (modelUrl: string) => {
+			return useGltf(modelUrl).then((model) => {
+				gltf = model;
+			});
+		};
+
+		loadModel(targetUrl).catch(() => {
+			console.warn(`Failed to load model from ${targetUrl}, falling back to /models/garden.glb`);
+			// Fallback
+			loadModel(getCloudinaryAssetUrl('/models/garden.glb')).catch((err) =>
+				console.error('Failed to load fallback garden model', err)
+			);
+		});
 	});
-
-	// Simple GLTF loading - let Threlte handle DRACOLoader automatically
-	const gltf = useGltf(currentModelUrl);
 </script>
 
 <T is={ref} dispose={false} {...rest}>
-	{#await gltf}
-		<slot name="fallback" />
-	{:then gltf}
+	{#if gltf}
 		<T.Group scale={0.01}>
 			<T.Group
 				position={[-304.43, 14.26, -342.8]}
@@ -634,9 +630,7 @@ Title: Japanese Bridge Garden
 				scale={[36.5, 36.5, 62.08]}
 			/>
 		</T.Group>
-	{:catch error}
-		<slot name="error" {error} />
-	{/await}
+	{/if}
 
 	<slot {ref} />
 </T>

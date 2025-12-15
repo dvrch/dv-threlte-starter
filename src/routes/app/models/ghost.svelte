@@ -4,25 +4,35 @@ Command: npx @threlte/gltf@2.0.3 /home/ubt/DpDIST/Web_site_3D_anime_By_DV/static
 -->
 
 <script>
-  import { Group } from 'three'
-  import { T, forwardEventHandlers } from '@threlte/core'
-  import { useGltf } from '@threlte/extras'
-  import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
-  
+	import { Group } from 'three';
+	import { T } from '@threlte/core';
+	import { useGltf } from '@threlte/extras';
+	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
-  export const ref = new Group()
+	import { onMount } from 'svelte';
 
-  const gltf = useGltf(getCloudinaryAssetUrl('/models/ghost.glb')
+	export const ref = new Group();
+	let { ...rest } = $props();
+
+	let gltf = $state(null);
+
+	onMount(() => {
+		useGltf(getCloudinaryAssetUrl('/models/ghost.glb'))
+			.then((model) => {
+				gltf = model;
+			})
+			.catch((err) => {
+				console.error('Failed to load Ghost model', err);
+			});
+	});
 </script>
 
-<T is={ref} dispose={false} {...restProps} bind:this={$component}>
-  {#await gltf}
-    <slot name="fallback" />
-  {:then gltf}
-    <T.Mesh geometry={gltf.nodes.Ghost002.geometry} material={gltf.materials.Outline} />
-  {:catch error}
-    <slot name="error" {error} />
-  {/await}
+<T is={ref} dispose={false} {...rest}>
+	{#if gltf}
+		<T.Mesh geometry={gltf.nodes.Ghost002.geometry} material={gltf.materials.Outline} />
+	{/if}
 
-  <slot {ref} />
+	<slot {ref} />
+
+	<slot {ref} />
 </T>
