@@ -45,7 +45,6 @@
 					}
 					return true;
 				})
-				.map((g: any) => ({ ...g, visible: true })); // Initialize visible to true
 			console.log('✅ Loaded geometries:', geometries.length);
 		} catch (e) {
 			error = (e as Error).message;
@@ -62,9 +61,23 @@
 		fetchGeometries();
 		window.addEventListener('modelAdded', fetchGeometries);
 
-		const handleVisibilityChange = (event: CustomEvent) => {
-			const { id, visible } = event.detail;
-			geometries = geometries.map((g) => (g.id === id ? { ...g, visible } : g));
+		const handleVisibilityChange = async (event: CustomEvent) => {
+			const { id } = event.detail;
+			try {
+				const response = await fetch(`${ENDPOINTS.GEOMETRIES}${id}/toggle-visibility/`, {
+					method: 'PATCH'
+				});
+				if (!response.ok) {
+					throw new Error('Failed to toggle visibility');
+				}
+				const updatedGeometry = await response.json();
+				geometries = geometries.map((g) =>
+					g.id === updatedGeometry.id ? { ...g, visible: updatedGeometry.visible } : g
+				);
+			} catch (err) {
+				console.error('Error toggling visibility:', err);
+				// Optionally, dispatch an event to show a toast notification
+			}
 		};
 		window.addEventListener('geometryVisibilityChanged', handleVisibilityChange);
 
