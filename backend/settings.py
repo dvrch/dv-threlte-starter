@@ -54,6 +54,11 @@ CSRF_TRUSTED_ORIGINS = [
     "https://dv-threlte-starter.vercel.app",
 ]
 
+# Ajouter dynamiquement l'URL de prévisualisation de Vercel si elle existe
+VERCEL_URL = os.environ.get("VERCEL_URL")
+if VERCEL_URL and f"https://{VERCEL_URL}" not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{VERCEL_URL}")
+
 # Ajouter les domaines depuis les variables d'environnement Vercel
 VERCEL_URL = os.environ.get("VERCEL_URL")
 if VERCEL_URL and VERCEL_URL not in ALLOWED_HOSTS:
