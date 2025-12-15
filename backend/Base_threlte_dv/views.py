@@ -27,6 +27,18 @@ class GeometryViewSet(viewsets.ModelViewSet):
     serializer_class = GeometrySerializer
     pagination_class = None
 
+    def partial_update(self, request, *args, **kwargs):
+        logger.info(f"--- Entering partial_update for Geometry ID: {kwargs.get('pk')} ---")
+        logger.info(f"Request data: {request.data}")
+        try:
+            response = super().partial_update(request, *args, **kwargs)
+            logger.info(f"Update successful. Response status: {response.status_code}")
+            return response
+        except Exception as e:
+            logger.error(f"!!! EXCEPTION in partial_update: {str(e)}", exc_info=True)
+            # Re-raise the exception to let DRF handle the error response
+            raise
+
     def perform_create(self, serializer):
         # La sauvegarde initiale gère l'upload du fichier grâce au serializer
         geometry_instance = serializer.save()

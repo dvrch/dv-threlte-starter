@@ -6,6 +6,8 @@
 	import { onMount } from 'svelte';
 	import { ENDPOINTS } from '$lib/config';
 
+	import { addToast } from '$lib/stores/toasts';
+
 	interface GeometryItem {
 		id: string;
 		name: string;
@@ -75,10 +77,11 @@
 				});
 
 				if (!response.ok) {
-					// Log the error for debugging
-					const errorData = await response.json().catch(() => ({ detail: 'API request failed' }));
-					console.error('Failed to update visibility:', response.status, errorData);
-					throw new Error('Failed to update visibility');
+					const errorText = await response.text();
+					const errorDetail = `[${response.status} ${response.statusText}] ${errorText}`;
+					addToast(`Error: ${errorDetail}`, 'error');
+					console.error('Failed to update visibility:', errorDetail);
+					return; // Stop execution
 				}
 
 				const updatedGeometry = await response.json();
@@ -87,9 +90,11 @@
 				geometries = geometries.map((g) =>
 					g.id === updatedGeometry.id ? { ...g, visible: updatedGeometry.visible } : g
 				);
+				addToast('Visibility updated successfully!', 'success');
 			} catch (err) {
+				const errorMessage = err instanceof Error ? err.message : 'Unknown network error';
+				addToast(`Error: ${errorMessage}`, 'error');
 				console.error('Error toggling visibility:', err);
-				// Maybe show a toast to the user that it failed
 			}
 		};
 		window.addEventListener('geometryVisibilityChanged', handleVisibilityChange);
