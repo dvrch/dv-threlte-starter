@@ -137,7 +137,7 @@
 {#if geometries.length > 0}
 	{#each geometries as geometry (geometry.id)}
 		{#if geometry.visible}
-			{#if browser}
+			{#if typeof window !== 'undefined'}
 				<Float floatIntensity={1} floatingRange={[0, 1]}>
 					<Dynamic3DModel {geometry} />
 				</Float>
