@@ -5,6 +5,10 @@
 	import { OrbitControls } from '@threlte/extras';
 </script>
 
+<h1 style="position: absolute; top: 10px; left: 10px; z-index: 999; color: red; font-size: 2rem;">
+	TEST: VAGUE PAGE LOADED
+</h1>
+
 <Canvas>
 	<T.PerspectiveCamera position={[0, 1, 2]} makeDefault />
 	<T.AmbientLight intensity={0.5} />
