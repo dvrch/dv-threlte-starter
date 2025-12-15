@@ -16,9 +16,9 @@
 }
 
 html[data-theme='dark'] {
-	--color-bg-0: #121212;
-	--color-bg-1: #1a1a1a;
-	--color-bg-2: #242424;
+	--color-bg-0: #1e1e1e; /* A slightly lighter black */
+	--color-bg-1: #282828;
+	--color-bg-2: #323232;
 	--color-theme-1: #4db6ac; /* A nice teal for dark mode */
 	--color-theme-2: #80cbc4;
 	--color-text: rgba(255, 255, 255, 0.87);
