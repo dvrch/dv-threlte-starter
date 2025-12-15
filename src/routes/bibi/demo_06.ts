@@ -1,14 +1,16 @@
 import * as THREE from 'three'
 // import GLTFLoader from 'gltfloader'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets'
+
 const scene = new THREE.Scene()
 
 const camera = new THREE.PerspectiveCamera(70, window.innerWidth * 0.89 / window.innerHeight * 0.89)
 
-const geometry = await GLTFLoader.load('bibi.glb')
+const geometry = await GLTFLoader.load(getCloudinaryAssetUrl('bibi.glb'))
 
-const texture = new THREE.TextureLoader().load('bibi.png')
-const material = new THREE.MeshPhongMaterial({ map:texture,shininess:0})
+const texture = new THREE.TextureLoader().load(getCloudinaryAssetUrl('bibi.png'))
+const material = new THREE.MeshPhongMaterial({ map: texture, shininess: 0 })
 
 const mesh = new THREE.Mesh(geometry, material)
 

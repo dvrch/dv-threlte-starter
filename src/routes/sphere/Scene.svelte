@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 	import { T, useTask } from '@threlte/core';
 	import { assets } from '$lib/services/assets';
+	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 	// Store to manage texture state
 	let currentTexture = writable(null);
@@ -14,10 +15,8 @@
 
 	onMount(() => {
 		// Path to your GLB model and textures
-		// TODO: Move these assets to cloud storage and update URLs
-		console.warn('Using local asset paths - consider moving to cloud storage');
-		const glbPath = '/public/cloth_sim.glb';
-		const textures = ['/public/bibi.png'];
+		const glbPath = getCloudinaryAssetUrl('cloth_sim.glb');
+		const textures = [getCloudinaryAssetUrl('bibi.png')];
 		let activeTextureIndex = 0; // Moved inside onMount as it depends on textures
 
 		// Load the GLB model

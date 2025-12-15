@@ -1,68 +1,69 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
- 
-export async function initSn(canvas: HTMLCanvasElement){
+import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
-const scene = new THREE.Scene()
+export async function initSn(canvas: HTMLCanvasElement) {
 
-// Créer et positionner la caméra
-const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
-camera.position.set(0, 1.5, 5.2); // Positionner la caméra
+  const scene = new THREE.Scene()
 
-let gltf;
-try {
-  gltf = await new GLTFLoader().loadAsync('/public/cloth_sim.glb');
-} catch (error) {
-  console.error("Erreur lors du chargement du modèle GLTF:", error);
-  throw error; // Propager l'erreur
-}
+  // Créer et positionner la caméra
+  const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+  camera.position.set(0, 1.5, 5.2); // Positionner la caméra
 
-const mesh = gltf.scene.children[0] as THREE.Mesh; // Accéder au mesh
-let texture;
-try {
-  texture = await new THREE.TextureLoader().loadAsync('/public/bibi.png');
-} catch (error) {
-  console.error("Erreur lors du chargement de la texture:", error);
-  throw error; // Propager l'erreur
-}
+  let gltf;
+  try {
+    gltf = await new GLTFLoader().loadAsync(getCloudinaryAssetUrl('cloth_sim.glb'));
+  } catch (error) {
+    console.error("Erreur lors du chargement du modèle GLTF:", error);
+    throw error; // Propager l'erreur
+  }
 
-if (mesh.material) {
-  mesh.material = new THREE.MeshPhongMaterial({ map: texture, shininess: 10 });
-}
+  const mesh = gltf.scene.children[0] as THREE.Mesh; // Accéder au mesh
+  let texture;
+  try {
+    texture = await new THREE.TextureLoader().loadAsync(getCloudinaryAssetUrl('bibi.png'));
+  } catch (error) {
+    console.error("Erreur lors du chargement de la texture:", error);
+    throw error; // Propager l'erreur
+  }
 
-const light = new THREE.PointLight(0xFFFFFF)
-const alight = new THREE.AmbientLight(0x555555, 10)
+  if (mesh.material) {
+    mesh.material = new THREE.MeshPhongMaterial({ map: texture, shininess: 10 });
+  }
 
-scene.add(light)
-scene.add(mesh)
-scene.add(alight)
+  const light = new THREE.PointLight(0xFFFFFF)
+  const alight = new THREE.AmbientLight(0x555555, 10)
 
-const renderer = new THREE.WebGLRenderer({ canvas })
-renderer.setSize(window.innerWidth * 0.89, window.innerHeight * 0.89)
-renderer.setClearColor(0x000000, 0); // Définir l'arrière-plan comme transparent
+  scene.add(light)
+  scene.add(mesh)
+  scene.add(alight)
 
-camera.position.set(0, 1.5, 5.2)
-light.position.set(0, 4, 4)
+  const renderer = new THREE.WebGLRenderer({ canvas })
+  renderer.setSize(window.innerWidth * 0.89, window.innerHeight * 0.89)
+  renderer.setClearColor(0x000000, 0); // Définir l'arrière-plan comme transparent
 
-const mixer = new THREE.AnimationMixer(mesh);
+  camera.position.set(0, 1.5, 5.2)
+  light.position.set(0, 4, 4)
 
-if (gltf.animations && gltf.animations.length > 0) {
-  gltf.animations.forEach((clip) => {
-    mixer.clipAction(clip).play();
-  });
-  console.log(`Nombre d'animations trouvées: ${gltf.animations.length}`);
-} else {
-  console.warn("Aucune animation trouvée dans le modèle GLTF.");
-}
+  const mixer = new THREE.AnimationMixer(mesh);
 
-const clock = new THREE.Clock();
-function animate() {
-  const dt = clock.getDelta();
-  mixer.update(dt);
-  mesh.rotation.y += dt; // Rotation continue
-  renderer.render(scene, camera);
-}
+  if (gltf.animations && gltf.animations.length > 0) {
+    gltf.animations.forEach((clip) => {
+      mixer.clipAction(clip).play();
+    });
+    console.log(`Nombre d'animations trouvées: ${gltf.animations.length}`);
+  } else {
+    console.warn("Aucune animation trouvée dans le modèle GLTF.");
+  }
 
-// return { renderer, animate };
-return Promise.resolve({ renderer, scene, camera, animate });
+  const clock = new THREE.Clock();
+  function animate() {
+    const dt = clock.getDelta();
+    mixer.update(dt);
+    mesh.rotation.y += dt; // Rotation continue
+    renderer.render(scene, camera);
+  }
+
+  // return { renderer, animate };
+  return Promise.resolve({ renderer, scene, camera, animate });
 }
