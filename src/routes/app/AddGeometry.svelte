@@ -103,9 +103,9 @@
 			if (!response.ok) throw new Error(`HTTP ${response.status}`);
 			const data = await response.json();
 			if (data.results && Array.isArray(data.results)) {
-				geometries = data.results.map((g: any) => ({ ...g, visible: true }));
+				geometries = data.results;
 			} else if (Array.isArray(data)) {
-				geometries = data.map((g: any) => ({ ...g, visible: true }));
+				geometries = data;
 			}
 		} catch (error) {
 			console.error('Error loading geometries:', error);
@@ -271,10 +271,45 @@
 					<span>{geometry.name}</span>
 					<button
 						type="button"
-						class:active={geometry.visible}
+						class="visibility-toggle"
+						class:visible={geometry.visible}
+						class:hidden={!geometry.visible}
 						onclick={() => toggleGeometryVisibility(geometry.id)}
+						aria-label={geometry.visible ? 'Hide' : 'Show'}
 					>
-						{geometry.visible ? 'Hide' : 'Show'}
+						{#if geometry.visible}
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="16"
+								height="16"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle
+									cx="12"
+									cy="12"
+									r="3"
+								/></svg
+							>
+						{:else}
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="16"
+								height="16"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								><path
+									d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
+								/><line x1="1" y1="1" x2="23" y2="23" /></svg
+							>
+						{/if}
 					</button>
 				</div>
 			{/each}
