@@ -27,6 +27,7 @@
         <!-- 3D Canvas -->
         <div class="canvas-container">
             <Canvas renderMode="always">
+                <T.Color attach="background" args={['var(--color-bg-0)']} />
                 <T.PerspectiveCamera makeDefault position={[-10, 10, 10]} fov={70}>
                     <OrbitControls autoRotate enableZoom={true} minDistance={0} maxDistance={80} target={[0, 1.5, 0]} />
                 </T.PerspectiveCamera>
@@ -53,11 +54,6 @@
 </div>
 
 <style>
-    :global(html) {
-        background: #121212; /* dark background */
-        color: #e0e0e0;   /* light text */
-        font-family: 'Inter', sans-serif;
-    }
     .canvas-container {
         position: relative;
         width: 100%;
