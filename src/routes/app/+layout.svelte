@@ -79,7 +79,8 @@
         border-radius: 8px;
         max-width: 320px;
         max-height: 50px; /* Collapsed height */
-        overflow: hidden;
+        overflow-y: auto; /* Enable vertical scroll */
+        overflow-x: hidden; /* Disable horizontal scroll */
         transition: max-height 0.3s ease-out, background 0.3s ease-out;
         box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
