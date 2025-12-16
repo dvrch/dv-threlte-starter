@@ -8,6 +8,7 @@ export interface Geometry {
     color: string;
     name: string;
     model_url?: string;
+    scale?: { x: number; y: number; z: number };
 }
 
 export const GeometriesRepository = {
