@@ -8,6 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@gltf-transform/core':
+        specifier: ^4.2.1
+        version: 4.2.1
+      '@gltf-transform/extensions':
+        specifier: ^4.2.1
+        version: 4.2.1
+      '@gltf-transform/functions':
+        specifier: ^4.2.1
+        version: 4.2.1
       '@threlte/core':
         specifier: ^8.3.0
         version: 8.3.0(svelte@5.43.14)(three@0.180.0)
