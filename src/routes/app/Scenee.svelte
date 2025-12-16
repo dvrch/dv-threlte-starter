@@ -4,7 +4,7 @@
 	import { writable } from 'svelte/store';
 	import Nissangame from './nissangame.svelte';
 	import { T } from '@threlte/core';
-	import { ContactShadows, Float, Grid, OrbitControls } from '@threlte/extras';
+	import { ContactShadows, Float, Grid, OrbitControls, Text } from '@threlte/extras';
 	import Bloom from './models/bloom.svelte';
 	import AddGeometry from './AddGeometry.svelte';
 	import { addToast } from '$lib/stores/toasts';
@@ -16,10 +16,10 @@
 	import Spaceship from '../Spaceship/+page.svelte';
 	import Desk from '../desksc/+page.svelte';
 
-    import { assets } from '$lib/services/assets';
-    import { GeometriesRepository, type Geometry } from '$lib/repositories/geometries';
+	import { assets } from '$lib/services/assets';
+	import { GeometriesRepository, type Geometry } from '$lib/repositories/geometries';
 
-	let geometries: Geometry[] = [];
+	let geometries = $state<Geometry[]>([]);
 
 	const selectedGeometry = writable<Geometry | null>(null);
 
@@ -29,7 +29,7 @@
 
 	const deleteGeometry = async (id: string) => {
 		try {
-            await GeometriesRepository.delete(id);
+			await GeometriesRepository.delete(id);
 			loadGeometries();
 			addToast('Geometry deleted successfully!', 'success');
 		} catch (error) {
@@ -40,10 +40,10 @@
 
 	const loadGeometries = async () => {
 		try {
-            const data = await GeometriesRepository.getAll();
+			const data = await GeometriesRepository.getAll();
 			console.log('Loaded geometries:', data);
 
-            // Gestion de la pagination Django Rest Framework (results) ou liste directe
+			// Gestion de la pagination Django Rest Framework (results) ou liste directe
 			if (data && 'results' in data && Array.isArray(data.results)) {
 				geometries = data.results;
 			} else if (Array.isArray(data)) {
@@ -54,7 +54,7 @@
 			}
 		} catch (error) {
 			console.error('Error loading geometries:', error);
-            // addToast('Error loading geometries', 'error'); // Optionnel
+			// addToast('Error loading geometries', 'error'); // Optionnel
 		}
 	};
 
@@ -142,7 +142,7 @@
 				<T.MeshStandardMaterial color={geometry.color} />
 			</T.Mesh>
 		{:else if geometry.type === 'nissangame'}
-			<Nissangame />
+			<Nissangame {geometry} />
 		{:else if geometry.type === 'garden'}
 			<!-- Garden temporarily disabled -->
 		{:else if geometry.type === 'nissan'}
@@ -190,6 +190,21 @@
 			</T.Mesh>
 		{:else if geometry.type === 'bibigame'}
 			<Bibigame />
+		{:else if geometry.type === 'text'}
+			<Text
+				text={geometry.name}
+				position={[geometry.position.x, geometry.position.y, geometry.position.z]}
+				rotation={[
+					geometry.rotation.x * (Math.PI / 180),
+					geometry.rotation.y * (Math.PI / 180),
+					geometry.rotation.z * (Math.PI / 180)
+				]}
+				scale={[geometry.scale?.x || 1, geometry.scale?.y || 1, geometry.scale?.z || 1]}
+				color={geometry.color}
+				fontSize={1}
+				anchorX="center"
+				anchorY="middle"
+			/>
 		{/if}
 	</Float>
 {/each}

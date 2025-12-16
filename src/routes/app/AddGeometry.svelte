@@ -535,139 +535,169 @@
 					+ Add New Geometry
 				</button>
 
-				<input type="text" bind:value={name} placeholder="Name" required />
+				<!-- Type Selection -->
 				{#if !file}
-					<select bind:value={type}>
-						{#each types as geometryType}
-							<option value={geometryType}>{geometryType}</option>
-						{/each}
-					</select>
+					<div class="type-select-row">
+						<select bind:value={type}>
+							{#each types as geometryType}
+								<option value={geometryType}>{geometryType}</option>
+							{/each}
+							<option value="text">text</option>
+							<!-- Explicitly add text option -->
+						</select>
+
+						{#if type === 'text'}
+							<input
+								type="text"
+								bind:value={name}
+								placeholder="Enter text..."
+								class="text-content-input"
+							/>
+						{:else}
+							<input type="text" bind:value={name} placeholder="Name" required />
+						{/if}
+						<input type="color" bind:value={color} class="color-input" />
+					</div>
+				{:else}
+					<input type="text" bind:value={name} placeholder="Name" required />
+					<input type="color" bind:value={color} />
 				{/if}
 
-				<input type="color" bind:value={color} />
-
-				<!-- Transform Controls -->
-				<div class="transforms-container">
-					<!-- Position -->
-					<div class="transform-group">
-						<div class="group-header">
-							<label>Position</label>
+				<!-- Transform Controls: 3 Columns (Pos | Rot | Scl) -->
+				<div class="transforms-grid">
+					<!-- Header Row -->
+					<div class="grid-header">
+						<div class="col-header">
+							<span>Pos</span>
 							<button
 								type="button"
-								class="icon-btn"
+								class="icon-btn tiny"
 								onclick={randomizePosition}
-								title="Random Position">🎲</button
+								title="Rnd Pos">🎲</button
 							>
 						</div>
-						<div class="input-row">
-							<div class="input-wrap">
-								<input type="number" bind:value={position.x} placeholder="X" step="0.1" />
-								<button
-									type="button"
-									class="mini-btn"
-									onclick={() => (position.x = randomizeVal(-5, 5))}>🎲</button
-								>
-							</div>
-							<div class="input-wrap">
-								<input type="number" bind:value={position.y} placeholder="Y" step="0.1" />
-								<button
-									type="button"
-									class="mini-btn"
-									onclick={() => (position.y = randomizeVal(-5, 5))}>🎲</button
-								>
-							</div>
-							<div class="input-wrap">
-								<input type="number" bind:value={position.z} placeholder="Z" step="0.1" />
-								<button
-									type="button"
-									class="mini-btn"
-									onclick={() => (position.z = randomizeVal(-5, 5))}>🎲</button
-								>
-							</div>
-						</div>
-					</div>
-
-					<!-- Rotation -->
-					<div class="transform-group">
-						<div class="group-header">
-							<label>Rotation</label>
+						<div class="col-header">
+							<span>Rot</span>
 							<button
 								type="button"
-								class="icon-btn"
+								class="icon-btn tiny"
 								onclick={randomizeRotation}
-								title="Random Rotation">🎲</button
+								title="Rnd Rot">🎲</button
 							>
 						</div>
-						<div class="input-row">
-							<div class="input-wrap">
-								<input type="number" bind:value={rotation.x} placeholder="X" step="1" />
-								<button
-									type="button"
-									class="mini-btn"
-									onclick={() => (rotation.x = randomizeVal(0, 360))}>🎲</button
-								>
-							</div>
-							<div class="input-wrap">
-								<input type="number" bind:value={rotation.y} placeholder="Y" step="1" />
-								<button
-									type="button"
-									class="mini-btn"
-									onclick={() => (rotation.y = randomizeVal(0, 360))}>🎲</button
-								>
-							</div>
-							<div class="input-wrap">
-								<input type="number" bind:value={rotation.z} placeholder="Z" step="1" />
-								<button
-									type="button"
-									class="mini-btn"
-									onclick={() => (rotation.z = randomizeVal(0, 360))}>🎲</button
-								>
-							</div>
+						<div class="col-header">
+							<span>Scl</span>
+							<button type="button" class="icon-btn tiny" onclick={randomizeScale} title="Rnd Scl"
+								>🎲</button
+							>
+							<button
+								type="button"
+								class="icon-btn tiny"
+								class:active={isUniformScale}
+								onclick={() => (isUniformScale = !isUniformScale)}
+								title="Uniform">🔗</button
+							>
 						</div>
 					</div>
 
-					<!-- Scale -->
-					<div class="transform-group">
-						<div class="group-header">
-							<label>Scale</label>
-							<div class="header-controls">
-								<button type="button" class="icon-btn" onclick={randomizeScale} title="Random Scale"
-									>🎲</button
-								>
-								<button
-									type="button"
-									class="icon-btn"
-									class:active={isUniformScale}
-									onclick={() => (isUniformScale = !isUniformScale)}
-									title="Uniform Scale"
-								>
-									🔗
-								</button>
-							</div>
+					<!-- X Row -->
+					<div class="grid-row">
+						<div class="cell">
+							<input
+								type="number"
+								bind:value={position.x}
+								step="0.1"
+								class="mini-input"
+								placeholder="X"
+							/>
+						</div>
+						<div class="cell">
+							<input
+								type="number"
+								bind:value={rotation.x}
+								step="1"
+								class="mini-input"
+								placeholder="X"
+							/>
+						</div>
+						<div class="cell">
+							<input
+								type="number"
+								bind:value={scale.x}
+								step="0.1"
+								class="mini-input"
+								placeholder="X"
+								oninput={(e) => updateScale('x', parseFloat(e.currentTarget.value) || 1)}
+							/>
+						</div>
+					</div>
+
+					<!-- Y Row -->
+					<div class="grid-row">
+						<div class="cell">
+							<input
+								type="number"
+								bind:value={position.y}
+								step="0.1"
+								class="mini-input"
+								placeholder="Y"
+							/>
+						</div>
+						<div class="cell">
+							<input
+								type="number"
+								bind:value={rotation.y}
+								step="1"
+								class="mini-input"
+								placeholder="Y"
+							/>
 						</div>
 						{#if isUniformScale}
-							<div class="input-row">
-								<div class="input-wrap full-width">
-									<input
-										type="number"
-										value={scale.x}
-										oninput={(e) => updateScale('x', parseFloat(e.currentTarget.value) || 1)}
-										placeholder="Scale"
-										step="0.1"
-									/>
-								</div>
-							</div>
+							<div class="cell empty" />
 						{:else}
-							<div class="input-row">
-								<div class="input-wrap">
-									<input type="number" bind:value={scale.x} placeholder="X" step="0.1" />
-								</div>
-								<div class="input-wrap">
-									<input type="number" bind:value={scale.y} placeholder="Y" step="0.1" />
-								</div>
-								<div class="input-wrap">
-									<input type="number" bind:value={scale.z} placeholder="Z" step="0.1" />
-								</div>
+							<div class="cell">
+								<input
+									type="number"
+									bind:value={scale.y}
+									step="0.1"
+									class="mini-input"
+									placeholder="Y"
+								/>
+							</div>
+						{/if}
+					</div>
+
+					<!-- Z Row -->
+					<div class="grid-row">
+						<div class="cell">
+							<input
+								type="number"
+								bind:value={position.z}
+								step="0.1"
+								class="mini-input"
+								placeholder="Z"
+							/>
+						</div>
+						<div class="cell">
+							<input
+								type="number"
+								bind:value={rotation.z}
+								step="1"
+								class="mini-input"
+								placeholder="Z"
+							/>
+						</div>
+						{#if isUniformScale}
+							<div class="cell empty" />
+						{:else}
+							<div class="cell">
+								<input
+									type="number"
+									bind:value={scale.z}
+									step="0.1"
+									class="mini-input"
+									placeholder="Z"
+								/>
 							</div>
 						{/if}
 					</div>
@@ -741,63 +771,101 @@
 		border-color: #4db6ac;
 	}
 
-	.position-rotation {
+	/* Type Select Row */
+	.type-select-row {
 		display: flex;
-		gap: 5px;
+		gap: 6px;
+		align-items: center;
+	}
+	.type-select-row select {
+		flex: 1;
+	}
+	.text-content-input, .color-input {
+		flex: 1;
+	}
+	.color-input {
+		max-width: 40px;
+		padding: 0;
+		border: 0;
+		height: 24px;
 	}
 
-	.position-rotation > div {
-		flex: 1;
+	/* Transforms Grid */
+	.transforms-grid {
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
+		margin-top: 5px;
+		background: rgba(0,0,0,0.2);
+		padding: 4px;
+		border-radius: 4px;
 	}
 
-	label {
-		font-size: 0.6rem;
-		color: #999;
+	.grid-header {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr;
+		gap: 4px;
 		margin-bottom: 2px;
 	}
 
-	.add-button {
-		background: #4db6ac;
-		color: black;
+	.col-header {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 4px;
+		font-size: 0.65rem;
 		font-weight: bold;
-		cursor: pointer;
-		padding: 8px;
-		margin-top: 5px;
+		color: #bbb;
+		text-transform: uppercase;
 	}
 
-	.add-button:hover {
-		background: #80cbc4;
+	.grid-row {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr;
+		gap: 4px;
 	}
 
-	.update-button {
-		background: #ffb74d;
-		color: black;
-		font-weight: bold;
+	.cell {
+		display: flex;
+		align-items: center;
+	}
+	
+	.cell.empty {
+		visibility: hidden;
 	}
 
-	.cancel-button {
-		background: transparent;
-		border: 1px solid #777;
-	}
-
-	.delete-section {
-		margin-top: 10px;
-		border-top: 1px solid rgba(255, 255, 255, 0.1);
-		padding-top: 10px;
-	}
-
-	.delete-button {
-		background: #ef5350;
-		color: white;
+	.mini-input {
 		width: 100%;
+		padding: 2px 4px;
+		font-size: 0.7rem;
+		text-align: center;
+		background: rgba(255, 255, 255, 0.07);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		color: #ddd;
+		border-radius: 2px;
+	}
+	
+	.mini-input:focus {
+		border-color: #4db6ac;
+		background: rgba(255, 255, 255, 0.1);
 	}
 
-	.reset-button {
-		background: linear-gradient(135deg, #4db6ac, #80cbc4);
-		border: 1px solid #4db6ac;
+	.icon-btn.tiny {
+		padding: 0 2px;
+		font-size: 0.7rem;
+		background: transparent;
+		border: none;
+		color: #777;
+		cursor: pointer;
+	}
+	
+	.icon-btn.tiny:hover {
+		color: #4db6ac;
+	}
+	
+	.icon-btn.active {
+		color: #4db6ac;
+	}
 		color: black;
 		font-size: 0.7rem;
 		font-weight: 600;
