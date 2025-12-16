@@ -9,7 +9,8 @@ Title: Nissan Skyline GTR r35
 
 <script lang="ts">
 	import { T } from '@threlte/core';
-	import { useGltf, useDraco } from '@threlte/extras';
+	import { useGltf } from '@threlte/extras';
+	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { Group, LessEqualDepth } from 'three';
 	import Bloom from './bloom.svelte';
 	import { onMount } from 'svelte';
@@ -21,11 +22,11 @@ Title: Nissan Skyline GTR r35
 
 	let gltf: any;
 
-	const dracoLoader = useDraco();
-
 	onMount(() => {
 		if (browser) {
-			gltf = useGltf(getCloudinaryAssetUrl('/models/nissan.glb'), { dracoLoader });
+			gltf = useGltf(getCloudinaryAssetUrl('/models/nissan.glb'), {
+				dracoLoader: createDracoLoader()
+			});
 
 			gltf?.then((model: any) => {
 				function alphaFix(material: any) {

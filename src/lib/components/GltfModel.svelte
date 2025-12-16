@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
 	import { useGltf, useGltfAnimations } from '@threlte/extras';
+	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { browser } from '$app/environment';
 
 	// Receive URL and other props
@@ -8,10 +9,8 @@
 
 	// Load GLTF at the top level.
 	// NOTE: This assumes the component is re-created (keyed) if the URL changes.
-	// Load GLTF at the top level.
-	// NOTE: This assumes the component is re-created (keyed) if the URL changes.
 	const gltf = useGltf(url, {
-		draco: 'https://www.gstatic.com/draco/versioned/decoders/1.5.6/'
+		dracoLoader: createDracoLoader()
 	});
 
 	// useGltfAnimations extracts animations and provides 'actions'.
