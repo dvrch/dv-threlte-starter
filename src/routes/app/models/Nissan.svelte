@@ -10,7 +10,7 @@ Title: Nissan Skyline GTR r35
 <script lang="ts">
 	// import { Group } from 'three'
 	import { T } from '@threlte/core';
-	import { useGltf } from '@threlte/extras';
+	import { useGltf, useDraco } from '@threlte/extras';
 
 	import { AddEquation, CustomBlending, Group, LessEqualDepth, OneFactor } from 'three';
 
@@ -24,8 +24,10 @@ Title: Nissan Skyline GTR r35
 	// Configure DRACOLoader and load GLTF on client-side only
 	let gltf = $state<any>(null); // Use state for reactivity
 
+	const dracoLoader = useDraco();
+
 	onMount(() => {
-		const modelPromise = useGltf(getCloudinaryAssetUrl('/models/nissan.glb'));
+		const modelPromise = useGltf(getCloudinaryAssetUrl('/models/nissan.glb'), { dracoLoader });
 
 		modelPromise
 			.then((model: any) => {

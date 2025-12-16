@@ -20,7 +20,7 @@ def upload_target():
         secure=True
     )
     
-    filepath = Path('static/public/cloth_sim_rffdfn.glb')
+    filepath = Path('static/public/nissan.glb')
     if not filepath.exists():
         print(f"❌ File not found: {filepath}")
         return
@@ -44,3 +44,27 @@ def upload_target():
 
 if __name__ == '__main__':
     upload_target()
+
+
+# ---
+# Le problème vient du fait que vous utilisez /bin/python (le Python du système) au lieu du Python de votre environnement virtuel (.venv), où la librairie 
+# cloudinary
+#  est installée. De plus, il faut charger les variables d'environnement (
+# .env
+# ) pour que l'authentification fonctionne.
+
+# Voici la commande exacte à copier-coller pour que ça marche (elle charge les clés et utilise le bon Python) :
+
+# bash
+# export $(grep -v '^#' .env | xargs) && .venv/bin/python src/lib/components/goog_upload_cloudinary.py
+# Explication rapide :
+# export $(grep -v '^#' .env | xargs) : Lit votre fichier 
+# .env
+#  et charge les clés API (API_KEY, SECRET, etc.) en mémoire pour ce script.
+# .venv/bin/python
+#  : Force l'utilisation du Python de votre dossier .venv (celui qui a le module 
+# cloudinary
+# ).
+# Le fichier 
+# static/public/nissan.glb
+#  que vous ciblez dans votre script existe bien, donc cela devrait fonctionner immédiatement ! 🚀
