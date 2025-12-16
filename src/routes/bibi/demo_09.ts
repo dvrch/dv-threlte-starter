@@ -12,7 +12,7 @@ export async function initSn(canvas: HTMLCanvasElement) {
 
   let gltf;
   try {
-    gltf = await new GLTFLoader().loadAsync(getCloudinaryAssetUrl('cloth_sim.glb'));
+    gltf = await new GLTFLoader().loadAsync(getCloudinaryAssetUrl('cloth_sim_rffdfn.glb'));
   } catch (error) {
     console.error("Erreur lors du chargement du modèle GLTF:", error);
     throw error; // Propager l'erreur

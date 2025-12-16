@@ -16,7 +16,7 @@
 	let clock = new THREE.Clock(); // To manage animation time
 
 	// Path to your GLB model and textures
-	const glbPath = getCloudinaryAssetUrl('cloth_sim.glb');
+	const glbPath = getCloudinaryAssetUrl('cloth_sim_rffdfn.glb');
 	const textures = [getCloudinaryAssetUrl('bibi.png')];
 	let activeTextureIndex = 0;
 

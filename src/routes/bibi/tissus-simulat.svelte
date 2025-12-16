@@ -16,14 +16,14 @@
 	import { assets } from '$lib/services/assets';
 
 	const CLOUDINARY_BASE_URL = 'https://res.cloudinary.com/drcok7moc/raw/upload';
-	const CLOTH_SIM_GLB_URL = `${CLOUDINARY_BASE_URL}/public/cloth_sim.glb`;
+	const CLOTH_SIM_GLB_URL = `${CLOUDINARY_BASE_URL}/public/cloth_sim_rffdfn.glb`;
 
 	// This component should be loaded dynamically via the database
 	// The cloth_sim model is available as geometry ID 71 in the database
 	console.warn('This component should be loaded via Dynamic3DModel with geometry ID 71');
 	const gltf = useGltf(CLOTH_SIM_GLB_URL);
 	gltf.catch((err: any) =>
-		console.error('Failed to load cloth_sim.glb - use database instead', err)
+		console.error('Failed to load cloth_sim_rffdfn.glb - use database instead', err)
 	);
 
 	// Animate the model using useTask

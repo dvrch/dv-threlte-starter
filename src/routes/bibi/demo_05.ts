@@ -8,7 +8,7 @@ export async function initScene(canvas: HTMLCanvasElement) {
   const camera = new THREE.PerspectiveCamera(70, window.innerWidth * 0.89 / window.innerHeight * 0.89)
 
 
-  // const geometry = await GLTFLoader.loadGeometry('/public/cloth_sim.glb', '/public/cloth')
+  // const geometry = await GLTFLoader.loadGeometry('/public/cloth_sim_rffdfn.glb', '/public/cloth')
   // const geometry = await GLTFLoader.loadGeometry('/public/bibi2.glb')
   // const geometry = await GLTFLoader.loadGeometry('/public/Barrel Model1.glb')
 

@@ -6,7 +6,7 @@ const scene = new THREE.Scene()
 
 const camera = new THREE.PerspectiveCamera(70, window.innerWidth * 0.89 / window.innerHeight * 0.89)
 
-// const mesh = await GLTFLoader.loadObject('cloth_sim.glb', 'cloth')
+// const mesh = await GLTFLoader.loadObject('cloth_sim_rffdfn.glb', 'cloth')
 const mesh = await GLTFLoader.loadObject(getCloudinaryAssetUrl('bibi3.glb'), 'bibi')
 const texture = new THREE.TextureLoader().load(getCloudinaryAssetUrl('bibi.png'))
 mesh.material = new THREE.MeshPhongMaterial({ map: texture, shininess: 0 })

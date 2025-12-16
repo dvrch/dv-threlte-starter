@@ -50,7 +50,7 @@
 
   onMount(async () => {
     try {
-      const gltf = await new GLTFLoader().loadAsync('/public/cloth_sim.glb');
+      const gltf = await new GLTFLoader().loadAsync('/public/cloth_sim_rffdfn.glb');
       const texture = await new THREE.TextureLoader().loadAsync('/public/zaki.png');
       const mesh = gltf.scene.children[0] as THREE.Mesh;
 
