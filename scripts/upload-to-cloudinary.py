@@ -102,7 +102,7 @@ def upload_to_cloudinary():
                         public_id=public_id,
                         resource_type=resource_type,
                         folder='dv-threlte',  # Dossier dans Cloudinary
-                        overwrite=False,
+                        overwrite=True,
                         unique_filename=False
                     )
                     
