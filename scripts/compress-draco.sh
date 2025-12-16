@@ -31,14 +31,19 @@ print_error() {
 
 # Vérifier si gltf-transform est installé
 check_dependencies() {
-    if ! command -v npx &> /dev/null; then
-        print_error "npx n'est pas installé. Installez Node.js et npm."
+    if ! command -v bc &> /dev/null; then
+        print_error "La calculatrice 'bc' n'est pas installée. Veuillez l'installer (ex: sudo apt-get install bc)."
+        exit 1
+    fi
+
+    if ! command -v pnpm &> /dev/null; then
+        print_error "pnpm n'est pas installé. Veuillez l'installer."
         exit 1
     fi
     
     if ! npx gltf-transform --version &> /dev/null; then
-        print_warning "gltf-transform n'est pas installé. Installation..."
-        npm install -g @gltf-transform/cli
+        print_warning "gltf-transform n'est pas installé. Installation avec pnpm..."
+        pnpm add --save-dev @gltf-transform/cli
     fi
 }
 
@@ -58,12 +63,12 @@ compress_file() {
     cp "$input_file" "$BACKUP_DIR/"
     
     # Compression
-    $GLTF_TRANSFORM draco "$input_file" "$output_file"
+    npx gltf-transform draco "$input_file" "$output_file"
     
     if [ $? -eq 0 ]; then
         # Comparaison des tailles
-        original_size=$(stat -f%z "$input_file")
-        compressed_size=$(stat -f%z "$output_file")
+        original_size=$(stat -c%s "$input_file")
+        compressed_size=$(stat -c%s "$output_file")
         
         original_mb=$(echo "scale=2; $original_size / 1048576" | bc)
         compressed_mb=$(echo "scale=2; $compressed_size / 1048576" | bc)
@@ -133,6 +138,11 @@ main() {
             ;;
         2)
             read -r "filepath?Chemin du fichier GLB: "
+            # Remove surrounding quotes if present
+            filepath="${filepath%\"}"
+            filepath="${filepath#\"}"
+            filepath="${filepath%\'}"
+            filepath="${filepath#\'}"
             if [ -f "$filepath" ]; then
                 compress_file "$filepath"
             else

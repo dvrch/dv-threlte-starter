@@ -13,6 +13,7 @@
 	"devDependencies": {
 		"@dimforge/rapier3d-compat": "^0.19.3",
 		"@fontsource/fira-mono": "^4.5.10",
+		"@gltf-transform/cli": "^4.2.1",
 		"@neoconfetti/svelte": "^1.0.0",
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/adapter-static": "^3.0.0",
