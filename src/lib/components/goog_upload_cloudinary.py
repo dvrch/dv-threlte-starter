@@ -20,23 +20,37 @@ def upload_target():
         secure=True
     )
     
-    filepath = Path('static/public/nissan.glb')
+    filepath = Path('static/public/cloth_sim_rffdfn.glb')
+    if not filepath.exists():
+        # Fallback to cloth_sim.glb if rffdfn version doesn't exist
+        filepath = Path('static/public/cloth_sim.glb')
+    
     if not filepath.exists():
         print(f"❌ File not found: {filepath}")
         return
 
-    relative_path = filepath.relative_to('static')
-    public_id = str(relative_path.with_suffix('')).replace('\\', '/')
+    # Force the public_id to match what the app expects: 'public/cloth_sim_rffdfn'
+    # The app requests: https://res.cloudinary.com/.../upload/public/cloth_sim_rffdfn.glb
+    # So we need folder='dv-threlte/public' (if that's the base) AND ID='cloth_sim_rffdfn'
+    # OR if folder is just 'dv-threlte', we need ID='public/cloth_sim_rffdfn'.
+    # Looking at the 404: /upload/public/cloth_sim_rffdfn.glb
+    # It seems the folder structure in Cloudinary might be 'public' at the root or 'public' is part of the ID.
+    # Let's assume standard Cloudinary 'folder' param usage. 
+    # If I use folder='public', public_id='cloth_sim_rffdfn', URL is .../upload/v123/public/cloth_sim_rffdfn.glb
     
-    print(f"⬆️  Uploading {filepath} as {public_id}...")
+    public_id = 'cloth_sim_rffdfn'
+    folder = 'public' 
+    
+    print(f"⬆️  Uploading {filepath} to folder '{folder}' as '{public_id}'...")
     try:
         result = cloudinary.uploader.upload(
             str(filepath),
             public_id=public_id,
             resource_type='raw',
-            folder='dv-threlte',
+            folder=folder,
             overwrite=True,
-            unique_filename=False
+            unique_filename=False,
+            use_filename=True 
         )
         print(f"✅ Success: {result['secure_url']}")
     except Exception as e:

@@ -294,31 +294,42 @@
 			<h3>{isEditing ? 'Update' : 'Add'} Geometry</h3>
 
 			<div class="geometry-list">
-				<select
-					bind:value={selectedGeometryId}
-					onchange={handleGeometrySelect}
-					class="geometry-select"
-				>
-					<option value="">-- Add New Geometry --</option>
-					{#each geometries as geometry}
-						<option value={geometry.id}>{geometry.name}</option>
-					{/each}
-				</select>
-
-				<div class="geometry-visibility-list">
-					<h4>Toggle Visibility</h4>
+				<div class="geometry-actions">
 					{#each geometries as geometry (geometry.id)}
-						<div class="geometry-item">
-							<span>{geometry.name}</span>
+						<div class="geometry-item" class:selected={selectedGeometryId === geometry.id}>
+							<!-- Left part: Select geometry and close form -->
+							<div
+								class="geometry-name"
+								onclick={() => {
+									loadGeometryDetails(geometry.id);
+									isFormOpen = false; // "Re-enroule le ruban"
+								}}
+								role="button"
+								tabindex="0"
+								onkeydown={(e) => {
+									if (e.key === 'Enter' || e.key === ' ') {
+										loadGeometryDetails(geometry.id);
+										isFormOpen = false;
+									}
+								}}
+							>
+								{geometry.name}
+							</div>
+
+							<!-- Right part: Toggle visibility -->
 							<button
 								type="button"
 								class="visibility-toggle"
 								class:visible={geometry.visible}
 								class:hidden={!geometry.visible}
-								onclick={() => toggleGeometryVisibility(geometry.id)}
+								onclick={(e) => {
+									e.stopPropagation(); // Prevent selection when toggling visibility
+									toggleGeometryVisibility(geometry.id);
+								}}
 								aria-label={geometry.visible ? 'Hide' : 'Show'}
 							>
 								{#if geometry.visible}
+									<!-- Icon Visible -->
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
 										width="16"
@@ -336,6 +347,7 @@
 										/></svg
 									>
 								{:else}
+									<!-- Icon Hidden -->
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
 										width="16"
@@ -355,6 +367,17 @@
 						</div>
 					{/each}
 				</div>
+
+				<button
+					type="button"
+					class="add-new-button"
+					onclick={() => {
+						resetForm();
+						isEditing = false;
+					}}
+				>
+					+ Add New Geometry
+				</button>
 
 				<input type="text" bind:value={name} placeholder="Name" required />
 				{#if !file}
@@ -671,53 +694,5 @@
 		border-color: #ff9800;
 		transform: scale(1.1);
 	}
-	.geometry-visibility-list {
-		margin-top: 10px;
-		padding-top: 10px;
-		border-top: 1px solid rgba(255, 255, 255, 0.1);
-	}
-
-	.geometry-visibility-list h4 {
-		margin: 0 0 8px 0;
-		font-size: 0.8rem;
-		color: #4db6ac;
-	}
-
-	.geometry-item {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 4px 0;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-	}
-
-	.geometry-item:last-child {
-		border-bottom: none;
-	}
-
-	.geometry-item span {
-		font-size: 0.7rem;
-		color: #ccc;
-	}
-
-	.geometry-item button {
-		width: auto;
-		padding: 2px 8px;
-		font-size: 0.65rem;
-		background: rgba(255, 255, 255, 0.1);
-		color: #ccc;
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		cursor: pointer;
-	}
-
-	.geometry-item button.active {
-		background: #4db6ac;
-		color: black;
-		font-weight: bold;
-	}
-
-	.geometry-item button:hover {
-		background: #80cbc4;
-		color: black;
-	}
+	/* Removed unused styles */
 </style>
