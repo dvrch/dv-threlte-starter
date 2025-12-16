@@ -8,7 +8,11 @@
 
 	// Load GLTF at the top level.
 	// NOTE: This assumes the component is re-created (keyed) if the URL changes.
-	const gltf = useGltf(url);
+	// Load GLTF at the top level.
+	// NOTE: This assumes the component is re-created (keyed) if the URL changes.
+	const gltf = useGltf(url, {
+		draco: 'https://www.gstatic.com/draco/versioned/decoders/1.5.6/'
+	});
 
 	// useGltfAnimations extracts animations and provides 'actions'.
 	// It accepts the store returned by useGltf.
