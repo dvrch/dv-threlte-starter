@@ -62,11 +62,13 @@
 			<Component {geometry} />
 		{:else if geometry.model_url && geometry.model_url.trim() !== ''}
 			<!-- 2. Render a generic GLTF model if model_url is present and valid -->
-			<GltfModel
-				url={geometry.model_url && geometry.model_url.startsWith('http')
+			{@const modelUrl =
+				geometry.model_url && geometry.model_url.startsWith('http')
 					? geometry.model_url
 					: assets.getUrl(geometry.model_url)}
-			/>
+			{#key modelUrl}
+				<GltfModel url={modelUrl} />
+			{/key}
 		{:else if geometry.type === 'box'}
 			<!-- 3. Render primitive shapes -->
 			<T.Mesh>

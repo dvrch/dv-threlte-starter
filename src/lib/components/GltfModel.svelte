@@ -1,31 +1,34 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
-	import { useGltf } from '@threlte/extras';
+	import { useGltf, useGltfAnimations } from '@threlte/extras';
 	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
 
-	let { url, ...restProps }: { url: string } = $props();
+	// Receive URL and other props
+	let { url, ...restProps }: { url: string; [key: string]: any } = $props();
 
-	let gltf: any = $state(null); // Declare gltf as a mutable variable
+	// Load GLTF at the top level.
+	// NOTE: This assumes the component is re-created (keyed) if the URL changes.
+	const gltf = useGltf(url);
 
+	// useGltfAnimations extracts animations and provides 'actions'.
+	// It accepts the store returned by useGltf.
+	const { actions } = useGltfAnimations(gltf);
+
+	// Effect to play animations once they are loaded
 	$effect(() => {
-		if (browser && url) {
-			const gltfStore = useGltf(url);
-			// useGltf return a store that is also a promise
-			gltfStore
-				.then((loaded) => {
-					gltf = loaded;
-				})
-				.catch((err) => {
-					console.error('Failed to load GLTF:', url, err);
-					gltf = null;
-				});
+		if ($actions) {
+			// Iterate over all available animations and play them
+			Object.values($actions).forEach((action) => {
+				action?.reset().play();
+			});
 		}
 	});
 </script>
 
-{#if browser && gltf}
-	<T is={gltf.scene} {...restProps} />
+{#if browser && $gltf}
+	<!-- Render the scene from the loaded GLTF -->
+	<T is={$gltf.scene} {...restProps} />
 {:else}
-	<!-- Fallback for SSR, maybe a placeholder or nothing --> <T.Group />
+	<!-- Fallback or empty group while loading -->
+	<T.Group />
 {/if}
