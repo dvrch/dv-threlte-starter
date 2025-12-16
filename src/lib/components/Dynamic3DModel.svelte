@@ -10,13 +10,13 @@
 
 	// Map geometry types to their respective Svelte components using dynamic imports
 	const componentMap: { [key: string]: () => Promise<any> } = {
-		sphere: () => import('../../routes/sphere/+page.svelte'),
-		vague: () => import('../../routes/vague/+page.svelte'),
+		sphere: () => import('../../routes/sphere/Scene.svelte'),
+		vague: () => import('../../routes/vague/vague.svelte'),
 		tissus: () => import('../../routes/bibi/tissus-simulat.svelte'),
-		desk: () => import('../../routes/desksc/+page.svelte'),
-		// nissan: () => import('../../routes/Spaceship/Nissan.svelte'), // Temporarily disabled
+		desk: () => import('../../routes/desksc/scene.svelte'), // Corrected case
+		nissan: () => import('../../routes/app/models/Nissan.svelte'),
 		bibi: () => import('../../routes/bibi/bibanime.svelte'),
-		// garden: () => import('../../routes/app/models/garden.svelte'), // Temporarily disabled
+		garden: () => import('../../routes/app/models/garden.svelte'),
 		nissangame: () => import('../../routes/app/nissangame.svelte'),
 		bibigame: () => import('../../routes/app/bibigame.svelte')
 	};
