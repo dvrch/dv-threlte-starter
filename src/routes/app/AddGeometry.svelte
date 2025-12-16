@@ -47,6 +47,11 @@
 	let types = $state<string[]>([]);
 	let isLoading = $state(false);
 	let isFormOpen = $state(false);
+	let isDropdownOpen = $state(false);
+
+	const toggleDropdown = () => {
+		isDropdownOpen = !isDropdownOpen;
+	};
 
 	const loadTypes = async () => {
 		try {
@@ -294,78 +299,109 @@
 			<h3>{isEditing ? 'Update' : 'Add'} Geometry</h3>
 
 			<div class="geometry-list">
-				<div class="geometry-actions">
-					{#each geometries as geometry (geometry.id)}
-						<div class="geometry-item" class:selected={selectedGeometryId === geometry.id}>
-							<!-- Left part: Select geometry and close form -->
-							<div
-								class="geometry-name"
-								onclick={() => {
-									loadGeometryDetails(geometry.id);
-									isFormOpen = false; // "Re-enroule le ruban"
-								}}
-								role="button"
-								tabindex="0"
-								onkeydown={(e) => {
-									if (e.key === 'Enter' || e.key === ' ') {
-										loadGeometryDetails(geometry.id);
-										isFormOpen = false;
-									}
-								}}
-							>
-								{geometry.name}
-							</div>
+				<!-- Custom Dropdown Menu -->
+				<div class="custom-dropdown">
+					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					<div class="dropdown-header" onclick={toggleDropdown} role="button" tabindex="0">
+						<span>
+							{selectedGeometryId
+								? geometries.find((g) => g.id === selectedGeometryId)?.name || 'Unknown Geometry'
+								: '-- Select Geometry --'}
+						</span>
+						<svg
+							class="chevron"
+							class:open={isDropdownOpen}
+							xmlns="http://www.w3.org/2000/svg"
+							width="16"
+							height="16"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg
+						>
+					</div>
 
-							<!-- Right part: Toggle visibility -->
-							<button
-								type="button"
-								class="visibility-toggle"
-								class:visible={geometry.visible}
-								class:hidden={!geometry.visible}
-								onclick={(e) => {
-									e.stopPropagation(); // Prevent selection when toggling visibility
-									toggleGeometryVisibility(geometry.id);
-								}}
-								aria-label={geometry.visible ? 'Hide' : 'Show'}
-							>
-								{#if geometry.visible}
-									<!-- Icon Visible -->
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="16"
-										height="16"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle
-											cx="12"
-											cy="12"
-											r="3"
-										/></svg
+					{#if isDropdownOpen}
+						<div class="dropdown-list">
+							{#each geometries as geometry (geometry.id)}
+								<div class="dropdown-item" class:selected={selectedGeometryId === geometry.id}>
+									<!-- Name: Selects and closes form (Re-enroule le ruban) -->
+									<div
+										class="item-name"
+										onclick={() => {
+											loadGeometryDetails(geometry.id);
+											isFormOpen = false; // Close form
+											isDropdownOpen = false; // Close dropdown
+										}}
+										role="button"
+										tabindex="0"
+										onkeydown={(e) => {
+											if (e.key === 'Enter' || e.key === ' ') {
+												loadGeometryDetails(geometry.id);
+												isFormOpen = false;
+												isDropdownOpen = false;
+											}
+										}}
 									>
-								{:else}
-									<!-- Icon Hidden -->
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="16"
-										height="16"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										><path
-											d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
-										/><line x1="1" y1="1" x2="23" y2="23" /></svg
+										{geometry.name}
+									</div>
+
+									<!-- Eye: Toggles Visibility (stays open or just updates state) -->
+									<button
+										type="button"
+										class="visibility-toggle"
+										class:visible={geometry.visible}
+										class:hidden={!geometry.visible}
+										onclick={(e) => {
+											e.stopPropagation();
+											toggleGeometryVisibility(geometry.id);
+										}}
+										aria-label={geometry.visible ? 'Hide' : 'Show'}
 									>
-								{/if}
-							</button>
+										{#if geometry.visible}
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												width="14"
+												height="14"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												stroke-width="2"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle
+													cx="12"
+													cy="12"
+													r="3"
+												/></svg
+											>
+										{:else}
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												width="14"
+												height="14"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												stroke-width="2"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												><path
+													d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
+												/><line x1="1" y1="1" x2="23" y2="23" /></svg
+											>
+										{/if}
+									</button>
+								</div>
+							{/each}
+
+							{#if geometries.length === 0}
+								<div class="dropdown-item empty">No geometries found</div>
+							{/if}
 						</div>
-					{/each}
+					{/if}
 				</div>
 
 				<button
@@ -615,84 +651,130 @@
 		box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 	}
 
-	.geometry-list {
+	/* Custom Dropdown Styles */
+	.custom-dropdown {
+		position: relative;
 		margin-bottom: 10px;
+		width: 100%;
+		font-family: 'Inter', sans-serif;
 	}
 
-	.geometry-actions {
-		max-height: 200px;
-		overflow-y: auto;
+	.dropdown-header {
+		background: rgba(255, 255, 255, 0.05);
 		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 4px;
-		margin-top: 5px;
-	}
-
-	.geometry-item {
+		color: rgb(160, 155, 155);
+		padding: 6px 10px;
+		border-radius: 3px;
+		cursor: pointer;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 6px 8px;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-		transition: background-color 0.2s ease;
+		font-size: 0.75rem;
+		transition: border-color 0.2s;
 	}
 
-	.geometry-item:last-child {
+	.dropdown-header:hover {
+		border-color: #4db6ac;
+	}
+
+	.chevron {
+		transition: transform 0.2s ease;
+		color: #999;
+	}
+
+	.chevron.open {
+		transform: rotate(180deg);
+	}
+
+	.dropdown-list {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		right: 0;
+		background: #1a1a1a;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 4px;
+		margin-top: 4px;
+		max-height: 200px;
+		overflow-y: auto;
+		z-index: 1000;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+	}
+
+	.dropdown-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 8px 10px;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+		transition: background 0.1s;
+	}
+
+	.dropdown-item:last-child {
 		border-bottom: none;
 	}
 
-	.geometry-item.selected {
-		background: rgba(77, 182, 172, 0.2);
+	.dropdown-item:hover {
+		background: rgba(255, 255, 255, 0.05);
 	}
 
-	.geometry-name {
-		font-size: 0.7rem;
-		color: #ccc;
+	.dropdown-item.selected {
+		background: rgba(77, 182, 172, 0.15);
+		color: #80cbc4;
+	}
+
+	.item-name {
 		flex: 1;
+		font-size: 0.75rem;
+		color: #ddd;
+		cursor: pointer;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 
-	.geometry-controls {
-		display: flex;
-		gap: 4px;
+	.dropdown-item.selected .item-name {
+		color: #80cbc4;
+		font-weight: 500;
 	}
 
-	.visibility-toggle,
-	.select-geometry {
+	.dropdown-item.empty {
+		padding: 10px;
+		text-align: center;
+		color: #777;
+		font-style: italic;
+	}
+
+	/* Reusing visibility-toggle style from existing code, ensuring it fits */
+	.visibility-toggle {
 		background: rgba(255, 255, 255, 0.1);
 		border: 1px solid rgba(255, 255, 255, 0.2);
 		color: #fff;
-		padding: 2px 6px;
+		padding: 4px;
 		border-radius: 3px;
-		font-size: 0.8rem;
 		cursor: pointer;
-		transition: all 0.2s ease;
-		min-width: 24px;
-		height: 24px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-	}
-
-	.visibility-toggle.visible {
-		background: rgba(76, 175, 80, 0.3);
-		border-color: #4caf50;
-	}
-
-	.visibility-toggle.hidden {
-		background: rgba(244, 67, 54, 0.3);
-		border-color: #f44336;
+		width: 24px;
+		height: 24px;
+		margin-left: 8px;
 	}
 
 	.visibility-toggle:hover {
 		transform: scale(1.1);
+		border-color: #fff;
 	}
 
-	.select-geometry:hover {
-		background: rgba(255, 152, 0, 0.3);
-		border-color: #ff9800;
-		transform: scale(1.1);
+	.visibility-toggle.visible {
+		color: #4caf50;
+		border-color: rgba(76, 175, 80, 0.5);
+		background: rgba(76, 175, 80, 0.1);
 	}
-	/* Removed unused styles */
+
+	.visibility-toggle.hidden {
+		color: #f44336;
+		border-color: rgba(244, 67, 54, 0.5);
+		background: rgba(244, 67, 54, 0.1);
+	}
 </style>

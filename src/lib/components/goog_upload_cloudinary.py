@@ -82,3 +82,6 @@ if __name__ == '__main__':
 # Le fichier 
 # static/public/nissan.glb
 #  que vous ciblez dans votre script existe bien, donc cela devrait fonctionner immédiatement ! 🚀
+# ---
+# relative_path = filepath.relative_to('static')
+#    public_id = str(relative_path.with_suffix('')).replace('\\', '/')
