@@ -11,8 +11,9 @@
 		}
 	});
 
-	const getRandomValue = (min: number, max: number) =>
-		Number(Math.random() * (max - min) + min).toFixed(2);
+	// Random Utils
+	const getRandomValue = (min: number, max: number) => Number(Math.random() * (max - min) + min);
+	const formatVal = (val: number) => Number(val.toFixed(2));
 
 	// State for the form (runes)
 	let name = $state('');
@@ -22,12 +23,13 @@
 			.toString(16)
 			.padStart(6, '0')}`
 	);
+
+	// Transforms
 	let position = $state({ x: 0, y: 0, z: 0 });
-	let rotation = $state({
-		x: Number(getRandomValue(0, 360)),
-		y: Number(getRandomValue(0, 360)),
-		z: Number(getRandomValue(0, 360))
-	});
+	let rotation = $state({ x: 0, y: 0, z: 0 });
+	let scale = $state({ x: 1, y: 1, z: 1 });
+	let isUniformScale = $state(true);
+
 	let file: File | null = $state(null); // State for the uploaded file
 
 	interface GeometryItem {
@@ -37,8 +39,8 @@
 		color: string;
 		position: { x: number; y: number; z: number };
 		rotation: { x: number; y: number; z: number };
-		visible: boolean; // Add visible property
-		// Add other properties as needed
+		scale?: { x: number; y: number; z: number };
+		visible: boolean;
 	}
 
 	let geometries = $state<GeometryItem[]>([]);
@@ -74,21 +76,21 @@
 	const dispatch = createEventDispatcher();
 
 	const resetForm = () => {
+		// Default to 'box' or random type if available
 		type = types.length > 0 ? types[Math.floor(Math.random() * types.length)] : 'box';
 		name = type;
+
+		// Random color
 		color = `#${Math.floor(Math.random() * 16777215)
 			.toString(16)
 			.padStart(6, '0')}`;
-		position = {
-			x: Number(getRandomValue(-5, 5)),
-			y: Number(getRandomValue(-5, 5)),
-			z: Number(getRandomValue(-5, 5))
-		};
-		rotation = {
-			x: Number(getRandomValue(0, 360)),
-			y: Number(getRandomValue(0, 360)),
-			z: Number(getRandomValue(0, 360))
-		};
+
+		// Defaults: 0, 0, 0 for Pos/Rot, 1, 1, 1 for Scale
+		position = { x: 0, y: 0, z: 0 };
+		rotation = { x: 0, y: 0, z: 0 };
+		scale = { x: 1, y: 1, z: 1 };
+		isUniformScale = true;
+
 		isEditing = false;
 		selectedGeometryId = '';
 		file = null;
@@ -134,6 +136,7 @@
 			formData.append('color', color);
 			formData.append('position', JSON.stringify(position));
 			formData.append('rotation', JSON.stringify(rotation));
+			formData.append('scale', JSON.stringify(scale));
 
 			if (file) {
 				formData.append('model_file', file);
@@ -144,18 +147,21 @@
 				formData.append('type', type);
 			}
 
+			// Force visible=true for new items if API supports it,
+			// though typically handled by state toggles.
+			// We'll rely on backend default being visible=true, or user interaction.
+
 			let url = ENDPOINTS.GEOMETRIES;
 			let method = 'POST';
 
 			if (isEditing && selectedGeometryId) {
 				url = `${url}${selectedGeometryId}/`;
-				method = 'PUT'; // PUT pour une mise à jour complète
+				method = 'PUT';
 			}
 
 			const response = await fetch(url, {
 				method,
 				body: formData
-				// Pas de 'Content-Type', le navigateur le définit correctement pour FormData
 			});
 
 			if (!response.ok) {
@@ -165,10 +171,15 @@
 
 			addToast(isEditing ? 'Geometry updated!' : 'Geometry added!', 'success');
 
+			// If adding new, select it? Or just reset?
+			// User said "tu upload et vois direct".
+			// If we re-load geometries, we should see it.
+
 			if (!isEditing) resetForm();
+
 			dispatch('geometryChanged');
 			window.dispatchEvent(new Event('modelAdded'));
-			await loadGeometries(); // Recharger la liste
+			await loadGeometries();
 		} catch (error) {
 			console.error('Submit error:', error);
 			addToast(error instanceof Error ? error.message : 'Save failed', 'error');
@@ -199,7 +210,7 @@
 			resetForm();
 			dispatch('geometryChanged');
 			window.dispatchEvent(new Event('modelAdded'));
-			await loadGeometries(); // Recharger la liste
+			await loadGeometries();
 		} catch (error) {
 			console.error('Error deleting geometry:', error);
 			addToast('Failed to delete geometry', 'error');
@@ -214,11 +225,13 @@
 			name = geometry.name;
 			type = geometry.type;
 			color = geometry.color;
-			position = { ...geometry.position };
-			rotation = { ...geometry.rotation };
+			position = geometry.position ? { ...geometry.position } : { x: 0, y: 0, z: 0 };
+			rotation = geometry.rotation ? { ...geometry.rotation } : { x: 0, y: 0, z: 0 };
+			scale = geometry.scale ? { ...geometry.scale } : { x: 1, y: 1, z: 1 };
+
 			isEditing = true;
 			selectedGeometryId = id;
-			file = null; // On ne peut pas ré-éditer le fichier, donc on le vide
+			file = null;
 		} catch (error) {
 			console.error('Error loading geometry details:', error);
 			addToast('Failed to load geometry details', 'error');
@@ -226,7 +239,6 @@
 	};
 
 	const toggleGeometryVisibility = async (id: string) => {
-		// Optimistic update: toggle locally first
 		const originalGeometries = [...geometries];
 		const geometry = geometries.find((g) => g.id === id);
 
@@ -234,18 +246,15 @@
 
 		const newVisibleState = !geometry.visible;
 
-		// Update UI immediately
+		// Optimistic update
 		geometries = geometries.map((g) => (g.id === id ? { ...g, visible: newVisibleState } : g));
-		// Dispatch event for other components (Scene)
 		window.dispatchEvent(
 			new CustomEvent('geometryVisibilityChanged', {
 				detail: { id, visible: newVisibleState }
 			})
 		);
-		// Also dispatch Svelte event
 		dispatch('geometryVisibilityChanged', { id, visible: newVisibleState });
 
-		// Call backend to persist
 		try {
 			const response = await fetch(ENDPOINTS.TOGGLE_VISIBILITY(Number(id)), {
 				method: 'PATCH'
@@ -256,9 +265,7 @@
 			}
 
 			const data = await response.json();
-			// Optional: verify backend state matches local state
 			if (data.visible !== newVisibleState) {
-				// Correction if backend logic differs (unlikely)
 				geometries = geometries.map((g) => (g.id === id ? { ...g, visible: data.visible } : g));
 				window.dispatchEvent(
 					new CustomEvent('geometryVisibilityChanged', {
@@ -267,13 +274,10 @@
 				);
 			}
 
-			// Trigger other components to refresh if needed (like the scene)
 			window.dispatchEvent(new Event('modelAdded'));
-
 			addToast(data.message, 'success');
 		} catch (error) {
 			console.error('Error toggling visibility:', error);
-			// Revert on error
 			geometries = originalGeometries;
 			window.dispatchEvent(
 				new CustomEvent('geometryVisibilityChanged', {
@@ -281,6 +285,41 @@
 				})
 			);
 			addToast(error instanceof Error ? error.message : 'Failed to toggle visibility', 'error');
+		}
+	};
+
+	// Randomization Functions
+	const randomizeVector = (
+		current: { x: number; y: number; z: number },
+		min: number,
+		max: number
+	) => {
+		return {
+			x: formatVal(getRandomValue(min, max)),
+			y: formatVal(getRandomValue(min, max)),
+			z: formatVal(getRandomValue(min, max))
+		};
+	};
+
+	const randomizeVal = (min: number, max: number) => formatVal(getRandomValue(min, max));
+
+	const randomizePosition = () => {
+		position = randomizeVector(position, -5, 5);
+	};
+	const randomizeRotation = () => {
+		rotation = randomizeVector(rotation, 0, 360);
+	};
+	const randomizeScale = () => {
+		const s = randomizeVal(0.5, 3);
+		scale = { x: s, y: s, z: s }; // Uniform random
+	};
+
+	const updateScale = (axis: 'x' | 'y' | 'z', val: number) => {
+		scale[axis] = val;
+		if (isUniformScale) {
+			scale.x = val;
+			scale.y = val;
+			scale.z = val;
 		}
 	};
 </script>
@@ -316,7 +355,119 @@
 					isDragging = false;
 					if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
 						file = e.dataTransfer.files[0];
-						// Reset name/type if file loaded
+						/* Transform Controls Styles */
+	.transforms-container {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		margin-bottom: 5px;
+	}
+
+	.transform-group {
+		background: rgba(255, 255, 255, 0.02);
+		padding: 6px;
+		border-radius: 4px;
+		border: 1px solid rgba(255, 255, 255, 0.03);
+	}
+
+	.group-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 4px;
+	}
+
+	.group-header label {
+		color: #bbb;
+		font-size: 0.65rem;
+		text-transform: uppercase;
+		font-weight: 600;
+	}
+
+	.header-controls {
+		display: flex;
+		gap: 2px;
+	}
+
+	.input-row {
+		display: flex;
+		gap: 4px;
+	}
+
+	.input-wrap {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		background: rgba(0,0,0,0.2);
+		border-radius: 3px;
+		border: 1px solid rgba(255,255,255,0.05);
+	}
+	
+	.input-wrap.full-width {
+		width: 100%;
+	}
+
+	.input-wrap input {
+		border: none;
+		background: transparent;
+		padding: 2px 4px;
+		text-align: left;
+		width: 100%;
+		font-family: monospace;
+	}
+	
+	.input-wrap input:focus {
+		border: none;
+		outline: none;
+	}
+
+	button.icon-btn {
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		color: #ccc;
+		border-radius: 3px;
+		width: 20px;
+		height: 20px;
+		padding: 0;
+		font-size: 0.7rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+	}
+
+	button.icon-btn:hover {
+		background: rgba(255, 255, 255, 0.1);
+		color: white;
+	}
+	
+	button.icon-btn.active {
+		background: #4db6ac;
+		color: black;
+		border-color: #4db6ac;
+	}
+
+	button.mini-btn {
+		background: transparent;
+		border: none;
+		border-left: 1px solid rgba(255, 255, 255, 0.05);
+		color: #666;
+		width: 18px;
+		height: 100%;
+		padding: 0;
+		font-size: 0.6rem;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	button.mini-btn:hover {
+		color: #4db6ac;
+		background: rgba(255, 255, 255, 0.02);
+	}
+	
+	/* Removed old position-rotation specific styles if they conflict */if file loaded
 						if (!isEditing) name = file.name.split('.')[0];
 					}
 				}}
@@ -508,72 +659,132 @@
 
 				<input type="color" bind:value={color} />
 
-				<div class="position-rotation">
-					<div>
-						<label for="position-x">Position (X,Y,Z)</label>
-						<input
-							id="position-x"
-							type="number"
-							bind:value={position.x}
-							placeholder="X"
-							step="0.01"
-						/>
-						<input
-							id="position-y"
-							type="number"
-							bind:value={position.y}
-							placeholder="Y"
-							step="0.01"
-						/>
-						<input
-							id="position-z"
-							type="number"
-							bind:value={position.z}
-							placeholder="Z"
-							step="0.01"
-						/>
-						<button
-							type="button"
-							onclick={() => (position = { x: 0, y: 0, z: 0 })}
-							class="reset-button"
-						>
-							Reset Position
-						</button>
+				<!-- Transform Controls -->
+				<div class="transforms-container">
+					<!-- Position -->
+					<div class="transform-group">
+						<div class="group-header">
+							<label>Position</label>
+							<button
+								type="button"
+								class="icon-btn"
+								onclick={randomizePosition}
+								title="Random Position">🎲</button
+							>
+						</div>
+						<div class="input-row">
+							<div class="input-wrap">
+								<input type="number" bind:value={position.x} placeholder="X" step="0.1" />
+								<button
+									type="button"
+									class="mini-btn"
+									onclick={() => (position.x = randomizeVal(-5, 5))}>🎲</button
+								>
+							</div>
+							<div class="input-wrap">
+								<input type="number" bind:value={position.y} placeholder="Y" step="0.1" />
+								<button
+									type="button"
+									class="mini-btn"
+									onclick={() => (position.y = randomizeVal(-5, 5))}>🎲</button
+								>
+							</div>
+							<div class="input-wrap">
+								<input type="number" bind:value={position.z} placeholder="Z" step="0.1" />
+								<button
+									type="button"
+									class="mini-btn"
+									onclick={() => (position.z = randomizeVal(-5, 5))}>🎲</button
+								>
+							</div>
+						</div>
 					</div>
-					<div>
-						<label for="rotation-x">Rotation (X,Y,Z)</label>
-						<input
-							id="rotation-x"
-							type="number"
-							bind:value={rotation.x}
-							placeholder="X"
-							step="0.01"
-						/>
-						<input
-							id="rotation-y"
-							type="number"
-							bind:value={rotation.y}
-							placeholder="Y"
-							step="0.01"
-						/>
-						<input
-							id="rotation-z"
-							type="number"
-							bind:value={rotation.z}
-							placeholder="Z"
-							step="0.01"
-						/>
-						<button
-							type="button"
-							onclick={() => (rotation = { x: 0, y: 0, z: 0 })}
-							class="reset-button"
-						>
-							Reset Rotation
-						</button>
+
+					<!-- Rotation -->
+					<div class="transform-group">
+						<div class="group-header">
+							<label>Rotation</label>
+							<button
+								type="button"
+								class="icon-btn"
+								onclick={randomizeRotation}
+								title="Random Rotation">🎲</button
+							>
+						</div>
+						<div class="input-row">
+							<div class="input-wrap">
+								<input type="number" bind:value={rotation.x} placeholder="X" step="1" />
+								<button
+									type="button"
+									class="mini-btn"
+									onclick={() => (rotation.x = randomizeVal(0, 360))}>🎲</button
+								>
+							</div>
+							<div class="input-wrap">
+								<input type="number" bind:value={rotation.y} placeholder="Y" step="1" />
+								<button
+									type="button"
+									class="mini-btn"
+									onclick={() => (rotation.y = randomizeVal(0, 360))}>🎲</button
+								>
+							</div>
+							<div class="input-wrap">
+								<input type="number" bind:value={rotation.z} placeholder="Z" step="1" />
+								<button
+									type="button"
+									class="mini-btn"
+									onclick={() => (rotation.z = randomizeVal(0, 360))}>🎲</button
+								>
+							</div>
+						</div>
+					</div>
+
+					<!-- Scale -->
+					<div class="transform-group">
+						<div class="group-header">
+							<label>Scale</label>
+							<div class="header-controls">
+								<button type="button" class="icon-btn" onclick={randomizeScale} title="Random Scale"
+									>🎲</button
+								>
+								<button
+									type="button"
+									class="icon-btn"
+									class:active={isUniformScale}
+									onclick={() => (isUniformScale = !isUniformScale)}
+									title="Uniform Scale"
+								>
+									🔗
+								</button>
+							</div>
+						</div>
+						{#if isUniformScale}
+							<div class="input-row">
+								<div class="input-wrap full-width">
+									<input
+										type="number"
+										value={scale.x}
+										oninput={(e) => updateScale('x', parseFloat(e.currentTarget.value) || 1)}
+										placeholder="Scale"
+										step="0.1"
+									/>
+								</div>
+							</div>
+						{:else}
+							<div class="input-row">
+								<div class="input-wrap">
+									<input type="number" bind:value={scale.x} placeholder="X" step="0.1" />
+								</div>
+								<div class="input-wrap">
+									<input type="number" bind:value={scale.y} placeholder="Y" step="0.1" />
+								</div>
+								<div class="input-wrap">
+									<input type="number" bind:value={scale.z} placeholder="Z" step="0.1" />
+								</div>
+							</div>
+						{/if}
 					</div>
 				</div>
-
-				<!-- Old upload section removed -->
 
 				<button
 					type="submit"
@@ -603,7 +814,8 @@
 		font-family: 'Inter', sans-serif;
 		color: #fff;
 		font-size: 0.75rem;
-		width: 100%;
+		width: 75%; /* Reduced width by 1/4 */
+		margin: 0 auto;
 		background: rgba(255, 255, 255, 0.03);
 		padding: 12px;
 		border-radius: 8px;
