@@ -13,52 +13,68 @@ Title: Nissan Skyline GTR r35
 	import { useGltf } from '@threlte/extras';
 	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { browser } from '$app/environment';
+	import { LessEqualDepth, Group } from 'three';
 
-// ...
-const gltf = $derived(modelUrl && browser ? useGltf(modelUrl, { dracoLoader: createDracoLoader() })
+	// Define props
+	let { modelUrl, ref = new Group(), ...rest } = $props();
 
-	gltf.then((model) => {
-		function alphaFix(material) {
-			if (material) {
-				material.transparent = true;
-				material.alphaToCoverage = true;
-				material.depthFunc = LessEqualDepth;
-				material.depthTest = true;
-				material.depthWrite = true;
+	// Load GLTF only in browser
+	const gltf = $derived(
+		modelUrl && browser
+			? useGltf(modelUrl, {
+					dracoLoader: createDracoLoader()
+			  })
+			: null
+	);
+
+	$effect(() => {
+		if ($gltf) {
+			function alphaFix(material) {
+				if (material) {
+					material.transparent = true;
+					material.alphaToCoverage = true;
+					material.depthFunc = LessEqualDepth;
+					material.depthTest = true;
+					material.depthWrite = true;
+				}
 			}
+
+			const materials = [
+				'r35_paint',
+				'Meo_turbo_black',
+				'Meo_turbo_Gray',
+				'Meo_turbo_chrome',
+				'Meo_turbo_gold',
+				'Meo_turbo_matblack',
+				'r35_badges',
+				'grille',
+				'r35_plastic',
+				'r35_interior',
+				'r35_symbols_2017',
+				'r35_leather',
+				'r35_lejather_perf',
+				'r35_leather_stitching',
+				'r35_steeringwheel',
+				'mirror',
+				'r35_cf',
+				'r35_taillight_2017',
+				'r35_signal_R_2017',
+				'r35_dash_2017_r35_cf',
+				'r35_leather'
+			];
+
+			materials.forEach((materialName) => {
+				if ($gltf.materials[materialName]) {
+					alphaFix($gltf.materials[materialName]);
+				}
+			});
 		}
-
-		const materials = [
-			'r35_paint',
-			'Meo_turbo_black',
-			'Meo_turbo_Gray',
-			'Meo_turbo_chrome',
-			'Meo_turbo_gold',
-			'Meo_turbo_matblack',
-			'r35_badges',
-			'grille',
-			'r35_plastic',
-			'r35_interior',
-			'r35_symbols_2017',
-			'r35_leather',
-			'r35_lejather_perf',
-			'r35_leather_stitching',
-			'r35_steeringwheel',
-			'mirror',
-			'r35_cf',
-			'r35_taillight_2017',
-			'r35_signal_R_2017',
-			'r35_dash_2017_r35_cf',
-			'r35_leather'
-		];
-
-		materials.forEach((materialName) => alphaFix(model.materials[materialName]));
 	});
 
 	const component = forwardEventHandlers();
 </script>
 
-<T is={ref} dispose={false} {...restProps} bind:this={$component}>
+<T is={ref} dispose={false} {...rest} bind:this={$component}>
 	{#await gltf}
 		<slot name="fallback" />
 	{:then gltf}

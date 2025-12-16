@@ -47,3 +47,4 @@ def clear_db():
 
 if __name__ == "__main__":
     clear_db()
+# ~/…/dv-threlte-starter $ .venv/bin/python scripts/clear_geometries.py

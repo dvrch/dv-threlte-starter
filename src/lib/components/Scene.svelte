@@ -5,7 +5,7 @@
 	import { Color, Mesh, PMREMGenerator, PlaneGeometry, Raycaster, Vector2, Vector3 } from 'three';
 	import { onMount } from 'svelte';
 	import Stars from './Stars.svelte';
-	import Nissan from './Nissan.svelte';
+	import Nissan from './.Nissan';
 	// import Vague from '../../routes/vague/vague.svelte';
 	import Bloom from './bloom.svelte';
 
@@ -106,7 +106,6 @@
 	});
 </script>
 
-
 <T.PerspectiveCamera makeDefault position={[-5, 6, 10]} fov={25}>
 	<OrbitControls enableDamping target={[0, 0, 0]} />
 </T.PerspectiveCamera>
@@ -121,11 +120,7 @@
 <Bloom />
 <Stars />
 <!-- <Vague /> -->
-<Nissan
-	bind:ref={spaceShipRef}
-	position={[0, translY, 0]}
-	rotation={[angleZ, 80, angleZ, 'ZXY']}
-/>
+<Nissan bind:ref={spaceShipRef} position={[0, translY, 0]} rotation={[angleZ, 80, angleZ, 'ZXY']} />
 
 <!-- <NissanSkylineGtrR35
 	bind:ref={spaceShipRef}

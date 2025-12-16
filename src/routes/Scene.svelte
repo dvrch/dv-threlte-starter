@@ -13,7 +13,7 @@
 	import { OrbitControls } from '@threlte/extras';
 	import Stars from '$lib/components/Stars.svelte';
 	import Spaceship from '$lib/components/models/spaceship.svelte';
-	import Nissan from '$lib/components/Nissan.svelte';
+	import Nissan from '$lib/components/.Nissan';
 
 	import { useThrelte, useTask } from '@threlte/core';
 
