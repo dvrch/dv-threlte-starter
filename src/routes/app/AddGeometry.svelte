@@ -45,6 +45,8 @@
 	let selectedGeometryId = $state('');
 	let isEditing = $state(false);
 	let types = $state<string[]>([]);
+	let isDragging = $state(false);
+	let fileInput = $state<HTMLInputElement>();
 	let isLoading = $state(false);
 	let isFormOpen = $state(false);
 	let isDropdownOpen = $state(false);
@@ -296,6 +298,86 @@
 				handleSubmit();
 			}}
 		>
+			<!-- Drag & Drop Upload Zone (Top of form) -->
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
+			<div
+				class="upload-zone"
+				class:dragging={isDragging}
+				class:has-file={!!file}
+				role="button"
+				tabindex="0"
+				ondragover={(e) => {
+					e.preventDefault();
+					isDragging = true;
+				}}
+				ondragleave={() => (isDragging = false)}
+				ondrop={(e) => {
+					e.preventDefault();
+					isDragging = false;
+					if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+						file = e.dataTransfer.files[0];
+						// Reset name/type if file loaded
+						if (!isEditing) name = file.name.split('.')[0];
+					}
+				}}
+				onclick={() => fileInput?.click()}
+			>
+				<input
+					bind:this={fileInput}
+					type="file"
+					accept=".glb,.gltf"
+					style="display: none;"
+					onchange={(e) => {
+						const target = e.target as HTMLInputElement;
+						if (target.files && target.files.length > 0) {
+							file = target.files[0];
+							if (!isEditing) name = file.name.split('.')[0];
+						}
+					}}
+				/>
+
+				{#if file}
+					<div class="file-info">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="24"
+							height="24"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							class="file-icon"
+							><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline
+								points="13 2 13 9 20 9"
+							/></svg
+						>
+						<span class="filename">{file.name}</span>
+						<span class="change-text">(Click to change)</span>
+					</div>
+				{:else}
+					<div class="upload-placeholder">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="24"
+							height="24"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							class="upload-icon"
+							><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline
+								points="17 8 12 3 7 8"
+							/><line x1="12" y1="3" x2="12" y2="15" /></svg
+						>
+						<span>Glisser / Sélectionner (.glb)</span>
+					</div>
+				{/if}
+			</div>
+
 			<h3>{isEditing ? 'Update' : 'Add'} Geometry</h3>
 
 			<div class="geometry-list">
@@ -491,21 +573,7 @@
 					</div>
 				</div>
 
-				<div class="file-upload-section">
-					<label for="file-upload">Or Upload a GLB/GLTF Model</label>
-					<input
-						id="file-upload"
-						type="file"
-						accept=".glb,.gltf"
-						onchange={(e) => {
-						const target = e.target as HTMLInputElement;
-						file = target.files?.[0] || null;
-					}}
-					/>
-					{#if file}
-						<p>Selected file: {file.name}</p>
-					{/if}
-				</div>
+				<!-- Old upload section removed -->
 
 				<button
 					type="submit"
