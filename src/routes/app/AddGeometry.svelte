@@ -866,6 +866,8 @@
 	.icon-btn.active {
 		color: #4db6ac;
 	}
+
+	.reset-button {
 		color: black;
 		font-size: 0.7rem;
 		font-weight: 600;
