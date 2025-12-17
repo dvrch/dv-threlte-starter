@@ -4,11 +4,16 @@
 	import Bloom from './bloom.svelte';
 	import Vague from './vague.svelte';
 	import { browser } from '$app/environment';
+	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 	// let y = 2;
 	// let rotation = 0;
 
-	const modelNames = ['/assets/ghost', '/assets/Desk-bati', '/public/cloth_sim'];
+	const modelNames = [
+		getCloudinaryAssetUrl('/models/ghost.glb'),
+		getCloudinaryAssetUrl('/models/Desk-bati.glb'),
+		getCloudinaryAssetUrl('cloth_sim.glb')
+	];
 
 	// function levitate() {
 	// 	const time = Date.now() / 1000;
@@ -32,7 +37,7 @@
 {/if}
 
 {#if browser}
-	{#await Promise.all(modelNames.map((name) => useGltf(`${name}.glb`))) then results}
+	{#await Promise.all(modelNames.map((url) => useGltf(url))) then results}
 		{#each results as result}
 			<T is={result.scene} position={[0, 0, 0]} scale={0.4} />
 		{/each}
