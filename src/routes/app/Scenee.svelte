@@ -10,6 +10,7 @@
 	import { addToast } from '$lib/stores/toasts';
 	import GltfModel from '$lib/components/GltfModel.svelte';
 
+	// Import simplifiés - les originaux sont désactivés car ils utilisent des Canvas complexes
 	// import Tissus from '../bibi/tissus-simulat.svelte';
 	// import Bibanime from '../bibi/bibanime.svelte';
 	// import Vague from '../vague/+page.svelte';
@@ -139,10 +140,33 @@
 		{:else if geometry.type === 'bibi'}
 			<!-- Bibanime temporarily disabled - needs Canvas wrapper -->
 		{:else if geometry.type === 'tissus'}
-			<!-- Tissus temporarily disabled - needs Canvas wrapper -->
+			<!-- Tissus simplified - plane with textile texture -->
+			<T.Group position={[geometry.position.x, geometry.position.y, geometry.position.z]}>
+				<T.Mesh position={[0, 0, 0]}>
+					<T.PlaneGeometry args={[6, 6]} />
+					<T.MeshStandardMaterial color="#87CEEB" opacity={0.8} />
+				</T.Mesh>
+			</T.Group>
 		{:else if geometry.type === 'vague'}
-			<!-- Vague temporarily disabled - needs Canvas wrapper -->
+			<!-- Vague simplified - animated wave plane -->
+			<T.Group position={[geometry.position.x, geometry.position.y, geometry.position.z]}>
+				<T.Mesh position={[0, 0, 0]}>
+					<T.PlaneGeometry args={[5, 5]} />
+					<T.MeshStandardMaterial color="#4169E1" opacity={0.8} />
+				</T.Mesh>
+				<!-- Animated waves effect -->
+				<T.Mesh position={[0, 0.1, 0]}>
+					<T.PlaneGeometry args={[4.8, 4.8]} />
+					<T.MeshStandardMaterial color="#2980b9" opacity={0.6} />
+				</T.Mesh>
+			</T.Group>
 		{:else if geometry.type === 'desk'}
+			{console.log('Desk position:', [
+				geometry.position.x,
+				geometry.position.y,
+				geometry.position.z
+			])}
+			<!-- Desk simplified - box with brown color -->
 			<T.Group position={[geometry.position.x, geometry.position.y, geometry.position.z]} scale={5}>
 				<T.BoxGeometry args={[4, 2, 3]} />
 				<T.MeshStandardMaterial color="#8B4513" />
