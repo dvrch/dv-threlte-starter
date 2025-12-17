@@ -62,7 +62,7 @@
 <Grid cellColor="gray" sectionSize={0} />
 
 <!-- Camera -->
-<T.PerspectiveCamera position={[20, 20, 20]} fov={50} makeDefault>
+<T.PerspectiveCamera position={[15, 10, 15]} fov={60} makeDefault>
 	<!-- Controls -->
 	<OrbitControls enableDamping enableZoom enableRotate enablePan />
 </T.PerspectiveCamera>
@@ -84,8 +84,8 @@
 
 <!-- Sphere -->
 
-<T.Mesh position={[0, 3, 2]} scale={0.3} let:ref castShadow>
-	<T.SphereGeometry args={[4, 64, 64]} />
+<T.Mesh position={[0, 1, 0]} scale={0.5} let:ref castShadow>
+	<T.SphereGeometry args={[2, 32, 32]} />
 	<T.MeshStandardMaterial color="white" />
 </T.Mesh>
 

@@ -9,7 +9,7 @@
 </script>
 
 <Canvas renderMode="always">
-	<T.PerspectiveCamera makeDefault position={[0, 0, 10]}>
+	<T.PerspectiveCamera makeDefault position={[0, 0, 15]} fov={60}>
 		<OrbitControls enableDamping enableZoom enableRotate enablePan />
 	</T.PerspectiveCamera>
 	<T.AmbientLight intensity={0.5} />
