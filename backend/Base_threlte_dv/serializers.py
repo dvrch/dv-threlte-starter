@@ -25,7 +25,7 @@ class GeometrySerializer(serializers.ModelSerializer):
             "model_type",
             "position",
             "rotation",
-            "scale",      # Added scale field
+            "scale",  # Added scale field
             "color",
             "color_picker",
             "visible",
@@ -50,7 +50,7 @@ class GeometrySerializer(serializers.ModelSerializer):
                 resource_type="raw",
                 folder="dv-threlte/models",  # Specify the folder
             )
-            # Add the full URL to the data to be saved
+            # Add the full URL to data to be saved
             validated_data["model_url"] = upload_result["secure_url"]
 
         # Create the Geometry instance
@@ -71,6 +71,7 @@ class GeometrySerializer(serializers.ModelSerializer):
                 try:
                     # Extract public_id from the old model_url
                     import re
+
                     url_pattern = r"/dv-threlte/models/([^/]+)"
                     match = re.search(url_pattern, instance.model_url)
                     if match:
@@ -78,14 +79,22 @@ class GeometrySerializer(serializers.ModelSerializer):
                         cloudinary.uploader.destroy(old_public_id, resource_type="raw")
                         # Delete the old CloudinaryAsset record
                         CloudinaryAsset.objects.filter(public_id=old_public_id).delete()
-                        print(f"✅ Deleted old Cloudinary asset and record: {old_public_id}")
+                        print(
+                            f"✅ Deleted old Cloudinary asset and record: {old_public_id}"
+                        )
                     else:
-                        print(f"⚠️ Could not extract public_id from old model_url: {instance.model_url}. Old Cloudinary asset not deleted.")
+                        print(
+                            f"⚠️ Could not extract public_id from old model_url: {instance.model_url}. Old Cloudinary asset not deleted."
+                        )
                 except Exception as e:
                     print(f"❌ Error deleting old Cloudinary asset: {str(e)}")
-            
+
             upload_result = cloudinary.uploader.upload(
-                model_file, resource_type="raw", folder="dv-threlte/models"
+                model_file,
+                resource_type="raw",
+                folder="dv-threlte/models",
+                use_filename=True,  # Disable versioning
+                unique_filename=False,  # Allow overwrite
             )
             # Update the instance's model_url with the new URL
             instance.model_url = upload_result["secure_url"]
