@@ -97,11 +97,7 @@
 	{/if}
 </HTML>
 
-<T.PerspectiveCamera makeDefault position={[10, 10, 10]} fov={50}>
-	<OrbitControls enableDamping enableZoom enableRotate enablePan />
-</T.PerspectiveCamera>
 
-<Grid />
 
 <!-- Sphère au centre -->
 <T.Mesh position={[0, 0.5, 0]}>
