@@ -10,11 +10,11 @@
 	import { addToast } from '$lib/stores/toasts';
 	import GltfModel from '$lib/components/GltfModel.svelte';
 
-	import Tissus from '../bibi/tissus-simulat.svelte';
-	import Bibanime from '../bibi/bibanime.svelte';
-	import Vague from '../vague/+page.svelte';
-	import Spaceship from '../Spaceship/+page.svelte';
-	import Desk from '../desksc/+page.svelte';
+	// import Tissus from '../bibi/tissus-simulat.svelte';
+	// import Bibanime from '../bibi/bibanime.svelte';
+	// import Vague from '../vague/+page.svelte';
+	// import Spaceship from '../Spaceship/+page.svelte';
+	// import Desk from '../desksc/+page.svelte';
 
 	import { assets } from '$lib/services/assets';
 	import { GeometriesRepository, type Geometry } from '$lib/repositories/geometries';
@@ -73,19 +73,8 @@
 	};
 </script>
 
-<T.PerspectiveCamera
-	makeDefault
-	position={[-10, 10, 10]}
-	fov={70}
-	aspect={((window.innerWidth * 0.3) / window.innerHeight) * 0.3}
->
-	<OrbitControls
-		autoRotate
-		enableZoom={true}
-		minDistance={0}
-		maxDistance={80}
-		target={[0, 1.5, 0]}
-	/>
+<T.PerspectiveCamera makeDefault position={[15, 15, 15]} fov={50}>
+	<OrbitControls enableDamping enableZoom enableRotate enablePan />
 </T.PerspectiveCamera>
 
 <T.DirectionalLight intensity={0.8} position={[5, 10, 0]} />
@@ -148,37 +137,22 @@
 		{:else if geometry.type === 'nissan'}
 			<!-- Nissan temporarily disabled -->
 		{:else if geometry.type === 'bibi'}
-			<Bibanime
-				position={[geometry.position.x, geometry.position.y, geometry.position.z]}
-				scale={5}
-			/>
+			<!-- Bibanime temporarily disabled - needs Canvas wrapper -->
 		{:else if geometry.type === 'tissus'}
-			<Tissus
-				position={[geometry.position.x, geometry.position.y, geometry.position.z]}
-				scale={5}
-			/>
+			<!-- Tissus temporarily disabled - needs Canvas wrapper -->
 		{:else if geometry.type === 'vague'}
-			{console.log('Vague position:', [
-				geometry.position.x,
-				geometry.position.y,
-				geometry.position.z
-			])}
-			<Vague
-				position={[geometry.position.x, geometry.position.y, geometry.position.z]}
-				rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]}
-				scale={5}
-			/>
+			<!-- Vague temporarily disabled - needs Canvas wrapper -->
 		{:else if geometry.type === 'desk'}
 			{console.log('Desk position:', [
 				geometry.position.x,
 				geometry.position.y,
 				geometry.position.z
 			])}
-			<Desk
-				position={[geometry.position.x, geometry.position.y, geometry.position.z]}
-				rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]}
-				scale={5}
-			/>
+			<!-- Desk temporarily disabled - needs import fix -->
+			<T.Group position={[geometry.position.x, geometry.position.y, geometry.position.z]} scale={5}>
+				<T.BoxGeometry args={[4, 2, 3]} />
+				<T.MeshStandardMaterial color="#8B4513" />
+			</T.Group>
 		{:else if geometry.type === 'sphere'}
 			<T.Mesh
 				position={[geometry.position.x, geometry.position.y, geometry.position.z]}

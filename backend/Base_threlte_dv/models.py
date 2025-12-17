@@ -14,6 +14,9 @@ def get_default_position():
 def get_default_rotation():
     return {"x": 0.0, "y": 0.0, "z": 0.0}
 
+def get_default_scale():
+    return {"x": 1.0, "y": 1.0, "z": 1.0}
+
 
 class Geometry(models.Model):
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default="box")
@@ -35,6 +38,7 @@ class Geometry(models.Model):
     )
     position = models.JSONField(default=get_default_position)
     rotation = models.JSONField(default=get_default_rotation)
+    scale = models.JSONField(default=get_default_scale) # Added scale field
     color = models.CharField(max_length=7, blank=True, default="#000000")  # Couleur
     visible = models.BooleanField(
         default=True, help_text="Activer/Désactiver l'affichage de la géométrie"
