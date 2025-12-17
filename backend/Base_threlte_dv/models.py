@@ -112,3 +112,4 @@ class CloudinaryAsset(models.Model):
 
     def __str__(self):
         return str(self.file_name or self.public_id)
+        
