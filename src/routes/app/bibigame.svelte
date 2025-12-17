@@ -37,10 +37,10 @@
 	function handleKeyDown(event: KeyboardEvent) {
 		switch (event.key) {
 			case 'ArrowUp':
-				curvePosition = (curvePosition + speed) % 1;
+				curvePosition = (curvePosition - speed + 1) % 1;
 				break;
 			case 'ArrowDown':
-				curvePosition = (curvePosition - speed + 1) % 1;
+				curvePosition = (curvePosition + speed) % 1;
 				break;
 		}
 	}

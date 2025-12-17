@@ -32,12 +32,12 @@
 	// Game loop
 	useTask(() => {
 		if (keys.ArrowUp) {
-			x -= Math.sin(rotationY) * speed;
-			z -= Math.cos(rotationY) * speed;
-		}
-		if (keys.ArrowDown) {
 			x += Math.sin(rotationY) * speed;
 			z += Math.cos(rotationY) * speed;
+		}
+		if (keys.ArrowDown) {
+			x -= Math.sin(rotationY) * speed;
+			z -= Math.cos(rotationY) * speed;
 		}
 		if (keys.ArrowLeft) {
 			rotationY += rotSpeed;
