@@ -31,6 +31,10 @@
 {#if browser && $gltf}
 	<!-- Render the scene from the loaded GLTF -->
 	<T is={$gltf.scene} {...restProps} />
+{:else if browser && !$gltf && url}
+	<!-- Log an error if GLTF failed to load and a URL was provided -->
+	{console.error(`Failed to load GLTF model from URL: ${url}`)}
+	<T.Group />
 {:else}
 	<!-- Fallback or empty group while loading -->
 	<T.Group />
