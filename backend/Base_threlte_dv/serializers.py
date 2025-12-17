@@ -25,6 +25,7 @@ class GeometrySerializer(serializers.ModelSerializer):
             "model_type",
             "position",
             "rotation",
+            "scale",      # Added scale field
             "color",
             "color_picker",
             "visible",
