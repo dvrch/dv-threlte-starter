@@ -62,6 +62,7 @@ class GeometrySerializer(serializers.ModelSerializer):
                 public_id=filename,  # Use our naming
                 use_filename=True,  # Disable versioning
                 unique_filename=False,  # Allow overwrite
+                overwrite=True,  # Allow overwriting existing files
             )
             # Add the full URL to data to be saved
             validated_data["model_url"] = upload_result["secure_url"]
