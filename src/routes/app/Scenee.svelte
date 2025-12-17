@@ -10,12 +10,11 @@
 	import { addToast } from '$lib/stores/toasts';
 	import GltfModel from '$lib/components/GltfModel.svelte';
 
-	// Import simplifiés - les originaux sont désactivés car ils utilisent des Canvas complexes
-	// import Tissus from '../bibi/tissus-simulat.svelte';
-	// import Bibanime from '../bibi/bibanime.svelte';
-	// import Vague from '../vague/+page.svelte';
-	// import Spaceship from '../Spaceship/+page.svelte';
-	// import Desk from '../desksc/+page.svelte';
+	 Tissus from '../bibi/tissus-simulat.svelte';
+	import Bibanime from '../bibi/bibanime.svelte';
+	import Vague from '../vague/+page.svelte';
+	import Spaceship from '../Spaceship/+page.svelte';
+	import Desk from '../desksc/+page.svelte';
 
 	import { assets } from '$lib/services/assets';
 	import { GeometriesRepository, type Geometry } from '$lib/repositories/geometries';
