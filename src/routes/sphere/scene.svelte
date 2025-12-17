@@ -1,33 +1,38 @@
 <script lang="ts">
-	import Nissan from '../Spaceship/Nissan.svelte'
-	import { T } from '@threlte/core'
-	import { Grid, OrbitControls, TransformControls } from '@threlte/extras'
-	import * as Three from 'three'
-	const { DEG2RAD } = Three.MathUtils
+	import Nissan from '../Spaceship/Nissan.svelte';
+	import { T } from '@threlte/core';
+	import { Grid, OrbitControls, TransformControls } from '@threlte/extras';
+	import * as Three from 'three';
+	const { DEG2RAD } = Three.MathUtils;
 	import { onMount } from 'svelte';
 
 	// Créer une courbe fermée
-	const curve = new Three.CatmullRomCurve3([
-		new Three.Vector3(-5, 0, 5),
-		new Three.Vector3(0, 0, 5),
-		new Three.Vector3(5, 0, 5),
-		new Three.Vector3(5, 0, 0),
-		new Three.Vector3(5, 0, -5),
-		new Three.Vector3(0, 0, -5),
-		new Three.Vector3(-5, 0, -5),
-		new Three.Vector3(-5, 0, 0),
-	], true);
+	const curve = new Three.CatmullRomCurve3(
+		[
+			new Three.Vector3(-5, 0, 5),
+			new Three.Vector3(0, 0, 5),
+			new Three.Vector3(5, 0, 5),
+			new Three.Vector3(5, 0, 0),
+			new Three.Vector3(5, 0, -5),
+			new Three.Vector3(0, 0, -5),
+			new Three.Vector3(-5, 0, -5),
+			new Three.Vector3(-5, 0, 0)
+		],
+		true
+	);
 
 	let curvePosition = 0;
 	const speed = 0.005;
 
- let nissanPosition = $derived(curve.getPoint(curvePosition));
- let nissanRotation = $derived(new Three.Euler().setFromQuaternion();
-		new Three.Quaternion().setFromUnitVectors(
-			new Three.Vector3(0, 0, 1),
-			curve.getTangent(curvePosition)
-		)
-	);
+	let nissanPosition = $derived(curve.getPoint(curvePosition));
+	let nissanRotation = $derived(() => {
+		return new Three.Euler().setFromQuaternion(
+			new Three.Quaternion().setFromUnitVectors(
+				new Three.Vector3(0, 0, 1),
+				curve.getTangent(curvePosition)
+			)
+		);
+	});
 
 	// $: {
 	// 	console.log('Position Nissan:', nissanPosition);
@@ -51,7 +56,6 @@
 			window.removeEventListener('keydown', handleKeyDown);
 		};
 	});
-	
 </script>
 
 <!-- Grid -->
@@ -60,7 +64,7 @@
 <!-- Camera -->
 <T.PerspectiveCamera position={[20, 20, 20]} fov={50} makeDefault>
 	<!-- Controls -->
-	<OrbitControls enableDamping />
+	<OrbitControls enableDamping enableZoom enableRotate enablePan />
 </T.PerspectiveCamera>
 
 <!-- Lights the scene equally -->
@@ -76,10 +80,9 @@
 />
 
 <!-- Nissan -->
-<Nissan position={[...nissanPosition]} rotation={[...nissanRotation]} let:ref castShadow>
+<Nissan position={nissanPosition} rotation={nissanRotation} let:ref castShadow>
 	<TransformControls object={ref} />
 </Nissan>
-
 
 <!-- Sphere -->
 
@@ -99,9 +102,11 @@
 <T.Line position.y={0.5}>
 	<T.BufferGeometry>
 		{#if curve}
-			<T.Float32BufferAttribute attach="attributes-position" args={[curve.getPoints(50).flatMap(v => [v.x, v.y, v.z]), 3]} />
+			<T.Float32BufferAttribute
+				attach="attributes-position"
+				args={[curve.getPoints(50).flatMap((v) => [v.x, v.y, v.z]), 3]}
+			/>
 		{/if}
 	</T.BufferGeometry>
 	<T.LineBasicMaterial color="red" />
 </T.Line>
-

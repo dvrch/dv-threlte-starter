@@ -6,7 +6,7 @@
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 
-	let Canvas;
+	let Canvas: any;
 
 	let {
 		position = [0, 0, 0],
@@ -28,6 +28,11 @@
 
 {#if browser && Canvas}
 	<Canvas>
+		<T.PerspectiveCamera makeDefault position={[10, 10, 10]}>
+			<OrbitControls enableDamping enableZoom enableRotate enablePan />
+		</T.PerspectiveCamera>
+		<T.AmbientLight intensity={0.5} />
+		<T.DirectionalLight position={[5, 10, 5]} intensity={1} />
 		<Vaguend {position} {rotation} {scale} />
 		<About />
 	</Canvas>
