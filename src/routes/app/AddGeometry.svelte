@@ -150,6 +150,9 @@
 			// Force visible=true for new items if API supports it,
 			// though typically handled by state toggles.
 			// We'll rely on backend default being visible=true, or user interaction.
+			if (!isEditing) {
+				formData.append('visible', 'true');
+			}
 
 			let url = ENDPOINTS.GEOMETRIES;
 			let method = 'POST';
