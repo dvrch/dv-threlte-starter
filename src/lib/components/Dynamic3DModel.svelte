@@ -3,10 +3,25 @@
 	import GltfModel from '$lib/components/GltfModel.svelte';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte'; // Need onMount for dynamic imports
+	import { Text } from '@threlte/extras'; // Import Text component
+	import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader.js'; // Import FontLoader
 
 	import { assets } from '$lib/services/assets';
 
 	let { geometry }: { geometry: any } = $props();
+
+	let loadedFont: Font | null = $state(null); // State to store the loaded font
+
+	onMount(async () => {
+		if (browser) {
+			try {
+				const loader = new FontLoader();
+				loadedFont = await loader.loadAsync(assets.getUrl('/fonts/font.json'));
+			} catch (error) {
+				console.error('Failed to load 3D text font:', error);
+			}
+		}
+	});
 
 	// Map geometry types to their respective Svelte components using dynamic imports
 	const componentMap: { [key: string]: () => Promise<any> } = {
@@ -60,6 +75,16 @@
 			<!-- 1. Render the dynamically loaded Svelte component when available -->
 			{@const Component = LoadedDynamicComponent}
 			<Component {geometry} />
+		{:else if geometry.type === 'text' && loadedFont}
+			<!-- Render 3D Text -->
+			<Text
+				text={geometry.name}
+				color={geometry.color}
+				font={loadedFont}
+				fontSize={geometry.scale?.x ?? 1}
+				anchorX="center"
+				anchorY="middle"
+			/>
 		{:else if geometry.model_url && geometry.model_url.trim() !== ''}
 			<!-- 2. Render a generic GLTF model if model_url is present and valid -->
 			{@const modelUrl =
