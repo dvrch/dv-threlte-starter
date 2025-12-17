@@ -147,11 +147,15 @@
 				formData.append('type', type);
 			}
 
-			// Force visible=true for new items if API supports it,
-			// though typically handled by state toggles.
-			// We'll rely on backend default being visible=true, or user interaction.
+			// For new items, force visible=true. For existing items, retain current visibility.
 			if (!isEditing) {
 				formData.append('visible', 'true');
+			} else {
+				// When editing, retrieve the current visibility state of the selected geometry
+				const currentGeometry = geometries.find(g => g.id === selectedGeometryId);
+				if (currentGeometry) {
+					formData.append('visible', String(currentGeometry.visible));
+				}
 			}
 
 			let url = ENDPOINTS.GEOMETRIES;
