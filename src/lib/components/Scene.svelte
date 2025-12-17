@@ -5,7 +5,7 @@
 	import { Color, Mesh, PMREMGenerator, PlaneGeometry, Raycaster, Vector2, Vector3 } from 'three';
 	import { onMount } from 'svelte';
 	import Stars from './Stars.svelte';
-	import Nissan from './.Nissan';
+	import Nissan from './Nissan.svelte';
 	// import Vague from '../../routes/vague/vague.svelte';
 	import Bloom from './bloom.svelte';
 

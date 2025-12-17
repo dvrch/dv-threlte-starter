@@ -25,7 +25,7 @@
 	let envMapRT;
 
 	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
-	let ni = useGltf(getCloudinaryAssetUrl(`/models/nissan.glb`));
+	let ni = useGltf(getCloudinaryAssetUrl('nissan2.glb'));
 
 	const composer = new EffectComposer(renderer);
 	composer.setSize(innerWidth, innerHeight);

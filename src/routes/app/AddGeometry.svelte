@@ -783,7 +783,8 @@
 	.type-select-row select {
 		flex: 1;
 	}
-	.text-content-input, .color-input {
+	.text-content-input,
+	.color-input {
 		flex: 1;
 	}
 	.color-input {
@@ -799,7 +800,7 @@
 		flex-direction: column;
 		gap: 2px;
 		margin-top: 5px;
-		background: rgba(0,0,0,0.2);
+		background: rgba(0, 0, 0, 0.2);
 		padding: 4px;
 		border-radius: 4px;
 	}
@@ -832,7 +833,7 @@
 		display: flex;
 		align-items: center;
 	}
-	
+
 	.cell.empty {
 		visibility: hidden;
 	}
@@ -847,7 +848,7 @@
 		color: #ddd;
 		border-radius: 2px;
 	}
-	
+
 	.mini-input:focus {
 		border-color: #4db6ac;
 		background: rgba(255, 255, 255, 0.1);
@@ -861,11 +862,11 @@
 		color: #777;
 		cursor: pointer;
 	}
-	
+
 	.icon-btn.tiny:hover {
 		color: #4db6ac;
 	}
-	
+
 	.icon-btn.active {
 		color: #4db6ac;
 	}

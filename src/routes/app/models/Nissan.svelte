@@ -26,7 +26,7 @@ Title: Nissan Skyline GTR r35
 	let gltf = $state<any>(null); // Use state for reactivity
 
 	onMount(() => {
-		const modelPromise = useGltf(getCloudinaryAssetUrl('/models/nissan.glb'), {
+		const modelPromise = useGltf(getCloudinaryAssetUrl('nissan2.glb'), {
 			dracoLoader: createDracoLoader()
 		});
 
