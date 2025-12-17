@@ -609,7 +609,7 @@
 							<input
 								type="number"
 								bind:value={position.x}
-								step="0.1"
+								step="0.01"
 								class="mini-input"
 								placeholder="X"
 							/>
@@ -618,7 +618,7 @@
 							<input
 								type="number"
 								bind:value={rotation.x}
-								step="1"
+								step="0.01"
 								class="mini-input"
 								placeholder="X"
 							/>
@@ -627,7 +627,7 @@
 							<input
 								type="number"
 								bind:value={scale.x}
-								step="0.1"
+								step="0.01"
 								class="mini-input"
 								placeholder="X"
 								oninput={(e) => updateScale('x', parseFloat(e.currentTarget.value) || 1)}
@@ -641,7 +641,7 @@
 							<input
 								type="number"
 								bind:value={position.y}
-								step="0.1"
+								step="0.01"
 								class="mini-input"
 								placeholder="Y"
 							/>
@@ -650,7 +650,7 @@
 							<input
 								type="number"
 								bind:value={rotation.y}
-								step="1"
+								step="0.01"
 								class="mini-input"
 								placeholder="Y"
 							/>
@@ -662,7 +662,7 @@
 								<input
 									type="number"
 									bind:value={scale.y}
-									step="0.1"
+									step="0.01"
 									class="mini-input"
 									placeholder="Y"
 								/>
@@ -676,7 +676,7 @@
 							<input
 								type="number"
 								bind:value={position.z}
-								step="0.1"
+								step="0.01"
 								class="mini-input"
 								placeholder="Z"
 							/>
@@ -685,7 +685,7 @@
 							<input
 								type="number"
 								bind:value={rotation.z}
-								step="1"
+								step="0.01"
 								class="mini-input"
 								placeholder="Z"
 							/>
@@ -697,7 +697,7 @@
 								<input
 									type="number"
 									bind:value={scale.z}
-									step="0.1"
+									step="0.01"
 									class="mini-input"
 									placeholder="Z"
 								/>
