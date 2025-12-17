@@ -80,16 +80,13 @@
 />
 
 <!-- Nissan -->
-<Nissan position={nissanPosition} rotation={nissanRotation} let:ref castShadow>
-	<TransformControls object={ref} />
-</Nissan>
+<Nissan position={nissanPosition} rotation={nissanRotation} let:ref castShadow />
 
 <!-- Sphere -->
 
 <T.Mesh position={[0, 3, 2]} scale={0.3} let:ref castShadow>
 	<T.SphereGeometry args={[4, 64, 64]} />
 	<T.MeshStandardMaterial color="white" />
-	<TransformControls object={ref} />
 </T.Mesh>
 
 <!-- Floor -->

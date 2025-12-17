@@ -22,10 +22,13 @@
 		};
 	});
 
+	// Créer un clock global pour l'animation
+	const clock = new THREE.Clock();
+
 	// Mettre à jour les animations à chaque frame
-	useTask((state) => {
-		if (mixer && state.clock) {
-			mixer.update(state.clock.getDelta());
+	useTask(() => {
+		if (mixer) {
+			mixer.update(clock.getDelta());
 		}
 	});
 

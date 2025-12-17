@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
-	import { Float, Grid, HTML } from '@threlte/extras';
+	import { Float, Grid, HTML, OrbitControls } from '@threlte/extras';
 	import Dynamic3DModel from '$lib/components/Dynamic3DModel.svelte';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
@@ -96,6 +96,10 @@
 		<p class="empty">Aucune géométrie trouvée</p>
 	{/if}
 </HTML>
+
+<T.PerspectiveCamera makeDefault position={[10, 10, 10]} fov={50}>
+	<OrbitControls enableDamping enableZoom enableRotate enablePan />
+</T.PerspectiveCamera>
 
 <Grid />
 
