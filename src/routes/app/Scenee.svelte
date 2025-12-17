@@ -19,9 +19,9 @@
 	import { assets } from '$lib/services/assets';
 	import { GeometriesRepository, type Geometry } from '$lib/repositories/geometries';
 
-	let geometries = $state<Geometry[]>([]);
+	let geometries: any[] = $state([]);
 
-	const selectedGeometry = writable<Geometry | null>(null);
+	const selectedGeometry: any = writable(null);
 
 	const handleGeometryClick = (geometry: Geometry) => {
 		$selectedGeometry = geometry;
@@ -69,7 +69,7 @@
 
 	const handleGeometryChange = () => {
 		loadGeometries();
-		$selectedGeometry = null;
+		selectedGeometry.set(null);
 	};
 </script>
 
@@ -109,7 +109,7 @@
 				rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]}
 				scale={0.5}
 			>
-				<T.BoxGeometry />
+				<T.BoxGeometry args={[2, 2, 2]} />
 				<T.MeshStandardMaterial color={geometry.color} />
 			</T.Mesh>
 		{:else if geometry.type === 'torus'}
@@ -127,7 +127,7 @@
 				rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]}
 				scale={0.5}
 			>
-				<T.IcosahedronGeometry />
+				<T.IcosahedronGeometry args={[1, 0]} />
 				<T.MeshStandardMaterial color={geometry.color} />
 			</T.Mesh>
 		{:else if geometry.type === 'nissangame'}
@@ -143,12 +143,6 @@
 		{:else if geometry.type === 'vague'}
 			<!-- Vague temporarily disabled - needs Canvas wrapper -->
 		{:else if geometry.type === 'desk'}
-			{console.log('Desk position:', [
-				geometry.position.x,
-				geometry.position.y,
-				geometry.position.z
-			])}
-			<!-- Desk temporarily disabled - needs import fix -->
 			<T.Group position={[geometry.position.x, geometry.position.y, geometry.position.z]} scale={5}>
 				<T.BoxGeometry args={[4, 2, 3]} />
 				<T.MeshStandardMaterial color="#8B4513" />
