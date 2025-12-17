@@ -21,7 +21,7 @@ export async function initSn(canvas: HTMLCanvasElement) {
   const mesh = gltf.scene.children[0] as THREE.Mesh; // Accéder au mesh
   let texture;
   try {
-    texture = await new THREE.TextureLoader().loadAsync(getCloudinaryAssetUrl('bibi.png'));
+    texture = await new THREE.TextureLoader().loadAsync(getCloudinaryAssetUrl('zaki.png'));
   } catch (error) {
     console.error("Erreur lors du chargement de la texture:", error);
     throw error; // Propager l'erreur
