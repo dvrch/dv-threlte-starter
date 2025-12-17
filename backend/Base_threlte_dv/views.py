@@ -72,33 +72,40 @@ class GeometryViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        # Supprimer le fichier Cloudinary associé
-        if instance.model_url:
-            try:
-                # Extraire le public_id depuis l'URL
-                url_pattern = r"/dv-threlte/models/([^/]+)"
-                match = re.search(url_pattern, instance.model_url)
+        from django.db import transaction # Import transaction here
 
-                if match:
-                    public_id = f"dv-threlte/models/{match.group(1)}"
+        with transaction.atomic():
+            # Supprimer le fichier Cloudinary associé
+            if instance.model_url:
+                try:
+                    # Extraire le public_id depuis l'URL
+                    url_pattern = r"/dv-threlte/models/([^/]+)"
+                    match = re.search(url_pattern, instance.model_url)
 
-                    # Supprimer l'asset de Cloudinary
-                    import cloudinary.uploader
+                    if match:
+                        public_id = f"dv-threlte/models/{match.group(1)}"
 
-                    cloudinary.uploader.destroy(public_id, resource_type="raw")
-                    logger.info(f"✅ Deleted Cloudinary asset: {public_id}")
+                        # Supprimer l'asset de Cloudinary
+                        import cloudinary.uploader
 
-                    # Supprimer l'enregistrement CloudinaryAsset correspondant
-                    from .models import CloudinaryAsset
+                        cloudinary.uploader.destroy(public_id, resource_type="raw")
+                        logger.info(f"✅ Deleted Cloudinary asset: {public_id}")
 
-                    CloudinaryAsset.objects.filter(public_id=public_id).delete()
-                    logger.info(f"✅ Deleted CloudinaryAsset record: {public_id}")
+                        # Supprimer l'enregistrement CloudinaryAsset correspondant
+                        from .models import CloudinaryAsset
 
-            except Exception as e:
-                logger.error(f"❌ Error deleting Cloudinary asset: {str(e)}")
+                        CloudinaryAsset.objects.filter(public_id=public_id).delete()
+                        logger.info(f"✅ Deleted CloudinaryAsset record: {public_id}")
+                    else:
+                        logger.warning(f"⚠️ Could not extract public_id from model_url: {instance.model_url}. Cloudinary asset not deleted.")
 
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+                except Exception as e:
+                    logger.error(f"❌ Error deleting Cloudinary asset: {str(e)}. Rolling back transaction.")
+                    # Re-raise to trigger transaction rollback
+                    raise
+
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ToggleGeometryVisibilityView(APIView):

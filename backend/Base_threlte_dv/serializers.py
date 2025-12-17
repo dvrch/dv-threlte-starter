@@ -65,11 +65,43 @@ class GeometrySerializer(serializers.ModelSerializer):
 
         if model_file:
             # If there's a new file, upload it
+            # First, delete the old Cloudinary asset if it exists
+            if instance.model_url:
+                try:
+                    # Extract public_id from the old model_url
+                    import re
+                    url_pattern = r"/dv-threlte/models/([^/]+)"
+                    match = re.search(url_pattern, instance.model_url)
+                    if match:
+                        old_public_id = f"dv-threlte/models/{match.group(1)}"
+                        cloudinary.uploader.destroy(old_public_id, resource_type="raw")
+                        # Delete the old CloudinaryAsset record
+                        CloudinaryAsset.objects.filter(public_id=old_public_id).delete()
+                        print(f"✅ Deleted old Cloudinary asset and record: {old_public_id}")
+                    else:
+                        print(f"⚠️ Could not extract public_id from old model_url: {instance.model_url}. Old Cloudinary asset not deleted.")
+                except Exception as e:
+                    print(f"❌ Error deleting old Cloudinary asset: {str(e)}")
+            
             upload_result = cloudinary.uploader.upload(
                 model_file, resource_type="raw", folder="dv-threlte/models"
             )
             # Update the instance's model_url with the new URL
             instance.model_url = upload_result["secure_url"]
+
+            # Create or update the CloudinaryAsset record for the new file
+            new_public_id = upload_result["public_id"]
+            CloudinaryAsset.objects.update_or_create(
+                public_id=new_public_id,
+                defaults={
+                    "url": upload_result["secure_url"],
+                    "asset_type": "raw",
+                    "file_name": instance.name or new_public_id.split("/")[-1],
+                    "file_size": upload_result.get("bytes", 0),
+                    "format": upload_result.get("format", ""),
+                },
+            )
+            print(f"✅ Created/Updated CloudinaryAsset for new file: {new_public_id}")
 
         # Update other fields
         for attr, value in validated_data.items():
