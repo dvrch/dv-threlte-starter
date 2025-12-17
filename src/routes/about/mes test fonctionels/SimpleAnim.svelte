@@ -20,10 +20,10 @@
 			const gltfLoader = new GLTFLoader();
 
 			const gltf = await gltfLoader.loadAsync(
-				getCloudinaryAssetUrl('/public/cloth_sim_rffdfn.glb')
+				getCloudinaryAssetUrl('cloth_sim_rffdfn.glb')
 			);
 			const texture = await new THREE.TextureLoader().loadAsync(
-				getCloudinaryAssetUrl('/public/zaki.png')
+				getCloudinaryAssetUrl('zaki.png')
 			);
 
 			const mesh = gltf.scene.children[0] as THREE.Mesh;

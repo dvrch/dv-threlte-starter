@@ -1,6 +1,7 @@
 import os
 import cloudinary
 import cloudinary.uploader
+import re # Import regex module
 from pathlib import Path
 
 # Configuration
@@ -8,7 +9,18 @@ CLOUD_NAME = os.getenv('CLOUDINARY_CLOUD_NAME')
 API_KEY = os.getenv('CLOUDINARY_API_KEY')
 API_SECRET = os.getenv('CLOUDINARY_API_SECRET')
 
-def upload_target():
+# Cloudinary folder as defined in cloudinaryAssets.ts
+CLOUDINARY_TARGET_FOLDER = 'dv-threlte/public'
+
+def get_cleaned_path_for_cloudinary_public_id(path_relative_to_static: str) -> str:
+    """
+    Mimics the cleaning logic of getCloudinaryAssetUrl to determine the correct public_id.
+    """
+    cleaned_path = path_relative_to_static
+    cleaned_path = re.sub(r'^(public\/|assets\/|models\/)+', '', cleaned_path)
+    return cleaned_path
+
+def upload_file_to_cloudinary(file_path_relative_to_project_root):
     if not all([CLOUD_NAME, API_KEY, API_SECRET]):
         print("❌ Missing credentials")
         return
@@ -20,44 +32,55 @@ def upload_target():
         secure=True
     )
     
-    filepath = Path('static/public/cloth_sim_rffdfn.glb')
-    if not filepath.exists():
-        # Fallback to cloth_sim.glb if rffdfn version doesn't exist
-        filepath = Path('static/public/cloth_sim.glb')
+    filepath = Path(file_path_relative_to_project_root)
     
     if not filepath.exists():
         print(f"❌ File not found: {filepath}")
         return
 
-    # Force the public_id to match what the app expects: 'public/cloth_sim_rffdfn'
-    # The app requests: https://res.cloudinary.com/.../upload/public/cloth_sim_rffdfn.glb
-    # So we need folder='dv-threlte/public' (if that's the base) AND ID='cloth_sim_rffdfn'
-    # OR if folder is just 'dv-threlte', we need ID='public/cloth_sim_rffdfn'.
-    # Looking at the 404: /upload/public/cloth_sim_rffdfn.glb
-    # It seems the folder structure in Cloudinary might be 'public' at the root or 'public' is part of the ID.
-    # Let's assume standard Cloudinary 'folder' param usage. 
-    # If I use folder='public', public_id='cloth_sim_rffdfn', URL is .../upload/v123/public/cloth_sim_rffdfn.glb
+    # Get the path relative to 'static/'
+    path_relative_to_static = str(filepath.relative_to('static'))
+
+    # Determine the public_id using the same cleaning logic as the frontend
+    public_id_base = get_cleaned_path_for_cloudinary_public_id(path_relative_to_static)
+    public_id = str(Path(public_id_base).with_suffix('')) # Remove extension for public_id
+
+    # The Cloudinary folder should always be CLOUDINARY_TARGET_FOLDER
+    folder = CLOUDINARY_TARGET_FOLDER
     
-    public_id = 'cloth_sim_rffdfn'
-    folder = 'public' 
-    
-    print(f"⬆️  Uploading {filepath} to folder '{folder}' as '{public_id}'...")
+    print(f"⬆️  Uploading {filepath} to Cloudinary folder '{folder}' as public_id '{public_id}'...")
     try:
         result = cloudinary.uploader.upload(
             str(filepath),
             public_id=public_id,
-            resource_type='raw',
+            resource_type='raw', # Use 'raw' for GLB, 'image' for PNG/JPG
             folder=folder,
             overwrite=True,
             unique_filename=False,
-            use_filename=True 
+            use_filename=True # This might be problematic if public_id is already set
         )
         print(f"✅ Success: {result['secure_url']}")
     except Exception as e:
         print(f"❌ Error: {e}")
 
+def main():
+    files_to_upload = [
+        'static/assets/garden.glb',
+        'static/assets/ghost.glb',
+        'static/public/mario.glb',
+        'static/public/zaki.png',
+        'static/public/cdn.glb',
+        'static/public/cloth_sim.glb',
+        'static/public/bibi.glb',
+        'static/public/bibi2.glb',
+        'static/public/bibi3.glb',
+    ]
+    
+    for file_path in files_to_upload:
+        upload_file_to_cloudinary(file_path)
+
 if __name__ == '__main__':
-    upload_target()
+    main()
 
 
 # ---

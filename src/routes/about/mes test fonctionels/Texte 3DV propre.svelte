@@ -9,6 +9,7 @@
 	import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 	import { assets } from '$lib/services/assets';
 	import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader.js';
+import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 	const clock = new THREE.Clock();
 	const model = writable<THREE.Object3D | null>(null);
@@ -18,7 +19,7 @@
 	onMount(async () => {
 		try {
 			const gltf = await new GLTFLoader().loadAsync('/public/cloth_sim_rffdfn.glb');
-			const texture = await new THREE.TextureLoader().loadAsync('/public/zaki.png');
+			const texture = await new THREE.TextureLoader().loadAsync(getCloudinaryAssetUrl('zaki.png'));
 
 			const mesh = gltf.scene.children[0] as THREE.Mesh;
 			if (mesh.material) {

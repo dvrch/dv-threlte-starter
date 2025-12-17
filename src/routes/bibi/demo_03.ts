@@ -1,11 +1,12 @@
 import * as THREE from 'three'
 import GLTFLoader from 'gltfloader'
+import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 const scene = new THREE.Scene()
 
 const camera = new THREE.PerspectiveCamera(70, iw / ih)
 
-const geometry = await GLTFLoader.loadGeometry('mario.glb')
+const geometry = await GLTFLoader.loadGeometry(getCloudinaryAssetUrl('mario.glb'))
 
 const texture = new THREE.TextureLoader().load('mario.png')
 const material = new THREE.MeshPhongMaterial({ map:texture,shininess:0})
