@@ -17,10 +17,10 @@
 			<path d="M0,0 L1,2 C1.5,3 1.5,3 2,3 L2,0 Z" />
 		</svg>
 		<ul>
-            <li aria-current={$page.url.pathname === base + '/' ? 'page' : undefined}>
+			<li aria-current={$page.url.pathname === base + '/' ? 'page' : undefined}>
 				<a href="{base}/app/">App</a>
 			</li>
-      <li aria-current={$page.url.pathname === base + '/vague' ? 'page' : undefined}>
+			<li aria-current={$page.url.pathname === base + '/vague' ? 'page' : undefined}>
 				<a href="{base}/vague">Vague</a>
 			</li>
 
@@ -67,6 +67,9 @@
 			<!-- <li aria-current={$page.url.pathname === base + '/fkisios-main/' ? 'page' : undefined}>
 				<a href="{base}/fkisios-main/">GameZ</a>
 			</li> -->
+			<li aria-current={$page.url.pathname === base + '/text 3D propre/' ? 'page' : undefined}>
+				<a href="{base}/text 3D propre/">text 3D propre</a>
+			</li>
 		</ul>
 		<svg viewBox="0 0 2 3" aria-hidden="true">
 			<path d="M0,0 L0,3 C0.5,3 0.5,3 1,2 L2,0 Z" />
