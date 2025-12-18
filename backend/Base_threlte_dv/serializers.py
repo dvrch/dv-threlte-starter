@@ -44,27 +44,20 @@ class GeometrySerializer(serializers.ModelSerializer):
             validated_data["color"] = color_picker
 
         if model_file:
-            # Disable Cloudinary versioning and use sequential naming
-            import os
-            from django.db.models import Max
-
-            # Get count for naming
-            max_id = Geometry.objects.all().aggregate(Max("id"))["id__max"] or 0
-            next_id = (max_id + 1) if max_id else 1
-
-            # Generate simple filename
-            filename = f"upload_{next_id}.glb"
+            # If a file is uploaded, this geometry is defined by that file.
+            # Override the type and model_type to ensure consistency.
+            validated_data["type"] = "gltf_model"
+            validated_data["model_type"] = "glb"
 
             upload_result = cloudinary.uploader.upload(
                 model_file,
                 resource_type="raw",
                 folder="dv-threlte/models",
-                public_id=filename,  # Use our naming
-                use_filename=True,  # Disable versioning
-                unique_filename=False,  # Allow overwrite
-                overwrite=True,  # Allow overwriting existing files
+                # We can use the original filename for the public_id to keep it readable
+                use_filename=True,
+                unique_filename=False,  # If a file with the same name exists, it will be overwritten.
+                overwrite=True,
             )
-            # Add the full URL to data to be saved
             validated_data["model_url"] = upload_result["secure_url"]
 
         # Create the Geometry instance

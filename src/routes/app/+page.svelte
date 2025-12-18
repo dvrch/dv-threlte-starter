@@ -42,7 +42,7 @@
 			const results = Array.isArray(data) ? data : data.results || [];
 			// Filter out geometries that expect an URL but have none
 			geometries = results.filter((g: any) => {
-				if (g.type === 'gltf_model' || g.type === 'glb') {
+				if (g.model_type === 'gltf' || g.model_type === 'glb') {
 					return g.model_url && g.model_url.trim() !== '';
 				}
 				return true;
