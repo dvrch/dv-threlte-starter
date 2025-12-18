@@ -133,15 +133,23 @@
 		try {
 			const formData = new FormData();
 
-			const randomId = Math.random().toString(36).substring(2, 7);
+			const getUniqueName = (baseName: string) => {
+				const existingNames = geometries.map((g) => g.name);
+				if (!existingNames.includes(baseName)) return baseName;
+
+				let counter = 1;
+				while (existingNames.includes(`${baseName}-${counter}`)) {
+					counter++;
+				}
+				return `${baseName}-${counter}`;
+			};
+
 			let uniqueName = isEditing ? name : '';
 
 			if (!isEditing) {
-				if (type === 'text') {
-					uniqueName = name || 'Hello 3D';
-				} else {
-					uniqueName = `${name || (file ? file.name.split('.')[0] : 'geo')}-${randomId}`;
-				}
+				const baseName =
+					name || (file ? file.name.split('.')[0] : type === 'text' ? 'Hello 3D' : type);
+				uniqueName = getUniqueName(baseName);
 			}
 
 			formData.append('name', uniqueName);
