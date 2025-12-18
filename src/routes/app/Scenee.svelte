@@ -4,13 +4,20 @@
 	import { writable } from 'svelte/store';
 	import Nissangame from './nissangame.svelte';
 	import { T } from '@threlte/core';
-	import { ContactShadows, Float, Grid, OrbitControls, Text } from '@threlte/extras';
+	import {
+		ContactShadows,
+		Float,
+		Grid,
+		OrbitControls,
+		Text,
+		Text3DGeometry
+	} from '@threlte/extras';
 	import Bloom from './models/bloom.svelte';
 	import AddGeometry from './AddGeometry.svelte';
 	import { addToast } from '$lib/stores/toasts';
 	import GltfModel from '$lib/components/GltfModel.svelte';
 
-	 Tissus from '../bibi/tissus-simulat.svelte';
+	import Tissus from '../bibi/tissus-simulat.svelte';
 	import Bibanime from '../bibi/bibanime.svelte';
 	import Vague from '../vague/+page.svelte';
 	import Spaceship from '../Spaceship/+page.svelte';
@@ -18,6 +25,10 @@
 
 	import { assets } from '$lib/services/assets';
 	import { GeometriesRepository, type Geometry } from '$lib/repositories/geometries';
+
+	// 🌐 Font pour le texte 3D
+	const font =
+		'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/fonts/helvetiker_bold.typeface.json';
 
 	let geometries: any[] = $state([]);
 
@@ -182,20 +193,25 @@
 		{:else if geometry.type === 'bibigame'}
 			<Bibigame />
 		{:else if geometry.type === 'text'}
-			<Text
-				text={geometry.name}
+			<T.Mesh
 				position={[geometry.position.x, geometry.position.y, geometry.position.z]}
 				rotation={[
 					geometry.rotation.x * (Math.PI / 180),
 					geometry.rotation.y * (Math.PI / 180),
 					geometry.rotation.z * (Math.PI / 180)
 				]}
-				scale={[geometry.scale?.x || 1, geometry.scale?.y || 1, geometry.scale?.z || 1]}
-				color={geometry.color}
-				fontSize={1}
-				anchorX="center"
-				anchorY="middle"
-			/>
+				on:click={() => handleGeometryClick(geometry)}
+			>
+				<Text3DGeometry
+					{font}
+					text={geometry.name}
+					size={geometry.scale?.y || 1}
+					height={(geometry.scale?.y || 1) * 0.5}
+					curveSegments={12}
+					bevelEnabled
+				/>
+				<T.MeshStandardMaterial color={geometry.color} />
+			</T.Mesh>
 		{/if}
 	</Float>
 {/each}

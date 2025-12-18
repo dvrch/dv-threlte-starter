@@ -17,7 +17,7 @@
 
 	// Path to your GLB model and textures
 	const glbPath = getCloudinaryAssetUrl('cloth_sim_rffdfn.glb');
-	const textures = [getCloudinaryAssetUrl('bibi.png')];
+	const textures = [getCloudinaryAssetUrl('zaki.png')];
 	let activeTextureIndex = 0;
 
 	// Function to load a texture and update the material of the model

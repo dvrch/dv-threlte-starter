@@ -65,12 +65,8 @@
 			<!-- <li aria-current={$page.url.pathname === base + '/fkisios-main/' ? 'page' : undefined}>
 				<a href="{base}/fkisios-main/">GameZ</a>
 			</li> -->
-			<li
-				aria-current={$page.url.pathname === base + '/Texte_3DV_propre_svelte/'
-					? 'page'
-					: undefined}
-			>
-				<a href="{base}/Texte_3DV_propre_svelte/">text 3D propre</a>
+			<li aria-current={$page.url.pathname === base + '/Text/' ? 'page' : undefined}>
+				<a href="{base}/Text/">Text</a>
 			</li>
 		</ul>
 		<svg viewBox="0 0 2 3" aria-hidden="true">

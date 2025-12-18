@@ -30,6 +30,12 @@
 	let scale = $state({ x: 1, y: 1, z: 1 });
 	let isUniformScale = $state(true);
 
+	$effect(() => {
+		if (type === 'text') {
+			scale.z = formatVal(scale.y * 0.5);
+		}
+	});
+
 	let file: File | null = $state(null); // State for the uploaded file
 
 	interface GeometryItem {
@@ -128,9 +134,15 @@
 			const formData = new FormData();
 
 			const randomId = Math.random().toString(36).substring(2, 7);
-			const uniqueName = isEditing
-				? name
-				: `${name || (file ? file.name.split('.')[0] : 'geo')}-${randomId}`;
+			let uniqueName = isEditing ? name : '';
+
+			if (!isEditing) {
+				if (type === 'text') {
+					uniqueName = name || 'Hello 3D';
+				} else {
+					uniqueName = `${name || (file ? file.name.split('.')[0] : 'geo')}-${randomId}`;
+				}
+			}
 
 			formData.append('name', uniqueName);
 			formData.append('color', color);
@@ -152,7 +164,7 @@
 				formData.append('visible', 'true');
 			} else {
 				// When editing, retrieve the current visibility state of the selected geometry
-				const currentGeometry = geometries.find(g => g.id === selectedGeometryId);
+				const currentGeometry = geometries.find((g) => g.id === selectedGeometryId);
 				if (currentGeometry) {
 					formData.append('visible', String(currentGeometry.visible));
 				}
@@ -700,8 +712,17 @@
 								placeholder="Z"
 							/>
 						</div>
-						{#if isUniformScale}
-							<div class="cell empty" />
+						{#if isUniformScale || type === 'text'}
+							<div class="cell">
+								<input
+									type="number"
+									value={scale.z}
+									step="0.01"
+									class="mini-input readonly"
+									placeholder="Z"
+									readonly
+								/>
+							</div>
 						{:else}
 							<div class="cell">
 								<input
@@ -862,6 +883,12 @@
 	.mini-input:focus {
 		border-color: #4db6ac;
 		background: rgba(255, 255, 255, 0.1);
+	}
+
+	.mini-input.readonly {
+		opacity: 0.6;
+		cursor: not-allowed;
+		background: rgba(0, 0, 0, 0.2);
 	}
 
 	.icon-btn.tiny {
