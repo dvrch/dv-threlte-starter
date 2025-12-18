@@ -81,12 +81,10 @@
 			<Component {geometry} />
 		{:else if geometry.type === 'text' && loadedFont}
 			<!-- Render 3D Text -->
-			<svelte:fragment
-				>{console.log('Rendering 3D Text with props:', {
-					text: geometry.name,
-					color: geometry.color
-				})}</svelte:fragment
-			>
+			{console.log('Rendering 3D Text with props:', {
+				text: geometry.name,
+				color: geometry.color
+			})}
 			<Text
 				text={geometry.name}
 				color={geometry.color}
