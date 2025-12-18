@@ -16,6 +16,7 @@ TYPE_CHOICES = [
     ('tissus', 'Tissus'),
     ('desk', 'Desk'),
     ('gltf_model', 'GLTF Model'),
+    ('text', 'Text'),
 ]
 
 

@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { Canvas, T } from '@threlte/core';
-	import { OrbitControls, Grid } from '@threlte/extras';
-	import { degToRad } from 'three/src/math/MathUtils';
+	import { Grid } from '@threlte/extras';
 	import InteractivitySetup from '$lib/InteractivitySetup.svelte';
 	import GltfModel from '$lib/components/GltfModel.svelte';
 	import type { PageData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+	export let data: PageData;
 </script>
 
 <div>
@@ -22,8 +21,11 @@
 					{#if geometry.model_url}
 						<GltfModel
 							url={geometry.model_url}
-							position={geometry.position}
-							rotation={geometry.rotation}
+							position={[geometry.position.x, geometry.position.y, geometry.position.z]}
+							rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]}
+							scale={geometry.scale
+								? [geometry.scale.x, geometry.scale.y, geometry.scale.z]
+								: [1, 1, 1]}
 						/>
 					{/if}
 				{/each}

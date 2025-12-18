@@ -429,7 +429,13 @@
 				<!-- Custom Dropdown Menu -->
 				<div class="custom-dropdown">
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
-					<div class="dropdown-header" onclick={toggleDropdown} role="button" tabindex="0">
+					<div
+						class="dropdown-header"
+						onclick={toggleDropdown}
+						role="button"
+						tabindex="0"
+						aria-label="Select a geometry to edit or add a new one"
+					>
 						<span>
 							{selectedGeometryId
 								? geometries.find((g) => g.id === selectedGeometryId)?.name || 'Unknown Geometry'

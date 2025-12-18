@@ -85,7 +85,7 @@
 				text={geometry.name}
 				color={geometry.color}
 				font={loadedFont}
-				fontSize={geometry.scale?.x ?? 1}
+				fontSize={(geometry.scale?.y ?? 1) * 0.2}
 				anchorX="center"
 				anchorY="middle"
 			/>
