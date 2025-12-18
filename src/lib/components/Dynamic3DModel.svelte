@@ -81,11 +81,17 @@
 			<Component {geometry} />
 		{:else if geometry.type === 'text' && loadedFont}
 			<!-- Render 3D Text -->
+			<svelte:fragment
+				>{console.log('Rendering 3D Text with props:', {
+					text: geometry.name,
+					color: geometry.color
+				})}</svelte:fragment
+			>
 			<Text
 				text={geometry.name}
 				color={geometry.color}
 				font={loadedFont}
-				fontSize={(geometry.scale?.y ?? 1) * 0.2}
+				fontSize={0.5}
 				anchorX="center"
 				anchorY="middle"
 			/>
