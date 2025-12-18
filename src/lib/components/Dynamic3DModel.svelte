@@ -25,7 +25,6 @@
 
 	// Map geometry types to their respective Svelte components using dynamic imports
 	const componentMap: { [key: string]: () => Promise<any> } = {
-		sphere: () => import('../../routes/sphere/Scene.svelte'),
 		vague: () => import('../../routes/vague/vague.svelte'),
 		tissus: () => import('../../routes/bibi/tissus-simulat.svelte'),
 		desk: () => import('../../routes/desksc/scene.svelte'), // Corrected case
@@ -56,7 +55,7 @@
 		}
 	});
 
-	// reactive safe position/rotation arrays
+	// reactive safe position/rotation/scale arrays
 	const posArray: [number, number, number] = $derived([
 		geometry?.position?.x ?? 0,
 		geometry?.position?.y ?? 0,
@@ -67,10 +66,15 @@
 		geometry?.rotation?.y ?? 0,
 		geometry?.rotation?.z ?? 0
 	]);
+	const scaleArray: [number, number, number] = $derived([
+		geometry?.scale?.x ?? 1,
+		geometry?.scale?.y ?? 1,
+		geometry?.scale?.z ?? 1
+	]);
 </script>
 
 {#if browser && geometry}
-	<T.Group position={posArray} rotation={rotArray} scale={geometry.scale ?? 1}>
+	<T.Group position={posArray} rotation={rotArray} scale={scaleArray}>
 		{#if LoadedDynamicComponent}
 			<!-- 1. Render the dynamically loaded Svelte component when available -->
 			{@const Component = LoadedDynamicComponent}
