@@ -6,8 +6,6 @@
 	import { Text } from '@threlte/extras'; // Import Text component
 	import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader.js'; // Import FontLoader
 
-	import { assets } from '$lib/services/assets';
-
 	let { geometry }: { geometry: any } = $props();
 
 	let loadedFont: Font | null = $state(null); // State to store the loaded font
@@ -16,7 +14,7 @@
 		if (browser) {
 			try {
 				const loader = new FontLoader();
-				loadedFont = await loader.loadAsync(assets.getUrl('/fonts/font.json'));
+				loadedFont = await loader.loadAsync('/fonts/font.json');
 			} catch (error) {
 				console.error('Failed to load 3D text font:', error);
 			}
@@ -95,10 +93,7 @@
 			/>
 		{:else if geometry.model_url && geometry.model_url.trim() !== ''}
 			<!-- 2. Render a generic GLTF model if model_url is present and valid -->
-			{@const modelUrl =
-				geometry.model_url && geometry.model_url.startsWith('http')
-					? geometry.model_url
-					: assets.getUrl(geometry.model_url)}
+			{@const modelUrl = geometry.model_url}
 			{#key modelUrl}
 				<GltfModel url={modelUrl} />
 			{/key}
