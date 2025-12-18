@@ -36,9 +36,7 @@
 			<li aria-current={$page.url.pathname === base + '/scene-3d' ? 'page' : undefined}>
 				<a href="{base}/scene-3d">Scene 3D</a>
 			</li>
-			<li aria-current={$page.url.pathname === base + '/vague' ? 'page' : undefined}>
-				<a href="{base}/vague">Vague</a>
-			</li>
+
 			<li aria-current={$page.url.pathname === base + '/models' ? 'page' : undefined}>
 				<a href="{base}/models">model</a>
 			</li>
