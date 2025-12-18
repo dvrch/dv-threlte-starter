@@ -67,8 +67,14 @@
 			{@const Component = LoadedDynamicComponent}
 			<Component {geometry} />
 		{:else if geometry.type === 'text'}
-			<T.Mesh>
-				<Text3DGeometry {font} text={geometry.name} size={1} height={1} curveSegments={12} />
+			<T.Mesh scale={[geometry.scale?.x ?? 1, 1, 1]}>
+				<Text3DGeometry
+					{font}
+					text={geometry.name}
+					size={geometry.scale?.y ?? 1}
+					height={(geometry.scale?.z ?? 1) / 50}
+					curveSegments={12}
+				/>
 				<T.MeshStandardMaterial color={geometry.color} />
 			</T.Mesh>
 		{:else if geometry.model_url && geometry.model_url.trim() !== ''}

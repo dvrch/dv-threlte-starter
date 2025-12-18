@@ -200,13 +200,14 @@
 					geometry.rotation.y * (Math.PI / 180),
 					geometry.rotation.z * (Math.PI / 180)
 				]}
+				scale={[geometry.scale?.x || 1, 1, 1]}
 				on:click={() => handleGeometryClick(geometry)}
 			>
 				<Text3DGeometry
 					{font}
 					text={geometry.name}
-					size={geometry.scale?.y || 1}
-					height={(geometry.scale?.y || 1) * 0.5}
+					size={geometry.scale?.y ?? 1}
+					height={(geometry.scale?.z ?? 1) / 50}
 					curveSegments={12}
 					bevelEnabled
 				/>

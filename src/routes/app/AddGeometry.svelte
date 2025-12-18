@@ -30,12 +30,6 @@
 	let scale = $state({ x: 1, y: 1, z: 1 });
 	let isUniformScale = $state(true);
 
-	$effect(() => {
-		if (type === 'text') {
-			scale.z = formatVal(scale.y * 0.5);
-		}
-	});
-
 	let file: File | null = $state(null); // State for the uploaded file
 
 	interface GeometryItem {
@@ -720,7 +714,7 @@
 								placeholder="Z"
 							/>
 						</div>
-						{#if isUniformScale || type === 'text'}
+						{#if isUniformScale}
 							<div class="cell">
 								<input
 									type="number"
