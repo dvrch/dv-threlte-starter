@@ -17,7 +17,7 @@ import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 	onMount(async () => {
 		try {
-			const gltf = await new GLTFLoader().loadAsync('/public/cloth_sim_rffdfn.glb');
+			const gltf = await new GLTFLoader().loadAsync('/models/cloth_sim_rffdfn.glb');
 			const texture = await new THREE.TextureLoader().loadAsync(getCloudinaryAssetUrl('zaki.png'));
 
 			const mesh = gltf.scene.children[0] as THREE.Mesh;

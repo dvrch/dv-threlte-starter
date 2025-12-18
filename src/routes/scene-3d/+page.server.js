@@ -1,9 +1,20 @@
 // src/routes/scene-3d/+page.server.js
 
+import * as publicEnv from '$env/static/public';
+
 export async function load({ fetch }) {
+  const PUBLIC_API_URL = publicEnv.PUBLIC_API_URL || '';
+
+  if (!PUBLIC_API_URL) {
+    console.warn('PUBLIC_API_URL not configured, returning empty geometries list in scene-3d');
+    return {
+      geometries: [],
+      error: null
+    };
+  }
+
   try {
-    // Remplacez l'URL par l'URL de votre API en production si nécessaire
-    const response = await fetch('http://127.0.0.1:8000/api/geometries/');
+    const response = await fetch(`${PUBLIC_API_URL}/api/geometries/`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -17,7 +28,7 @@ export async function load({ fetch }) {
     };
 
   } catch (error) {
-    console.error("Could not fetch geometries:", error);
+    console.error("Could not fetch geometries in scene-3d:", error);
     return {
       geometries: [],
       error: "Impossible de charger les modèles 3D."
