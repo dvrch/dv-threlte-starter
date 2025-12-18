@@ -1,114 +1,23 @@
 <script lang="ts">
-	import { writable } from 'svelte/store';
-	import { T, Canvas } from '@threlte/core';
-	import { OrbitControls } from '@threlte/extras';
-	import * as THREE from 'three';
-	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation'; // Utilisation de la navigation SvelteKit
-	import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
-	import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader.js';
-import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
-
-	const clock = new THREE.Clock();
-	const model = writable<THREE.Object3D | null>(null);
-	let mixer: THREE.AnimationMixer;
-	let font: Font | null = null; // Now correctly typed with 'Font'
-
-	onMount(async () => {
-		try {
-			const gltf = await new GLTFLoader().loadAsync('/models/cloth_sim_rffdfn.glb');
-			const texture = await new THREE.TextureLoader().loadAsync(getCloudinaryAssetUrl('zaki.png'));
-
-			const mesh = gltf.scene.children[0] as THREE.Mesh;
-			if (mesh.material) {
-				mesh.material = new THREE.MeshPhongMaterial({ map: texture, shininess: 10 });
-			}
-
-			mixer = new THREE.AnimationMixer(gltf.scene);
-			gltf.animations.forEach((clip) => mixer.clipAction(clip).play());
-
-			animate();
-
-			// Charger la police
-			const loader = new FontLoader();
-			font = await loader.loadAsync('/fonts/font.json');
-
-			// Vérifiez si la police est chargée avant de créer le maillage de texte
-			if (font) {
-				model.set(gltf.scene); // Déplacez cette ligne ici si nécessaire
-			}
-		} catch (error) {
-			console.error('Erreur lors du chargement du modèle ou de la texture:', error);
-		}
-	});
-
-	function animate() {
-		mixer?.update(clock.getDelta());
-		if ($model?.rotation) {
-			$model.rotation.y += 0.01; // Rotation directe
-		}
-		requestAnimationFrame(animate);
-	}
-
-	function handleClick() {
-		goto('/about/scene');
-	}
-
-	function createTextMesh(
-		text: string,
-		position: [number, number, number],
-		size: number,
-		color: string
-	) {
-		if (!font) {
-			console.error("La police n'est pas encore chargée."); // Ajoutez un message d'erreur
-			return null; // Retournez null si la police n'est pas chargée
-		}
-
-		const geometry = new TextGeometry(text, {
-			font: font,
-			size: size,
-			height: 0.01 // Épaisseur du texte
-		});
-		const material = new THREE.MeshPhongMaterial({ color: color });
-		const textMesh = new THREE.Mesh(geometry, material);
-		textMesh.position.set(position[0], position[1], position[2]);
-		return textMesh;
-	}
+	import { Canvas } from '@threlte/core';
+	import * as T from '@threlte/extras';
+	import { degToRad } from 'three/src/math/MathUtils.js';
 </script>
 
-<div class="scene-container">
-	<Canvas renderMode="always">
-		<T.AmbientLight intensity={0.5} />
-		<T.DirectionalLight position={[5, 10, 7.5]} intensity={1} />
-		<T.PerspectiveCamera makeDefault position={[0, 1.5, 5]} fov={75}>
-			<OrbitControls />
-		</T.PerspectiveCamera>
+<Canvas camera={{ position: [0, 0, 10], fov: 50 }}>
+	<T.AmbientLight intensity={0.5} />
+	<T.DirectionalLight position={[5, 5, 5]} intensity={1} />
 
-		{#if $model}
-			<T is={$model} rotation.y />
-			<T is={createTextMesh('Mon texte en 3D avec svelte', [-1, 2, 0], 0.3, '#ffae00')} />
-			<T
-				is={createTextMesh(
-					'Reste plus que mon texte 3D soiT cliquable',
-					[0, 1.5, 0],
-					0.1,
-					'#ffffff'
-				)}
+	<T.Group position={[0, 0, 0]} rotation={[degToRad(0), degToRad(0), 0]}>
+		<T.Mesh>
+			<T.Text3DGeometry
+				font="/fonts/InterExtraBold.json"
+				text="Hello 3D"
+				size={1}
+				height={0.3}
+				depth={0.5}
 			/>
-			<T
-				is={createTextMesh('By DJONTSO Victorien ', [0, 1.1, 0.5], 0.07, '#660066')}
-				rotation={[0, Math.PI / 4, Math.PI / 12]}
-			/>
-		{/if}
-	</Canvas>
-</div>
-
-<style>
-	.scene-container {
-		position: relative;
-		width: 100%;
-		height: 100vh;
-	}
-</style>
+			<T.MeshStandardMaterial color="red" />
+		</T.Mesh>
+	</T.Group>
+</Canvas>
