@@ -5,7 +5,7 @@
 	import * as THREE from 'three';
 	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 	import { onMount } from 'svelte';
-	import { navigate } from 'svelte-routing';
+	import { goto } from '$app/navigation'; // Utilisation de la navigation SvelteKit
 	import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 	import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader.js';
 import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
@@ -52,7 +52,7 @@ import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 	}
 
 	function handleClick() {
-		navigate('/about/scene');
+		goto('/about/scene');
 	}
 
 	function createTextMesh(
