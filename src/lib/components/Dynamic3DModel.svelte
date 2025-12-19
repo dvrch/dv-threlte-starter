@@ -12,7 +12,7 @@
 
 	// Map geometry types to their respective Svelte components using dynamic imports
 	const componentMap: { [key: string]: () => Promise<any> } = {
-		vague: () => import('../../routes/vague/vague.svelte'),
+		vague: () => import('../../routes/vague/vaguend.svelte'),
 		tissus: () => import('../../routes/bibi/tissus-simulat.svelte'),
 		desk: () => import('../../routes/desksc/scene.svelte'), // Corrected case
 		nissan: () => import('../../routes/app/models/Nissan.svelte'),
