@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { T, useTask } from '@threlte/core';
-	import Nissan from './models/Nissan.svelte'; // Assuming relative import or use $lib
-	import { writable } from 'svelte/store';
+	import { HTML } from '@threlte/extras';
+	import Nissan from './models/Nissan.svelte';
+	import { browser } from '$app/environment';
 
 	let { geometry } = $props();
 
@@ -10,16 +11,21 @@
 	let z = $state(geometry?.position?.z ?? 0);
 	let rotationY = $state(0);
 
-	const speed = 0.1;
+	const speed = 0.2; // Slightly faster for better feel
 	const rotSpeed = 0.05;
 
-	// Keyboard state
-	let keys = {
+	// Keyboard/Touch state
+	let keys = $state({
 		ArrowUp: false,
 		ArrowDown: false,
 		ArrowLeft: false,
 		ArrowRight: false
-	};
+	});
+
+	let portalTarget = $state<HTMLElement | undefined>(undefined);
+	$effect(() => {
+		portalTarget = document.body;
+	});
 
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key in keys) keys[e.key as keyof typeof keys] = true;
@@ -28,6 +34,11 @@
 	function handleKeyUp(e: KeyboardEvent) {
 		if (e.key in keys) keys[e.key as keyof typeof keys] = false;
 	}
+
+	// Update key state for touch/mouse
+	const setKeyState = (key: keyof typeof keys, value: boolean) => {
+		keys[key] = value;
+	};
 
 	// Game loop
 	useTask(() => {
@@ -52,4 +63,150 @@
 
 <T.Group position={[x, geometry?.position?.y ?? 0, z]} rotation={[0, rotationY, 0]}>
 	<Nissan />
+
+	<!-- Virtual Controls Overlay -->
+	<HTML portal={portalTarget}>
+		<div class="controls-container">
+			<div class="dpad">
+				<div class="row cent">
+					<button
+						class="control-btn up"
+						class:active={keys.ArrowUp}
+						onmousedown={() => setKeyState('ArrowUp', true)}
+						onmouseup={() => setKeyState('ArrowUp', false)}
+						onmouseleave={() => setKeyState('ArrowUp', false)}
+						ontouchstart={(e) => {
+							e.preventDefault();
+							setKeyState('ArrowUp', true);
+						}}
+						ontouchend={() => setKeyState('ArrowUp', false)}
+					>
+						<span class="icon">▲</span>
+					</button>
+				</div>
+				<div class="row">
+					<button
+						class="control-btn left"
+						class:active={keys.ArrowLeft}
+						onmousedown={() => setKeyState('ArrowLeft', true)}
+						onmouseup={() => setKeyState('ArrowLeft', false)}
+						onmouseleave={() => setKeyState('ArrowLeft', false)}
+						ontouchstart={(e) => {
+							e.preventDefault();
+							setKeyState('ArrowLeft', true);
+						}}
+						ontouchend={() => setKeyState('ArrowLeft', false)}
+					>
+						<span class="icon">◀</span>
+					</button>
+					<button
+						class="control-btn down"
+						class:active={keys.ArrowDown}
+						onmousedown={() => setKeyState('ArrowDown', true)}
+						onmouseup={() => setKeyState('ArrowDown', false)}
+						onmouseleave={() => setKeyState('ArrowDown', false)}
+						ontouchstart={(e) => {
+							e.preventDefault();
+							setKeyState('ArrowDown', true);
+						}}
+						ontouchend={() => setKeyState('ArrowDown', false)}
+					>
+						<span class="icon">▼</span>
+					</button>
+					<button
+						class="control-btn right"
+						class:active={keys.ArrowRight}
+						onmousedown={() => setKeyState('ArrowRight', true)}
+						onmouseup={() => setKeyState('ArrowRight', false)}
+						onmouseleave={() => setKeyState('ArrowRight', false)}
+						ontouchstart={(e) => {
+							e.preventDefault();
+							setKeyState('ArrowRight', true);
+						}}
+						ontouchend={() => setKeyState('ArrowRight', false)}
+					>
+						<span class="icon">▶</span>
+					</button>
+				</div>
+			</div>
+		</div>
+	</HTML>
 </T.Group>
+
+<style>
+	.controls-container {
+		position: fixed;
+		bottom: 40px;
+		right: 40px;
+		user-select: none;
+		pointer-events: auto;
+		z-index: 1000;
+	}
+
+	.dpad {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		background: rgba(255, 255, 255, 0.05);
+		backdrop-filter: blur(10px);
+		padding: 20px;
+		border-radius: 24px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+	}
+
+	.row {
+		display: flex;
+		gap: 10px;
+		justify-content: center;
+	}
+
+	.control-btn {
+		width: 60px;
+		height: 60px;
+		border: none;
+		border-radius: 16px;
+		background: rgba(255, 255, 255, 0.1);
+		color: white;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+		font-size: 24px;
+		border: 1px solid rgba(255, 255, 255, 0.05);
+	}
+
+	.control-btn:hover {
+		background: rgba(255, 255, 255, 0.2);
+		transform: scale(1.05);
+	}
+
+	.control-btn:active,
+	.control-btn.active {
+		background: rgba(66, 135, 245, 0.4);
+		box-shadow: 0 0 20px rgba(66, 135, 245, 0.3);
+		transform: scale(0.95);
+		border-color: rgba(66, 135, 245, 0.5);
+	}
+
+	.icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+	}
+
+	/* Optional: adjustments for touch devices */
+	@media (max-width: 768px) {
+		.control-btn {
+			width: 70px;
+			height: 70px;
+			font-size: 28px;
+		}
+		.controls-container {
+			bottom: 20px;
+			right: 20px;
+		}
+	}
+</style>
