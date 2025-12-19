@@ -19,7 +19,8 @@
 		bibi: () => import('../../routes/bibi/bibanime.svelte'),
 		garden: () => import('../../routes/app/models/garden.svelte'),
 		nissangame: () => import('../../routes/app/nissangame.svelte'),
-		bibigame: () => import('../../routes/app/bibigame.svelte')
+		bibigame: () => import('../../routes/app/bibigame.svelte'),
+		spaceship: () => import('../../routes/Spaceship/models/spaceship.svelte')
 	};
 
 	const DynamicComponentLoader = $derived(componentMap[geometry?.type] ?? null);

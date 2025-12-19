@@ -1,55 +1,68 @@
-<script>
+<script lang="ts">
 	import { T, useTask } from '@threlte/core';
 	import { Instance, InstancedMesh, useTexture } from '@threlte/extras';
 	import { Color, DoubleSide, Vector3 } from 'three';
-
 	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 	let STARS_COUNT = 350;
 	let colors = ['#fcaa67', '#C75D59', '#ffffc7', '#8CC5C6', '#A5898C'];
-	let stars = [];
-	// src/routes/Spaceship/star.png
-	const map = useTexture(getCloudinaryAssetUrl('/textures/star.png')); // Modifié pour le chemin correct
-	function r(min, max) {
-		let diff = Math.random() * (max - min);
-		return min + diff;
+
+	interface Star {
+		pos: Vector3;
+		len: number;
+		speed: number;
+		color: Color;
+		rad: number;
 	}
 
-	function resetStar(star) {
-		if (r(0, 1) > 0.8) {
-			star.pos = new Vector3(r(-10, -30), r(-5, 5), r(6, -6));
-			star.len = r(1.5, 15);
+	let stars = $state<Star[]>([]);
+
+	const map = useTexture(getCloudinaryAssetUrl('star.png'));
+
+	function r(min: number, max: number) {
+		return min + Math.random() * (max - min);
+	}
+
+	function createStar(): Star {
+		let pos: Vector3;
+		let len: number;
+
+		if (Math.random() > 0.8) {
+			pos = new Vector3(r(-10, -30), r(-5, 5), r(6, -6));
+			len = r(1.5, 15);
 		} else {
-			star.pos = new Vector3(r(-15, -45), r(-10.5, 1.5), r(30, -45));
-			star.len = r(2.5, 20);
+			pos = new Vector3(r(-15, -45), r(-10.5, 1.5), r(30, -45));
+			len = r(2.5, 20);
 		}
 
-		star.speed = r(19.5, 42);
-		star.rad = r(0.04, 0.07);
-		star.color = new Color(colors[Math.floor(Math.random() * colors.length)])
-			.convertSRGBToLinear()
-			.multiplyScalar(1.3);
-
-		return star;
-	}
-
-	for (let i = 0; i < STARS_COUNT; i++) {
-		let star = {
-			pos: null,
-			len: null,
-			speed: null,
-			color: null
+		return {
+			pos,
+			len,
+			speed: r(19.5, 42),
+			rad: r(0.04, 0.07),
+			color: new Color(colors[Math.floor(Math.random() * colors.length)])
+				.convertSRGBToLinear()
+				.multiplyScalar(1.3)
 		};
-
-		stars.push(resetStar(star));
 	}
 
-	useTask((_, delta) => {
-		stars.forEach((star) => {
+	// Initialize stars
+	for (let i = 0; i < STARS_COUNT; i++) {
+		stars.push(createStar());
+	}
+
+	useTask((delta) => {
+		for (let i = 0; i < stars.length; i++) {
+			const star = stars[i];
 			star.pos.x += star.speed * delta;
-			if (star.pos.x > 40) resetStar(star);
-		});
-		stars = stars;
+			if (star.pos.x > 40) {
+				const newStar = createStar();
+				stars[i].pos.copy(newStar.pos);
+				stars[i].speed = newStar.speed;
+				stars[i].len = newStar.len;
+				stars[i].color.copy(newStar.color);
+			}
+		}
 	});
 </script>
 

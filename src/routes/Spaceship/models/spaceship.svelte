@@ -6,31 +6,40 @@
 	import { browser } from '$app/environment';
 	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
-	// Runes syntax pour les props
-	let { ref = new Group(), ...restProps } = $props();
+	import { createDracoLoader } from '$lib/utils/draco-loader';
 
-	let gltf: any;
+	// Runes syntax pour les props
+	let { ref = $bindable(new Group()), ...restProps } = $props();
+
+	let gltf = $state<any>(null);
 	let map: any;
 
 	onMount(() => {
 		if (browser) {
-			gltf = useGltf(getCloudinaryAssetUrl('/models/spaceship.glb'));
-			map = useTexture(getCloudinaryAssetUrl('/textures/energy-beam-opacity.png'));
+			const loader = useGltf(getCloudinaryAssetUrl('spaceship.glb'), {
+				dracoLoader: createDracoLoader()
+			});
+			loader
+				.then((data) => {
+					gltf = data;
+				})
+				.catch((err) => {
+					console.error('Failed to load spaceship:', err);
+				});
+
+			map = useTexture(getCloudinaryAssetUrl('energy-beam-opacity.png'));
 		}
-	});
-	gltf?.then(() => {
-		// Point d'extension si tu veux faire des ajustements sur les matériaux plus tard
 	});
 </script>
 
 <T is={ref} dispose={false} {...restProps}>
-	{#await gltf}
-		loading
-	{:then gltf}
-		<T.Mesh is={gltf.scene} />
-	{:catch error}
-		<p>Error loading model</p>
-	{/await}
+	{#if gltf}
+		<T.Group scale={0.01}>
+			<T is={gltf.scene} />
+		</T.Group>
+	{:else}
+		<slot name="fallback" />
+	{/if}
 
 	<slot {ref} />
 </T>

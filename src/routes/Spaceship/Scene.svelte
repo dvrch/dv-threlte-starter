@@ -1,116 +1,135 @@
-<script>
-	import Vague from '../vague/+page.svelte';
+<script lang="ts">
+	import Vaguend from '../vague/vaguend.svelte';
 	import { T, useTask, useThrelte } from '@threlte/core';
-	import { OrbitControls, useGltf } from '@threlte/extras';
+	import { OrbitControls } from '@threlte/extras';
 	import Spaceship from './models/spaceship.svelte';
-	import { Color, Mesh, PMREMGenerator, PlaneGeometry, Raycaster, Vector2, Vector3 } from 'three';
+	import {
+		Color,
+		Mesh,
+		PMREMGenerator,
+		PlaneGeometry,
+		Raycaster,
+		Vector2,
+		Vector3,
+		Group
+	} from 'three';
 	import { onMount, onDestroy } from 'svelte';
 	import Stars from './Stars.svelte';
 	import Nissan from './Nissan.svelte';
-	import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-	import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-	import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
-	import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+	import * as POST from 'postprocessing';
 
-	const { scene, camera, renderer } = useThrelte();
+	const { scene, camera, renderer, renderStage, autoRender } = useThrelte();
 
 	/** @type {import('three').Object3D} */
-	let spaceShipRef = $state(null);
-	let intersectionPoint = $state(null);
+	let spaceShipRef = $state(new Group());
+	let nissanRef = $state(new Group());
+	let intersectionPoint = $state(new Vector3(0, 0, 0));
 	let translY = $state(0);
 	let translAccelleration = $state(0);
 	let angleZ = $state(0);
 	let angleAccelleration = $state(0);
+	let rotationY = $state(0);
+
 	let pmrem = new PMREMGenerator(renderer);
-	let envMapRT;
+	let envMapRT: any;
 
-	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
-	let ni = useGltf(getCloudinaryAssetUrl('nissan2.glb'));
+	const composer = new POST.EffectComposer(renderer);
+	const currentCamera = $derived((camera as any)?.current || camera);
 
-	const composer = new EffectComposer(renderer);
-	composer.setSize(innerWidth, innerHeight);
+	function setupEffectComposer(cam: THREE.Camera) {
+		if (!cam || !scene) return;
+		composer.removeAllPasses();
+		composer.addPass(new POST.RenderPass(scene, cam));
 
-	const setupEffectComposer = () => {
-		const renderPass = new RenderPass(scene, camera.current);
-		composer.addPass(renderPass);
+		const bloomEffect = new POST.BloomEffect({
+			intensity: 1.5,
+			luminanceThreshold: 0.1,
+			height: 480
+		});
 
-		const bloomPass = new UnrealBloomPass(new Vector2(innerWidth, innerHeight), 0.275, 1, 0);
-		composer.addPass(bloomPass);
+		composer.addPass(new POST.EffectPass(cam, bloomEffect));
+	}
 
-		const outputPass = new OutputPass();
-		composer.addPass(outputPass);
-	};
-
-	let cleanupFunctions = [];
+	$effect(() => {
+		if (currentCamera && currentCamera instanceof Color === false) {
+			// tiny check to avoid weirdness
+			setupEffectComposer(currentCamera);
+		}
+	});
 
 	const setupEnvironmentMapping = () => {
+		if (!renderer || !scene) return;
 		if (envMapRT) envMapRT.dispose();
 
-		scene.background = null;
 		envMapRT = pmrem.fromScene(scene, 0, 0.1, 1000);
 
-		const updateMaterials = (object) => {
-			object.traverse((child) => {
-				if (child?.material?.envMapIntensity) {
+		const updateMaterials = (object: any) => {
+			if (!object) return;
+			object.traverse((child: any) => {
+				if (child.isMesh && child.material) {
 					child.material.envMap = envMapRT.texture;
-					child.material.envMapIntensity = 100;
-					child.material.normalScale?.set(0.3, 0.3);
+					child.material.envMapIntensity = 1.0;
 					child.material.needsUpdate = true;
 				}
 			});
 		};
 
-		if (spaceShipRef) updateMaterials(spaceShipRef);
-		const nissanRef = scene.getObjectByName('Nissan');
-		if (nissanRef) updateMaterials(nissanRef);
+		updateMaterials(spaceShipRef);
+		updateMaterials(nissanRef);
 	};
 
-	useTask(({ scene, delta }) => {
-		if (intersectionPoint) {
-			const targetY = intersectionPoint?.y || 0;
-			translAccelleration += (targetY - translY) * 0.002; // stiffness
-			translAccelleration *= 0.95; // damping
+	useTask(
+		(delta) => {
+			// Simulation de vol
+			const targetY = intersectionPoint.y;
+			translAccelleration += (targetY - translY) * 0.002;
+			translAccelleration *= 0.95;
 			translY += translAccelleration;
 
 			const dir = intersectionPoint.clone().sub(new Vector3(0, translY, 0)).normalize();
 			const dirCos = dir.dot(new Vector3(0, 1, 0));
 			const angle = Math.acos(dirCos) - Math.PI * 0.5;
-			angleAccelleration += (angle - angleZ) * 0.01; // stiffness
-			angleAccelleration *= 0.85; // damping
+			angleAccelleration += (angle - angleZ) * 0.01;
+			angleAccelleration *= 0.85;
 			angleZ += angleAccelleration;
-		}
 
-		setupEnvironmentMapping();
-		composer.render();
-	});
+			rotationY += 0.005;
+
+			if (composer && currentCamera) {
+				composer.render(delta);
+			}
+		},
+		{ stage: renderStage, autoInvalidate: false }
+	);
 
 	onMount(() => {
-		setupEffectComposer();
+		autoRender.set(false);
 
-		setupEnvironmentMapping();
+		const timeout = setTimeout(() => {
+			setupEnvironmentMapping();
+		}, 1000);
 
 		const interval = setInterval(() => {
 			setupEnvironmentMapping();
-		}, 1000); // Rafraîchir l'environnement toutes les secondes
+		}, 5000);
 
-		cleanupFunctions.push(() => clearInterval(interval));
+		return () => {
+			autoRender.set(true);
+			clearTimeout(timeout);
+			clearInterval(interval);
+			if (envMapRT) envMapRT.dispose();
+			if (pmrem) pmrem.dispose();
+		};
 	});
-
-	onDestroy(() => {
-		cleanupFunctions.forEach((fn) => fn());
-		if (envMapRT) envMapRT.dispose();
-	});
-
-	let canvas;
 </script>
 
 <div class="div">
-	<T.PerspectiveCamera makeDefault position={[-5, 6, 10]} fov={25}>
+	<T.PerspectiveCamera makeDefault position={[-15, 10, 25]} fov={30}>
 		<OrbitControls enableDamping target={[0, 0, 0]} />
 	</T.PerspectiveCamera>
 
-	<T.DirectionalLight intensity={1.8} position={[0, 10, 0]} castShadow shadow.bias={-0.0001} />
-	<!-- <T.AmbientLight intensity={0.5} /> -->
+	<T.DirectionalLight intensity={3} position={[5, 15, 5]} castShadow />
+	<T.AmbientLight intensity={0.5} />
 
 	<Spaceship
 		bind:ref={spaceShipRef}
@@ -118,14 +137,15 @@
 		rotation={[angleZ, 0, angleZ, 'ZXY']}
 	/>
 
-	<Vague bind:ref={spaceShipRef} position={[0, translY, 0]} scale={6} />
+	<Vaguend position={[0, -2, 0]} scale={20} />
 
 	<Stars />
 
 	<Nissan
-		bind:ref={spaceShipRef}
-		position={[0, translY, 0]}
-		rotation={[angleZ, 80, angleZ, 'ZXY']}
+		bind:ref={nissanRef}
+		position={[2, translY + 0.5, -2]}
+		rotation={[angleZ, rotationY, angleZ, 'ZXY']}
+		scale={0.5}
 	/>
 </div>
 
@@ -136,6 +156,6 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		z-index: -2;
+		z-index: -1;
 	}
 </style>

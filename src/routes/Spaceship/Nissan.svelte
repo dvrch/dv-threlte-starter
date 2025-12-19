@@ -18,9 +18,9 @@ Title: Nissan Skyline GTR r35
 	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 	// Runes syntax pour les props, avec un ref par défaut et passage du reste des props
-	let { ref = new Group(), ...restProps } = $props();
+	let { ref = $bindable(new Group()), ...restProps } = $props();
 
-	let gltf: any;
+	let gltf = $state<any>(null);
 
 	onMount(() => {
 		if (browser) {
@@ -53,11 +53,9 @@ Title: Nissan Skyline GTR r35
 {/if}
 
 <T is={ref} dispose={false} {...restProps}>
-	{#await gltf}
-		loading
-	{:then gltf}
-		<T.Mesh is={gltf.scene} />
-	{:catch error}
-		<p>Error loading model</p>
-	{/await}
+	{#if gltf}
+		<T is={gltf.scene} />
+	{:else}
+		<slot name="fallback" />
+	{/if}
 </T>
