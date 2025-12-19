@@ -67,12 +67,12 @@
 			{@const Component = LoadedDynamicComponent}
 			<Component {geometry} />
 		{:else if geometry.type === 'text'}
-			<T.Mesh scale={[geometry.scale?.x ?? 1, 1, 1]}>
+			<T.Mesh scale={[geometry.scale?.x ?? 1, 1, 0.001]}>
 				<Text3DGeometry
 					{font}
 					text={geometry.name}
 					size={geometry.scale?.y ?? 1}
-					height={(geometry.scale?.z ?? 1) / 50}
+					height={geometry.scale?.z ?? 0.01}
 					curveSegments={12}
 				/>
 				<T.MeshStandardMaterial color={geometry.color} />

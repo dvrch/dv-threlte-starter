@@ -187,7 +187,7 @@
 				rotation={[geometry.rotation.x, geometry.rotation.y, geometry.rotation.z]}
 				scale={0.5}
 			>
-				<T.SphereGeometry />
+				<!-- <T.SphereGeometry /> -->
 				<T.MeshStandardMaterial color={geometry.color} />
 			</T.Mesh>
 		{:else if geometry.type === 'bibigame'}
@@ -207,7 +207,7 @@
 					{font}
 					text={geometry.name}
 					size={geometry.scale?.y ?? 1}
-					height={(geometry.scale?.z ?? 1) / 50}
+					height={geometry.scale?.z ?? 0.01}
 					curveSegments={12}
 					bevelEnabled
 				/>
