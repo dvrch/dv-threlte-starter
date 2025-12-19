@@ -9,9 +9,9 @@
 		SMAAPreset
 	} from 'postprocessing';
 	import { useThrelte, useTask } from '@threlte/core';
-	import * as THREE from 'three'; // Ajout de l'importation de THREE
+	import * as THREE from 'three';
 
-	const {
+	let {
 		intensity = 0.8,
 		luminanceThreshold = 0,
 		height = 512,
@@ -20,10 +20,15 @@
 		mipmapBlur = true
 	} = $props();
 
-	const { scene, renderer, camera, autoRender } = useThrelte();
+	const { scene, renderer, camera, autoRender, renderStage } = useThrelte();
 	const composer = new EffectComposer(renderer);
 
-	const setupEffectComposer = (cam: THREE.Camera) => {
+	// Threlte 8 + Svelte 5 handling: camera can be a store or a direct ref.
+	// $derived handles reactivity automatically.
+	const currentCamera = $derived((camera as any)?.current || camera);
+
+	function setupEffectComposer(cam: THREE.Camera) {
+		if (!cam || !scene) return;
 		composer.removeAllPasses();
 		composer.addPass(new RenderPass(scene, cam));
 		composer.addPass(
@@ -48,11 +53,19 @@
 				})
 			)
 		);
-	};
+	}
 
 	$effect(() => {
-		if (camera.current) {
-			setupEffectComposer(camera.current);
+		// Track dependencies to recreate passes when props change
+		intensity;
+		luminanceThreshold;
+		height;
+		width;
+		luminanceSmoothing;
+		mipmapBlur;
+
+		if (currentCamera && currentCamera instanceof THREE.Camera) {
+			setupEffectComposer(currentCamera);
 		}
 	});
 
@@ -66,9 +79,10 @@
 
 	useTask(
 		({ delta }) => {
-			if (!composer || !camera.current || !scene) return;
+			// Only render if we have a valid camera and passes
+			if (!composer || !currentCamera || composer.passes.length < 2) return;
 			composer.render(delta);
 		},
-		{ stage: 'after' }
+		{ stage: renderStage }
 	);
 </script>
