@@ -17,7 +17,15 @@
 
 	let stars = $state<Star[]>([]);
 
-	const map = useTexture(getCloudinaryAssetUrl('star.png'));
+	// Try Cloudinary first, fallback to local
+	const map = (async () => {
+		try {
+			return await useTexture(getCloudinaryAssetUrl('star.png'));
+		} catch (e) {
+			console.warn('Star texture: Cloudinary fail, trying local...');
+			return await useTexture('/textures/star.png');
+		}
+	})();
 
 	function r(min: number, max: number) {
 		return min + Math.random() * (max - min);

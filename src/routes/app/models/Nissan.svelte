@@ -26,11 +26,20 @@ Title: Nissan Skyline GTR r35
 	let gltf = $state<any>(null); // Use state for reactivity
 
 	onMount(() => {
-		const modelPromise = useGltf(getCloudinaryAssetUrl('nissan2.glb'), {
-			dracoLoader: createDracoLoader()
-		});
+		const loadGltf = async () => {
+			try {
+				return await useGltf(getCloudinaryAssetUrl('nissan2.glb'), {
+					dracoLoader: createDracoLoader()
+				});
+			} catch (e) {
+				console.warn('Nissan main: Cloudinary fail, trying local...');
+				return await useGltf('/models/nissan2.glb', {
+					dracoLoader: createDracoLoader()
+				});
+			}
+		};
 
-		modelPromise
+		loadGltf()
 			.then((model: any) => {
 				// Apply alpha fix
 				function alphaFix(material: any) {
@@ -75,7 +84,7 @@ Title: Nissan Skyline GTR r35
 				gltf = model;
 			})
 			.catch((err: any) => {
-				console.error('Failed to load Nissan Model', err);
+				console.error('Failed to load Nissan Model completely', err);
 			});
 	});
 </script>

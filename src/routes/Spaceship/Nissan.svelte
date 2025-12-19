@@ -24,11 +24,21 @@ Title: Nissan Skyline GTR r35
 
 	onMount(() => {
 		if (browser) {
-			gltf = useGltf(getCloudinaryAssetUrl('nissan2.glb'), {
-				dracoLoader: createDracoLoader()
-			});
+			const loadGltf = async () => {
+				try {
+					return await useGltf(getCloudinaryAssetUrl('nissan2.glb'), {
+						dracoLoader: createDracoLoader()
+					});
+				} catch (e) {
+					console.warn('Nissan: Cloudinary fail, trying local...');
+					return await useGltf('/models/nissan2.glb', {
+						dracoLoader: createDracoLoader()
+					});
+				}
+			};
 
-			gltf?.then((model: any) => {
+			loadGltf().then((model: any) => {
+				gltf = model;
 				function alphaFix(material: any) {
 					if (!material) return;
 					material.transparent = true;

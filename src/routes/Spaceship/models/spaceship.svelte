@@ -16,18 +16,33 @@
 
 	onMount(() => {
 		if (browser) {
-			const loader = useGltf(getCloudinaryAssetUrl('spaceship.glb'), {
-				dracoLoader: createDracoLoader()
-			});
-			loader
+			const loadGltf = async () => {
+				try {
+					return await useGltf(getCloudinaryAssetUrl('spaceship.glb'), {
+						dracoLoader: createDracoLoader()
+					});
+				} catch (e) {
+					console.warn('Spaceship: Cloudinary fail, trying local...');
+					return await useGltf('/models/spaceship.glb', {
+						dracoLoader: createDracoLoader()
+					});
+				}
+			};
+
+			loadGltf()
 				.then((data) => {
 					gltf = data;
 				})
-				.catch((err) => {
-					console.error('Failed to load spaceship:', err);
-				});
+				.catch((err) => console.error('Spaceship load error:', err));
 
-			map = useTexture(getCloudinaryAssetUrl('energy-beam-opacity.png'));
+			const loadTexture = async () => {
+				try {
+					return await useTexture(getCloudinaryAssetUrl('energy-beam-opacity.png'));
+				} catch (e) {
+					return await useTexture('/textures/energy-beam-opacity.png');
+				}
+			};
+			loadTexture().then((t) => (map = t));
 		}
 	});
 </script>

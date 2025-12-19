@@ -18,7 +18,7 @@
 
 		<T.AmbientLight intensity={0.2} />
 		<T.DirectionalLight position={[10, 10, 5]} intensity={0.5} />
-
+		<Bloom />
 		<Scene cvLines={data.cvLines} />
 	</Canvas>
 </div>
