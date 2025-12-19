@@ -23,7 +23,7 @@
 	let geometries = $state<GeometryItem[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
-	let isBloomEnabled = $state(true); // State to control Bloom effect
+	let isBloomEnabled = $state(false); // State to control Bloom effect
 
 	// Function to fetch geometries
 	const fetchGeometries = async () => {

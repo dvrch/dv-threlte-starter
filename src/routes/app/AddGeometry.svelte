@@ -57,7 +57,7 @@
 		isDropdownOpen = !isDropdownOpen;
 	};
 
-	let isBloomActive = $state(true);
+	let isBloomActive = $state(false);
 	$effect(() => {
 		window.dispatchEvent(
 			new CustomEvent('toggleBloomEffect', {
@@ -74,11 +74,25 @@
 			if (!response.ok) throw new Error(`HTTP ${response.status}`);
 			const data = await response.json();
 			if (Array.isArray(data)) {
-				types = data.map((type) => type.id);
+				const fetchedTypes = data.map((type) => type.id);
+				// Ensure important types are present
+				const baseTypes = [
+					'box',
+					'sphere',
+					'torus',
+					'icosahedron',
+					'text',
+					'spaceship',
+					'vague',
+					'nissangame'
+				];
+				types = [...new Set([...baseTypes, ...fetchedTypes])];
 			}
 		} catch (error) {
 			console.error('Error loading types:', error);
-			addToast('Failed to load types.', 'error');
+			// Fallback types
+			types = ['box', 'sphere', 'torus', 'icosahedron', 'text', 'spaceship', 'vague', 'nissangame'];
+			addToast('Failed to load types from server. Using defaults.', 'warning');
 		}
 	};
 

@@ -44,7 +44,7 @@
 		const bloomEffect = new POST.BloomEffect({
 			intensity: 1.5,
 			luminanceThreshold: 0.1,
-			height: 480
+			height: 1024
 		});
 
 		composer.addPass(new POST.EffectPass(cam, bloomEffect));
@@ -55,6 +55,11 @@
 			// tiny check to avoid weirdness
 			setupEffectComposer(currentCamera);
 		}
+	});
+
+	$effect(() => {
+		const { width, height } = useThrelte().size.current;
+		composer.setSize(width, height);
 	});
 
 	const setupEnvironmentMapping = () => {

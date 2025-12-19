@@ -10,21 +10,21 @@
 	} from 'postprocessing';
 	import { useThrelte, useTask } from '@threlte/core';
 	import * as THREE from 'three';
+	import { onMount } from 'svelte';
 
 	let {
 		intensity = 0.8,
 		luminanceThreshold = 0,
-		height = 512,
-		width = 512,
+		height = 1024, // Increased resolution
+		width = 1024, // Increased resolution
 		luminanceSmoothing = 0,
 		mipmapBlur = true
 	} = $props();
 
-	const { scene, renderer, camera, autoRender, renderStage } = useThrelte();
+	const { scene, renderer, camera, autoRender, renderStage, size } = useThrelte();
 	const composer = new EffectComposer(renderer);
 
 	// Threlte 8 + Svelte 5 handling: camera can be a store or a direct ref.
-	// $derived handles reactivity automatically.
 	const currentCamera = $derived((camera as any)?.current || camera);
 
 	function setupEffectComposer(cam: THREE.Camera) {
@@ -49,11 +49,16 @@
 			new EffectPass(
 				cam,
 				new SMAAEffect({
-					preset: SMAAPreset.LOW
+					preset: SMAAPreset.HIGH // Better quality
 				})
 			)
 		);
 	}
+
+	// Dynamic resizing
+	$effect(() => {
+		composer.setSize(size.current.width, size.current.height);
+	});
 
 	$effect(() => {
 		// Track dependencies to recreate passes when props change
@@ -69,6 +74,7 @@
 		}
 	});
 
+	// Handle Threlte rendering
 	$effect(() => {
 		const initialAutoRender = autoRender.current;
 		autoRender.set(false);
@@ -77,10 +83,18 @@
 		};
 	});
 
+	// Workaround for initialization glitches: brief delay before rendering
+	let ready = $state(false);
+	onMount(() => {
+		const timer = setTimeout(() => {
+			ready = true;
+		}, 100);
+		return () => clearTimeout(timer);
+	});
+
 	useTask(
-		({ delta }) => {
-			// Only render if we have a valid camera and passes
-			if (!composer || !currentCamera || composer.passes.length < 2) return;
+		(delta) => {
+			if (!ready || !composer || !currentCamera || composer.passes.length < 2) return;
 			composer.render(delta);
 		},
 		{ stage: renderStage }
