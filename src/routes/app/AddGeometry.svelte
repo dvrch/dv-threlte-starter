@@ -354,449 +354,431 @@
 	};
 </script>
 
-<div
-	class="form-wrapper"
-	class:is-open={isFormOpen}
-	onmouseenter={() => (isFormOpen = true)}
-	onmouseleave={() => (isFormOpen = false)}
->
-	<div class="form-container">
-		<form
-			onsubmit={(event) => {
-				event.preventDefault();
-				handleSubmit();
+<div class="form-container">
+	<form
+		onsubmit={(event) => {
+			event.preventDefault();
+			handleSubmit();
+		}}
+	>
+		<!-- Drag & Drop Upload Zone (Top of form) -->
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<div
+			class="upload-zone"
+			class:dragging={isDragging}
+			class:has-file={!!file}
+			role="button"
+			tabindex="0"
+			ondragover={(e) => {
+				e.preventDefault();
+				isDragging = true;
 			}}
+			ondragleave={() => (isDragging = false)}
+			ondrop={(e) => {
+				e.preventDefault();
+				isDragging = false;
+				if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+					file = e.dataTransfer.files[0];
+					if (!isEditing) name = file.name.split('.')[0];
+				}
+			}}
+			onclick={() => fileInput?.click()}
 		>
-			<!-- Drag & Drop Upload Zone (Top of form) -->
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
-			<div
-				class="upload-zone"
-				class:dragging={isDragging}
-				class:has-file={!!file}
-				role="button"
-				tabindex="0"
-				ondragover={(e) => {
-					e.preventDefault();
-					isDragging = true;
-				}}
-				ondragleave={() => (isDragging = false)}
-				ondrop={(e) => {
-					e.preventDefault();
-					isDragging = false;
-					if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
-						file = e.dataTransfer.files[0];
-						if (!isEditing) name = file.name.split('.')[0];
-					}
-				}}
-				onclick={() => fileInput?.click()}
-			>
-				<input
-					bind:this={fileInput}
-					type="file"
-					accept=".glb,.gltf"
-					style="display: none;"
-					onchange={(e) => {
+			<input
+				bind:this={fileInput}
+				type="file"
+				accept=".glb,.gltf"
+				style="display: none;"
+				onchange={(e) => {
 						const target = e.target as HTMLInputElement;
 						if (target.files && target.files.length > 0) {
 							file = target.files[0];
 							if (!isEditing) name = file.name.split('.')[0];
 						}
 					}}
-				/>
+			/>
 
-				{#if file}
-					<div class="file-info">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="24"
-							height="24"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							class="file-icon"
-							><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline
-								points="13 2 13 9 20 9"
-							/></svg
-						>
-						<span class="filename">{file.name}</span>
-						<span class="change-text">(Click to change)</span>
-					</div>
-				{:else}
-					<div class="upload-placeholder">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="24"
-							height="24"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							class="upload-icon"
-							><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline
-								points="17 8 12 3 7 8"
-							/><line x1="12" y1="3" x2="12" y2="15" /></svg
-						>
-						<span>Glisser / Sélectionner (.glb)</span>
+			{#if file}
+				<div class="file-info">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="file-icon"
+						><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline
+							points="13 2 13 9 20 9"
+						/></svg
+					>
+					<span class="filename">{file.name}</span>
+					<span class="change-text">(Click to change)</span>
+				</div>
+			{:else}
+				<div class="upload-placeholder">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						class="upload-icon"
+						><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline
+							points="17 8 12 3 7 8"
+						/><line x1="12" y1="3" x2="12" y2="15" /></svg
+					>
+					<span>Glisser / Sélectionner (.glb)</span>
+				</div>
+			{/if}
+		</div>
+
+		<h3>{isEditing ? 'Update' : 'Add'} Geometry</h3>
+
+		<div class="geometry-list">
+			<!-- Custom Dropdown Menu -->
+			<div class="custom-dropdown">
+				<!-- svelte-ignore a11y_click_events_have_key_events -->
+				<div
+					class="dropdown-header"
+					onclick={toggleDropdown}
+					role="button"
+					tabindex="0"
+					aria-label="Select a geometry to edit or add a new one"
+				>
+					<span>
+						{selectedGeometryId
+							? geometries.find((g) => g.id === selectedGeometryId)?.name || 'Unknown Geometry'
+							: '-- Select Geometry --'}
+					</span>
+					<svg
+						class="chevron"
+						class:open={isDropdownOpen}
+						xmlns="http://www.w3.org/2000/svg"
+						width="16"
+						height="16"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg
+					>
+				</div>
+
+				{#if isDropdownOpen}
+					<div class="dropdown-list">
+						{#each geometries as geometry (geometry.id)}
+							<div class="dropdown-item" class:selected={selectedGeometryId === geometry.id}>
+								<!-- Name: Selects and closes form (Re-enroule le ruban) -->
+								<div
+									class="item-name"
+									onclick={() => {
+										loadGeometryDetails(geometry.id);
+										isFormOpen = false; // Close form
+										isDropdownOpen = false; // Close dropdown
+									}}
+									role="button"
+									tabindex="0"
+									onkeydown={(e) => {
+										if (e.key === 'Enter' || e.key === ' ') {
+											loadGeometryDetails(geometry.id);
+											isFormOpen = false;
+											isDropdownOpen = false;
+										}
+									}}
+								>
+									{geometry.name}
+								</div>
+
+								<!-- Eye: Toggles Visibility (stays open or just updates state) -->
+								<button
+									type="button"
+									class="visibility-toggle"
+									class:visible={geometry.visible}
+									class:hidden={!geometry.visible}
+									onclick={(e) => {
+										e.stopPropagation();
+										toggleGeometryVisibility(geometry.id);
+									}}
+									aria-label={geometry.visible ? 'Hide' : 'Show'}
+								>
+									{#if geometry.visible}
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="14"
+											height="14"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle
+												cx="12"
+												cy="12"
+												r="3"
+											/></svg
+										>
+									{:else}
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="14"
+											height="14"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											><path
+												d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
+											/><line x1="1" y1="1" x2="23" y2="23" /></svg
+										>
+									{/if}
+								</button>
+							</div>
+						{/each}
+
+						{#if geometries.length === 0}
+							<div class="dropdown-item empty">No geometries found</div>
+						{/if}
 					</div>
 				{/if}
 			</div>
 
-			<h3>{isEditing ? 'Update' : 'Add'} Geometry</h3>
+			<button
+				type="button"
+				class="add-new-button"
+				onclick={() => {
+					resetForm();
+					isEditing = false;
+				}}
+			>
+				+ Add New Geometry
+			</button>
 
-			<div class="geometry-list">
-				<!-- Custom Dropdown Menu -->
-				<div class="custom-dropdown">
-					<!-- svelte-ignore a11y_click_events_have_key_events -->
-					<div
-						class="dropdown-header"
-						onclick={toggleDropdown}
-						role="button"
-						tabindex="0"
-						aria-label="Select a geometry to edit or add a new one"
-					>
-						<span>
-							{selectedGeometryId
-								? geometries.find((g) => g.id === selectedGeometryId)?.name || 'Unknown Geometry'
-								: '-- Select Geometry --'}
-						</span>
-						<svg
-							class="chevron"
-							class:open={isDropdownOpen}
-							xmlns="http://www.w3.org/2000/svg"
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg
+			<!-- Type Selection -->
+			{#if !file}
+				<div class="type-select-row">
+					<select bind:value={type}>
+						{#each types as geometryType}
+							<option value={geometryType}>{geometryType}</option>
+						{/each}
+						<option value="text">text</option>
+						<!-- Explicitly add text option -->
+					</select>
+
+					{#if type === 'text'}
+						<input
+							type="text"
+							bind:value={name}
+							placeholder="Enter text..."
+							class="text-content-input"
+						/>
+					{:else}
+						<input type="text" bind:value={name} placeholder="Name" required />
+					{/if}
+					<input type="color" bind:value={color} class="color-input" />
+				</div>
+			{:else}
+				<input type="text" bind:value={name} placeholder="Name" required />
+				<input type="color" bind:value={color} />
+			{/if}
+
+			<!-- Transform Controls: 3 Columns (Pos | Rot | Scl) -->
+			<div class="transforms-grid">
+				<!-- Header Row -->
+				<div class="grid-header">
+					<div class="col-header">
+						<span>Pos</span>
+						<button type="button" class="icon-btn tiny" onclick={randomizePosition} title="Rnd Pos"
+							>🎲</button
 						>
 					</div>
+					<div class="col-header">
+						<span>Rot</span>
+						<button type="button" class="icon-btn tiny" onclick={randomizeRotation} title="Rnd Rot"
+							>🎲</button
+						>
+					</div>
+					<div class="col-header">
+						<span>Scl</span>
+						<button type="button" class="icon-btn tiny" onclick={randomizeScale} title="Rnd Scl"
+							>🎲</button
+						>
+						<button
+							type="button"
+							class="icon-btn tiny"
+							class:active={isUniformScale}
+							onclick={() => (isUniformScale = !isUniformScale)}
+							title="Uniform">🔗</button
+						>
+					</div>
+				</div>
 
-					{#if isDropdownOpen}
-						<div class="dropdown-list">
-							{#each geometries as geometry (geometry.id)}
-								<div class="dropdown-item" class:selected={selectedGeometryId === geometry.id}>
-									<!-- Name: Selects and closes form (Re-enroule le ruban) -->
-									<div
-										class="item-name"
-										onclick={() => {
-											loadGeometryDetails(geometry.id);
-											isFormOpen = false; // Close form
-											isDropdownOpen = false; // Close dropdown
-										}}
-										role="button"
-										tabindex="0"
-										onkeydown={(e) => {
-											if (e.key === 'Enter' || e.key === ' ') {
-												loadGeometryDetails(geometry.id);
-												isFormOpen = false;
-												isDropdownOpen = false;
-											}
-										}}
-									>
-										{geometry.name}
-									</div>
+				<!-- X Row -->
+				<div class="grid-row">
+					<div class="cell">
+						<input
+							type="number"
+							bind:value={position.x}
+							step="0.01"
+							class="mini-input"
+							placeholder="X"
+						/>
+					</div>
+					<div class="cell">
+						<input
+							type="number"
+							bind:value={rotation.x}
+							step="0.01"
+							class="mini-input"
+							placeholder="X"
+						/>
+					</div>
+					<div class="cell">
+						<input
+							type="number"
+							bind:value={scale.x}
+							step="0.01"
+							class="mini-input"
+							placeholder="X"
+							oninput={(e) => updateScale('x', parseFloat(e.currentTarget.value) || 1)}
+						/>
+					</div>
+				</div>
 
-									<!-- Eye: Toggles Visibility (stays open or just updates state) -->
-									<button
-										type="button"
-										class="visibility-toggle"
-										class:visible={geometry.visible}
-										class:hidden={!geometry.visible}
-										onclick={(e) => {
-											e.stopPropagation();
-											toggleGeometryVisibility(geometry.id);
-										}}
-										aria-label={geometry.visible ? 'Hide' : 'Show'}
-									>
-										{#if geometry.visible}
-											<svg
-												xmlns="http://www.w3.org/2000/svg"
-												width="14"
-												height="14"
-												viewBox="0 0 24 24"
-												fill="none"
-												stroke="currentColor"
-												stroke-width="2"
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle
-													cx="12"
-													cy="12"
-													r="3"
-												/></svg
-											>
-										{:else}
-											<svg
-												xmlns="http://www.w3.org/2000/svg"
-												width="14"
-												height="14"
-												viewBox="0 0 24 24"
-												fill="none"
-												stroke="currentColor"
-												stroke-width="2"
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												><path
-													d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
-												/><line x1="1" y1="1" x2="23" y2="23" /></svg
-											>
-										{/if}
-									</button>
-								</div>
-							{/each}
-
-							{#if geometries.length === 0}
-								<div class="dropdown-item empty">No geometries found</div>
-							{/if}
+				<!-- Y Row -->
+				<div class="grid-row">
+					<div class="cell">
+						<input
+							type="number"
+							bind:value={position.y}
+							step="0.01"
+							class="mini-input"
+							placeholder="Y"
+						/>
+					</div>
+					<div class="cell">
+						<input
+							type="number"
+							bind:value={rotation.y}
+							step="0.01"
+							class="mini-input"
+							placeholder="Y"
+						/>
+					</div>
+					{#if isUniformScale}
+						<div class="cell empty" />
+					{:else}
+						<div class="cell">
+							<input
+								type="number"
+								bind:value={scale.y}
+								step="0.01"
+								class="mini-input"
+								placeholder="Y"
+							/>
 						</div>
 					{/if}
 				</div>
 
+				<!-- Z Row -->
+				<div class="grid-row">
+					<div class="cell">
+						<input
+							type="number"
+							bind:value={position.z}
+							step="0.01"
+							class="mini-input"
+							placeholder="Z"
+						/>
+					</div>
+					<div class="cell">
+						<input
+							type="number"
+							bind:value={rotation.z}
+							step="0.01"
+							class="mini-input"
+							placeholder="Z"
+						/>
+					</div>
+					{#if isUniformScale}
+						<div class="cell">
+							<input
+								type="number"
+								value={scale.z}
+								step="0.01"
+								class="mini-input readonly"
+								placeholder="Z"
+								readonly
+							/>
+						</div>
+					{:else}
+						<div class="cell">
+							<input
+								type="number"
+								bind:value={scale.z}
+								step="0.01"
+								class="mini-input"
+								placeholder="Z"
+							/>
+						</div>
+					{/if}
+				</div>
+			</div>
+
+			<button type="submit" class={isEditing ? 'update-button' : 'add-button'} disabled={isLoading}>
+				{isLoading ? 'Saving...' : isEditing ? 'Update' : 'Add'}
+			</button>
+			{#if isEditing}
+				<button type="button" onclick={resetForm} class="cancel-button">Cancel</button>
+			{/if}
+		</div>
+
+		<!-- Scene Controls -->
+		<div class="scene-controls">
+			<div class="control-item">
+				<span>Bloom Effect</span>
 				<button
 					type="button"
-					class="add-new-button"
-					onclick={() => {
-						resetForm();
-						isEditing = false;
-					}}
+					class="toggle-btn"
+					class:active={isBloomActive}
+					onclick={() => (isBloomActive = !isBloomActive)}
 				>
-					+ Add New Geometry
+					{isBloomActive ? 'Enabled' : 'Disabled'}
 				</button>
-
-				<!-- Type Selection -->
-				{#if !file}
-					<div class="type-select-row">
-						<select bind:value={type}>
-							{#each types as geometryType}
-								<option value={geometryType}>{geometryType}</option>
-							{/each}
-							<option value="text">text</option>
-							<!-- Explicitly add text option -->
-						</select>
-
-						{#if type === 'text'}
-							<input
-								type="text"
-								bind:value={name}
-								placeholder="Enter text..."
-								class="text-content-input"
-							/>
-						{:else}
-							<input type="text" bind:value={name} placeholder="Name" required />
-						{/if}
-						<input type="color" bind:value={color} class="color-input" />
-					</div>
-				{:else}
-					<input type="text" bind:value={name} placeholder="Name" required />
-					<input type="color" bind:value={color} />
-				{/if}
-
-				<!-- Transform Controls: 3 Columns (Pos | Rot | Scl) -->
-				<div class="transforms-grid">
-					<!-- Header Row -->
-					<div class="grid-header">
-						<div class="col-header">
-							<span>Pos</span>
-							<button
-								type="button"
-								class="icon-btn tiny"
-								onclick={randomizePosition}
-								title="Rnd Pos">🎲</button
-							>
-						</div>
-						<div class="col-header">
-							<span>Rot</span>
-							<button
-								type="button"
-								class="icon-btn tiny"
-								onclick={randomizeRotation}
-								title="Rnd Rot">🎲</button
-							>
-						</div>
-						<div class="col-header">
-							<span>Scl</span>
-							<button type="button" class="icon-btn tiny" onclick={randomizeScale} title="Rnd Scl"
-								>🎲</button
-							>
-							<button
-								type="button"
-								class="icon-btn tiny"
-								class:active={isUniformScale}
-								onclick={() => (isUniformScale = !isUniformScale)}
-								title="Uniform">🔗</button
-							>
-						</div>
-					</div>
-
-					<!-- X Row -->
-					<div class="grid-row">
-						<div class="cell">
-							<input
-								type="number"
-								bind:value={position.x}
-								step="0.01"
-								class="mini-input"
-								placeholder="X"
-							/>
-						</div>
-						<div class="cell">
-							<input
-								type="number"
-								bind:value={rotation.x}
-								step="0.01"
-								class="mini-input"
-								placeholder="X"
-							/>
-						</div>
-						<div class="cell">
-							<input
-								type="number"
-								bind:value={scale.x}
-								step="0.01"
-								class="mini-input"
-								placeholder="X"
-								oninput={(e) => updateScale('x', parseFloat(e.currentTarget.value) || 1)}
-							/>
-						</div>
-					</div>
-
-					<!-- Y Row -->
-					<div class="grid-row">
-						<div class="cell">
-							<input
-								type="number"
-								bind:value={position.y}
-								step="0.01"
-								class="mini-input"
-								placeholder="Y"
-							/>
-						</div>
-						<div class="cell">
-							<input
-								type="number"
-								bind:value={rotation.y}
-								step="0.01"
-								class="mini-input"
-								placeholder="Y"
-							/>
-						</div>
-						{#if isUniformScale}
-							<div class="cell empty" />
-						{:else}
-							<div class="cell">
-								<input
-									type="number"
-									bind:value={scale.y}
-									step="0.01"
-									class="mini-input"
-									placeholder="Y"
-								/>
-							</div>
-						{/if}
-					</div>
-
-					<!-- Z Row -->
-					<div class="grid-row">
-						<div class="cell">
-							<input
-								type="number"
-								bind:value={position.z}
-								step="0.01"
-								class="mini-input"
-								placeholder="Z"
-							/>
-						</div>
-						<div class="cell">
-							<input
-								type="number"
-								bind:value={rotation.z}
-								step="0.01"
-								class="mini-input"
-								placeholder="Z"
-							/>
-						</div>
-						{#if isUniformScale}
-							<div class="cell">
-								<input
-									type="number"
-									value={scale.z}
-									step="0.01"
-									class="mini-input readonly"
-									placeholder="Z"
-									readonly
-								/>
-							</div>
-						{:else}
-							<div class="cell">
-								<input
-									type="number"
-									bind:value={scale.z}
-									step="0.01"
-									class="mini-input"
-									placeholder="Z"
-								/>
-							</div>
-						{/if}
-					</div>
-				</div>
-
-				<button
-					type="submit"
-					class={isEditing ? 'update-button' : 'add-button'}
-					disabled={isLoading}
-				>
-					{isLoading ? 'Saving...' : isEditing ? 'Update' : 'Add'}
-				</button>
-				{#if isEditing}
-					<button type="button" onclick={resetForm} class="cancel-button">Cancel</button>
-				{/if}
 			</div>
-
-			<!-- Scene Controls -->
-			<div class="scene-controls">
-				<div class="control-item">
-					<span>Bloom Effect</span>
-					<button
-						type="button"
-						class="toggle-btn"
-						class:active={isBloomActive}
-						onclick={() => (isBloomActive = !isBloomActive)}
-					>
-						{isBloomActive ? 'Enabled' : 'Disabled'}
-					</button>
-				</div>
-			</div>
-		</form>
-
-		<div class="delete-section">
-			<button onclick={deleteGeometry} disabled={!selectedGeometryId} class="delete-button">
-				Delete Selected
-			</button>
 		</div>
+	</form>
+
+	<div class="delete-section">
+		<button onclick={deleteGeometry} disabled={!selectedGeometryId} class="delete-button">
+			Delete Selected
+		</button>
 	</div>
 </div>
-
-<!-- Closing div for form-wrapper -->
 
 <style>
 	.form-container {
 		font-family: 'Inter', sans-serif;
 		color: #fff;
 		font-size: 0.75rem;
-		width: 75%; /* Reduced width by 1/4 */
-		margin: 0 auto;
+		width: 100%;
+		margin: 0;
 		background: rgba(255, 255, 255, 0.03);
-		padding: 12px;
-		border-radius: 8px;
-		border: 1px solid rgba(255, 255, 255, 0.05);
+		padding: 8px;
+		border-radius: 6px;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		box-sizing: border-box;
 	}
 
 	h3 {

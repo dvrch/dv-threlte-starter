@@ -71,7 +71,7 @@
     .form-wrapper {
         background: rgba(30, 30, 40, 0.6);
         backdrop-filter: blur(10px);
-        padding: 1rem;
+        padding: 0.5rem;
         border-radius: 8px;
         max-width: 320px;
         max-height: 50px; /* Collapsed height */
