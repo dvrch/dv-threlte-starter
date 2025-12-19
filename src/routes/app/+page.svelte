@@ -23,7 +23,7 @@
 	let geometries = $state<GeometryItem[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
-	let isBloomEnabled = $state(false); // State to control Bloom effect
+	let isBloomEnabled = $state(true); // State to control Bloom effect
 
 	// Function to fetch geometries
 	const fetchGeometries = async () => {
@@ -97,12 +97,10 @@
 	{/if}
 </HTML>
 
-
-
 <!-- Sphère au centre -->
 <T.Mesh position={[0, 0.5, 0]}>
 	<T.SphereGeometry args={[0.5, 32, 32]} />
-	<T.MeshStandardMaterial color="red" />
+	<T.MeshStandardMaterial color="red" emissive="red" emissiveIntensity={2} />
 </T.Mesh>
 
 {#if isBloomEnabled}

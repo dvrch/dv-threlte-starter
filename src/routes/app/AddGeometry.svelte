@@ -57,6 +57,15 @@
 		isDropdownOpen = !isDropdownOpen;
 	};
 
+	let isBloomActive = $state(true);
+	$effect(() => {
+		window.dispatchEvent(
+			new CustomEvent('toggleBloomEffect', {
+				detail: { enabled: isBloomActive }
+			})
+		);
+	});
+
 	const loadTypes = async () => {
 		try {
 			const response = await fetch(ENDPOINTS.TYPES, {
@@ -750,6 +759,21 @@
 					<button type="button" onclick={resetForm} class="cancel-button">Cancel</button>
 				{/if}
 			</div>
+
+			<!-- Scene Controls -->
+			<div class="scene-controls">
+				<div class="control-item">
+					<span>Bloom Effect</span>
+					<button
+						type="button"
+						class="toggle-btn"
+						class:active={isBloomActive}
+						onclick={() => (isBloomActive = !isBloomActive)}
+					>
+						{isBloomActive ? 'Enabled' : 'Disabled'}
+					</button>
+				</div>
+			</div>
 		</form>
 
 		<div class="delete-section">
@@ -1056,5 +1080,35 @@
 		color: #f44336;
 		border-color: rgba(244, 67, 54, 0.5);
 		background: rgba(244, 67, 54, 0.1);
+	}
+
+	/* Scene Controls */
+	.scene-controls {
+		margin-top: 10px;
+		padding-top: 8px;
+		border-top: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.control-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		font-size: 0.7rem;
+		color: #bbb;
+	}
+
+	.toggle-btn {
+		width: auto;
+		padding: 2px 8px;
+		font-size: 0.65rem;
+		background: rgba(255, 255, 255, 0.05);
+		border-radius: 12px;
+		transition: all 0.2s;
+	}
+
+	.toggle-btn.active {
+		background: rgba(77, 182, 172, 0.2);
+		color: #4db6ac;
+		border-color: #4db6ac;
 	}
 </style>
