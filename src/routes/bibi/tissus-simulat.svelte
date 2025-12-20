@@ -5,6 +5,7 @@
 	import { T, useTask } from '@threlte/core';
 	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
 	import { browser } from '$app/environment';
+	import { buildSceneGraph } from '$lib/utils/cloudinaryAssets';
 
 	// Store to manage texture state
 	let currentTexture = writable<THREE.Texture | null>(null);
@@ -53,6 +54,9 @@
 				loader.load(
 					glbUrl,
 					(gltf) => {
+						// 🛡️ SECURITY: Run through buildSceneGraph to fix potential missing materials
+						buildSceneGraph(gltf);
+
 						model = gltf.scene;
 						if (gltf.animations.length > 0) {
 							mixer = new THREE.AnimationMixer(model);

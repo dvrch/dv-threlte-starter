@@ -1,11 +1,21 @@
 <script lang="ts">
 	import { T, useTask } from '@threlte/core';
-	import { OrbitControls, useGltf } from '@threlte/extras';
-	import { AmbientLight, PointLight } from 'three'; // Importer les lumières de Three.js
-	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
+	import { OrbitControls } from '@threlte/extras';
+	import { browser } from '$app/environment';
+	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+	import { createDracoLoader } from '$lib/utils/draco-loader';
+	import { buildSceneGraph } from '$lib/utils/cloudinaryAssets';
+	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
+	import { onMount } from 'svelte';
 
 	let y = $state(2);
 	let rotation = $state(0);
+
+	let models = $state({
+		ghost: null as any,
+		garden: null as any,
+		nissan: null as any
+	});
 
 	function levitate() {
 		const time = Date.now() / 1000;
@@ -19,26 +29,46 @@
 		rotation += delta * 0.4;
 	});
 
-	levitate();
-</script>
+	onMount(async () => {
+		if (browser) {
+			levitate();
+			const loader = new GLTFLoader();
+			loader.setDRACOLoader(createDracoLoader());
 
-<!-- <Bloom /> -->
+			const loadSafe = async (name: string) => {
+				try {
+					const url = await getWorkingAssetUrl(name, 'models');
+					const gltf = await loader.loadAsync(url);
+					buildSceneGraph(gltf);
+					return gltf.scene;
+				} catch (e) {
+					console.error(`Safe load failed for ${name}`, e);
+					return null;
+				}
+			};
+
+			models.ghost = await loadSafe('ghost.glb');
+			models.garden = await loadSafe('garden1.glb');
+			models.nissan = await loadSafe('nissan.glb');
+		}
+	});
+</script>
 
 <T.OrthographicCamera position={[10, 10, 10]} zoom={40} makeDefault>
 	<OrbitControls enableDamping />
 </T.OrthographicCamera>
 
-<!-- <T.AmbientLight color="#8f00ff" intensity={1} /> -->
 <T.PointLight intensity={10} position={[1, 2, -4]} color="#76aac8" />
+<T.AmbientLight intensity={0.5} />
 
-{#await useGltf(getCloudinaryAssetUrl('ghost.glb')) then ghost}
-	<T is={ghost.scene} position={[0, y, 0]} scale={0.4} />
-{/await}
+{#if models.ghost}
+	<T is={models.ghost} position={[0, y, 0]} scale={0.4} />
+{/if}
 
-{#await useGltf(getCloudinaryAssetUrl('garden1.glb')) then garden}
-	<T is={garden.scene} rotation.y={rotation} />
-{/await}
+{#if models.garden}
+	<T is={models.garden} rotation.y={rotation} />
+{/if}
 
-{#await useGltf(getCloudinaryAssetUrl('nissan.glb')) then nissan}
-	<T is={nissan.scene} position={[2, y, 1]} scale={0.4} />
-{/await}
+{#if models.nissan}
+	<T is={models.nissan} position={[2, y, 1]} scale={0.4} />
+{/if}

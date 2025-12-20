@@ -17,7 +17,7 @@
 	onMount(async () => {
 		if (browser) {
 			try {
-				const gltfUrl = await getWorkingAssetUrl('spaceship.glb', 'models');
+				const gltfUrl = '/models/spaceship.glb'; // FORCED LOCAL AS PER USER REQUEST
 				const mapUrl = await getWorkingAssetUrl('energy-beam-opacity.png', 'textures');
 
 				const loader = new GLTFLoader();
