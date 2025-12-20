@@ -49,7 +49,7 @@
 
 			models.ghost = await loadSafe('ghost.glb');
 			models.garden = await loadSafe('garden1.glb');
-			models.nissan = await loadSafe('nissan.glb');
+			models.nissan = await loadSafe('nissan2.glb');
 		}
 	});
 </script>
