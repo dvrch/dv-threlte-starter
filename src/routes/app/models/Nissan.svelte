@@ -25,14 +25,14 @@ Title: Nissan Skyline GTR r35
 	onMount(async () => {
 		if (browser) {
 			try {
-				const url = await getWorkingAssetUrl('nissan2.glb', 'models');
+				// Use nissan.glb as it's the verified filename
+				const url = await getWorkingAssetUrl('nissan.glb', 'models');
 				const loader = new GLTFLoader();
 				loader.setDRACOLoader(createDracoLoader());
 
 				const rawGltf = await loader.loadAsync(url);
 				const { nodes, materials } = buildSceneGraph(rawGltf);
 
-				// Add nodes and materials to the object to mimic Threlte structure
 				const processed = { ...rawGltf, nodes, materials };
 
 				// Apply alpha fix
@@ -205,4 +205,6 @@ Title: Nissan Skyline GTR r35
 			</T.Group>
 		</T.Group>
 	{/if}
+
+	<slot {ref} />
 </T>

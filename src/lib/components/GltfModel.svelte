@@ -18,14 +18,16 @@
 	onMount(async () => {
 		if (browser && url) {
 			try {
-				const filename = url.split('/').pop() || url;
-				const resolved = await getWorkingAssetUrl(filename, 'models');
+				// 🧼 Clean URL: if it's a full URL (from DB), getWorkingAssetUrl will handle it
+				const resolved = await getWorkingAssetUrl(url, 'models');
 
 				const loader = new GLTFLoader();
 				loader.setDRACOLoader(createDracoLoader());
 
 				const raw = await loader.loadAsync(resolved);
 				const { nodes, materials } = buildSceneGraph(raw);
+
+				// Mimic Threlte structure for compatibility
 				gltfScene = { ...raw, nodes, materials };
 
 				if (raw.animations && raw.animations.length > 0) {
@@ -47,7 +49,7 @@
 	});
 </script>
 
-{#if browser && gltfScene}
+{#if browser && gltfScene && gltfScene.scene}
 	<T is={gltfScene.scene} {...restProps} />
 {:else}
 	<T.Group />

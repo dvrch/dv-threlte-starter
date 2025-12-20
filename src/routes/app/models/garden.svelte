@@ -24,12 +24,12 @@ Title: Japanese Bridge Garden
 	onMount(async () => {
 		if (browser) {
 			try {
-				const resolved = await getWorkingAssetUrl('garden.glb', 'models');
+				const resolved = await getWorkingAssetUrl('garden1.glb', 'models');
 				const loader = new GLTFLoader();
 				loader.setDRACOLoader(createDracoLoader());
 				const rawGltf = await loader.loadAsync(resolved);
-                const { nodes, materials } = buildSceneGraph(rawGltf);
-                gltfGarden = { ...rawGltf, nodes, materials };
+				const { nodes, materials } = buildSceneGraph(rawGltf);
+				gltfGarden = { ...rawGltf, nodes, materials };
 			} catch (e) {
 				console.error('Failed to load garden model:', e);
 			}
@@ -630,4 +630,4 @@ Title: Japanese Bridge Garden
 	{/if}
 
 	<slot {ref} />
-</T.Group>
+</T>

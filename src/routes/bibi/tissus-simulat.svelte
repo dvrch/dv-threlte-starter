@@ -3,9 +3,7 @@
 	import * as THREE from 'three';
 	import { onMount } from 'svelte';
 	import { T, useTask } from '@threlte/core';
-	import { assets } from '$lib/services/assets';
-	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
-
+	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
 	import { browser } from '$app/environment';
 
 	// Store to manage texture state
@@ -15,9 +13,6 @@
 	let mixer = $state<THREE.AnimationMixer | null>(null); // For animations
 	let clock = new THREE.Clock(); // To manage animation time
 
-	// Path to your GLB model and textures
-	const glbPath = getCloudinaryAssetUrl('cloth_sim_rffdfn.glb');
-	const textures = [getCloudinaryAssetUrl('zaki.png')];
 	let activeTextureIndex = 0;
 
 	// Function to load a texture and update the material of the model
@@ -26,12 +21,10 @@
 		const { MeshStandardMaterial } = await import('three');
 		const textureLoader = new TextureLoader();
 
-		// Cycle texture index logic if we actually had multiple textures,
-		// currently there's only one in the array but let's make it future-proof.
-		// activeTextureIndex = (activeTextureIndex + 1) % textures.length;
+		const texUrl = await getWorkingAssetUrl('zaki.png', 'textures');
 
 		textureLoader.load(
-			textures[activeTextureIndex],
+			texUrl,
 			(texture) => {
 				currentTexture.set(texture);
 				if (model) {
@@ -54,26 +47,32 @@
 		const loadModel = async () => {
 			const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
 			const loader = new GLTFLoader();
-			loader.load(
-				glbPath,
-				(gltf) => {
-					model = gltf.scene;
-					if (gltf.animations.length > 0) {
-						mixer = new THREE.AnimationMixer(model);
-						const action = mixer.clipAction(gltf.animations[0]);
-						action.play();
+
+			try {
+				const glbUrl = await getWorkingAssetUrl('cloth_sim_rffdfn.glb', 'models');
+				loader.load(
+					glbUrl,
+					(gltf) => {
+						model = gltf.scene;
+						if (gltf.animations.length > 0) {
+							mixer = new THREE.AnimationMixer(model);
+							const action = mixer.clipAction(gltf.animations[0]);
+							action.play();
+						}
+						// Apply initial texture
+						nextTexture();
+					},
+					undefined,
+					(error) => {
+						console.error('An error happened loading the GLB model:', error);
 					}
-					// Apply initial texture
-					nextTexture();
-				},
-				undefined,
-				(error) => {
-					console.error('An error happened loading the GLB model:', error);
-				}
-			);
+				);
+			} catch (e) {
+				console.error('Failed to resolve URL for cloth sim:', e);
+			}
 		};
 
-		loadModel();
+		if (browser) loadModel();
 
 		useTask(() => {
 			if (mixer) {
@@ -90,6 +89,4 @@
 	{#if model}
 		<T is={model} />
 	{/if}
-{:else}
-	<!-- Placeholder for SSR if needed, or just render nothing -->
 {/if}

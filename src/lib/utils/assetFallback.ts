@@ -4,33 +4,39 @@ export async function getWorkingAssetUrl(
     fileName: string,
     type: 'models' | 'textures'
 ): Promise<string> {
-    // 1. Extract pure filename if full URL is passed
+    if (!fileName) return '';
+
+    // 1. Extract pure filename from ANY URL (Vercel, Cloudinary, etc.)
+    // We want to handle paths like:
+    // - https://vercel-storage.com/models/xxx.glb
+    // - https://res.cloudinary.com/.../v12345/xxx.glb
+    // - /models/xxx.glb
     let pureName = fileName;
     if (fileName.includes('/')) {
         pureName = fileName.split('/').pop() || fileName;
     }
-    // Strip version junk if any (v12345/filename)
+
+    // Remove common Cloudinary/Vercel junk from the filename itself
+    // Some uploads have public IDs with random suffix or versioning
+    // We strip leading versions like v12345678/
     pureName = pureName.replace(/^v\d+[\/\-_]/, '');
 
-    // 2. Try the primary intended Cloudinary folder
-    const primaryFolder = type === 'models' ? 'dv-threlte/models' : 'dv-threlte/textures';
-    const primaryUrl = getCloudinaryAssetUrl(pureName, primaryFolder);
+    // Search logic: try several folders on Cloudinary
+    const foldersToTry = [
+        type === 'models' ? 'dv-threlte/models' : 'dv-threlte/textures',
+        'dv-threlte/public',
+        'dv-threlte' // some might be in the root of the folder
+    ];
 
-    try {
-        const response = await fetch(primaryUrl, { method: 'HEAD' });
-        if (response.ok) return primaryUrl;
-    } catch (e) {
-        console.warn(`Primary Cloudinary check failed for ${pureName}`);
+    for (const folder of foldersToTry) {
+        const cloudinaryUrl = getCloudinaryAssetUrl(pureName, folder);
+        try {
+            const response = await fetch(cloudinaryUrl, { method: 'HEAD' });
+            if (response.ok) return cloudinaryUrl;
+        } catch (e) { }
     }
 
-    // 3. Try the secondary (fallback) Cloudinary folder 'dv-threlte/public'
-    const secondaryUrl = getCloudinaryAssetUrl(pureName, 'dv-threlte/public');
-    try {
-        const response = await fetch(secondaryUrl, { method: 'HEAD' });
-        if (response.ok) return secondaryUrl;
-    } catch (e) { }
-
-    // 4. Check local fallbacks
+    // 2. Check local fallbacks (if Cloudinary fails)
     const localPaths =
         type === 'models'
             ? [`/models/${pureName}`, `/public/${pureName}`, `/${pureName}`]
@@ -43,6 +49,11 @@ export async function getWorkingAssetUrl(
         } catch (e) { }
     }
 
-    // 5. Hard fallback to the primary guessed Cloudinary URL if even locals fail
-    return primaryUrl;
+    // 3. Last chance: if we have a full URL originally, and it's not a broken Vercel link, try it
+    if (fileName.startsWith('http') && !fileName.includes('vercel-storage.com')) {
+        return fileName;
+    }
+
+    // 4. Default to the first Cloudinary attempt structure if all else fails
+    return getCloudinaryAssetUrl(pureName, foldersToTry[0]);
 }
