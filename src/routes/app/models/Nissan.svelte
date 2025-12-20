@@ -20,26 +20,19 @@ Title: Nissan Skyline GTR r35
 
 	import { assets } from '$lib/services/assets';
 	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
+	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
 	import { onMount } from 'svelte';
 
 	// Configure DRACOLoader and load GLTF on client-side only
 	let gltf = $state<any>(null); // Use state for reactivity
 
-	onMount(() => {
-		const loadGltf = async () => {
-			try {
-				return await useGltf(getCloudinaryAssetUrl('nissan2.glb'), {
-					dracoLoader: createDracoLoader()
-				});
-			} catch (e) {
-				console.warn('Nissan main: Cloudinary fail, trying local...');
-				return await useGltf('/models/nissan2.glb', {
-					dracoLoader: createDracoLoader()
-				});
-			}
-		};
+	onMount(async () => {
+		const url = await getWorkingAssetUrl('nissan2.glb', 'models');
+		const modelPromise = useGltf(url, {
+			dracoLoader: createDracoLoader()
+		});
 
-		loadGltf()
+		modelPromise
 			.then((model: any) => {
 				// Apply alpha fix
 				function alphaFix(material: any) {

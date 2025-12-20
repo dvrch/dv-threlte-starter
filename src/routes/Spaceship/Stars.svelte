@@ -2,7 +2,9 @@
 	import { T, useTask } from '@threlte/core';
 	import { Instance, InstancedMesh, useTexture } from '@threlte/extras';
 	import { Color, DoubleSide, Vector3 } from 'three';
-	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
+	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
+	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
 
 	let STARS_COUNT = 350;
 	let colors = ['#fcaa67', '#C75D59', '#ffffc7', '#8CC5C6', '#A5898C'];
@@ -16,16 +18,15 @@
 	}
 
 	let stars = $state<Star[]>([]);
+	let starTextureUrl = $state<string | null>(null);
 
-	// Try Cloudinary first, fallback to local
-	const map = (async () => {
-		try {
-			return await useTexture(getCloudinaryAssetUrl('star.png'));
-		} catch (e) {
-			console.warn('Star texture: Cloudinary fail, trying local...');
-			return await useTexture('/textures/star.png');
+	onMount(async () => {
+		if (browser) {
+			starTextureUrl = await getWorkingAssetUrl('star.png', 'textures');
 		}
-	})();
+	});
+
+	const map = $derived(starTextureUrl ? useTexture(starTextureUrl) : null);
 
 	function r(min: number, max: number) {
 		return min + Math.random() * (max - min);
@@ -54,7 +55,6 @@
 		};
 	}
 
-	// Initialize stars
 	for (let i = 0; i < STARS_COUNT; i++) {
 		stars.push(createStar());
 	}
@@ -74,17 +74,19 @@
 	});
 </script>
 
-{#await map then value}
-	<InstancedMesh limit={STARS_COUNT} range={STARS_COUNT}>
-		<T.PlaneGeometry args={[1, 0.05]} />
-		<T.MeshBasicMaterial side={DoubleSide} alphaMap={value} transparent />
+{#if map}
+	{#await map then value}
+		<InstancedMesh limit={STARS_COUNT} range={STARS_COUNT}>
+			<T.PlaneGeometry args={[1, 0.05]} />
+			<T.MeshBasicMaterial side={DoubleSide} alphaMap={value} transparent />
 
-		{#each stars as star}
-			<Instance
-				position={[star.pos.x, star.pos.y, star.pos.z]}
-				scale={[star.len, 1, 1]}
-				color={star.color}
-			/>
-		{/each}
-	</InstancedMesh>
-{/await}
+			{#each stars as star}
+				<Instance
+					position={[star.pos.x, star.pos.y, star.pos.z]}
+					scale={[star.len, 1, 1]}
+					color={star.color}
+				/>
+			{/each}
+		</InstancedMesh>
+	{/await}
+{/if}
