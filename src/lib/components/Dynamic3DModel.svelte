@@ -49,10 +49,11 @@
 		geometry?.position?.y ?? 0,
 		geometry?.position?.z ?? 0
 	]);
+	const DEG2RAD = Math.PI / 180;
 	const rotArray: [number, number, number] = $derived([
-		geometry?.rotation?.x ?? 0,
-		geometry?.rotation?.y ?? 0,
-		geometry?.rotation?.z ?? 0
+		(geometry?.rotation?.x ?? 0) * DEG2RAD,
+		(geometry?.rotation?.y ?? 0) * DEG2RAD,
+		(geometry?.rotation?.z ?? 0) * DEG2RAD
 	]);
 	const scaleArray: [number, number, number] = $derived([
 		geometry?.scale?.x ?? 1,

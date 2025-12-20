@@ -73,7 +73,10 @@
 			object.traverse((child: any) => {
 				if (child.isMesh && child.material) {
 					child.material.envMap = envMapRT.texture;
-					child.material.envMapIntensity = 1.0;
+					child.material.envMapIntensity = 100; // Reflets intenses
+					if (child.material.normalScale) {
+						child.material.normalScale.set(0.3, 0.3);
+					}
 					child.material.needsUpdate = true;
 				}
 			});
@@ -107,8 +110,30 @@
 		{ stage: renderStage, autoInvalidate: false }
 	);
 
+	// Simulation de vol avec Raycasting
+	const raycaster = new Raycaster();
+	const pointer = new Vector2();
+	const planeMesh = new Mesh(new PlaneGeometry(100, 100)); // Invisible plane for raycasting
+
+	const handlePointerMove = (event: PointerEvent) => {
+		// Normalisation des coordonnées de la souris (-1 à +1)
+		pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+		pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+		if (currentCamera && currentCamera instanceof Color === false) {
+			raycaster.setFromCamera(pointer, currentCamera);
+			const intersects = raycaster.intersectObject(planeMesh);
+			if (intersects[0]) {
+				intersectionPoint.copy(intersects[0].point);
+				// On fixe X à 3 pour garder un mouvement latéral contraint comme dans l'original
+				intersectionPoint.x = 3;
+			}
+		}
+	};
+
 	onMount(() => {
 		autoRender.set(false);
+		window.addEventListener('pointermove', handlePointerMove);
 
 		const timeout = setTimeout(() => {
 			setupEnvironmentMapping();
@@ -120,6 +145,7 @@
 
 		return () => {
 			autoRender.set(true);
+			window.removeEventListener('pointermove', handlePointerMove);
 			clearTimeout(timeout);
 			clearInterval(interval);
 			if (envMapRT) envMapRT.dispose();
