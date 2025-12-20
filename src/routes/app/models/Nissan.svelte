@@ -9,7 +9,7 @@ Title: Nissan Skyline GTR r35
 
 <script lang="ts">
 	import { T } from '@threlte/core';
-	import { useGltf } from '@threlte/extras';
+	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { Group } from 'three';
 	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
@@ -18,179 +18,174 @@ Title: Nissan Skyline GTR r35
 
 	let { ref = $bindable(new Group()), ...rest } = $props();
 
-	// Starting with a valid string prevents potential hook initialization issues
-	let gltfUrl = $state<string>('');
-	const gltfStore = useGltf(() => gltfUrl || '', { dracoLoader: createDracoLoader() });
+	let gltf = $state<any>(null); // Final processed model
+	let isLoading = $state(true);
 
 	onMount(async () => {
 		if (browser) {
-			gltfUrl = await getWorkingAssetUrl('nissan2.glb', 'models');
-		}
-	});
+			try {
+				const url = await getWorkingAssetUrl('nissan2.glb', 'models');
+				const loader = new GLTFLoader();
+				loader.setDRACOLoader(createDracoLoader());
 
-	let initialized = $state(false);
-	$effect(() => {
-		if ($gltfStore && !initialized) {
-			const model = $gltfStore;
-			// Apply alpha fix
-			function alphaFix(material: any) {
-				if (material) {
-					material.transparent = true;
-					material.alphaToCoverage = true;
-					material.depthWrite = true;
+				const model = await loader.loadAsync(url);
+
+				// Apply alpha fix
+				function alphaFix(material: any) {
+					if (material) {
+						material.transparent = true;
+						material.alphaToCoverage = true;
+						material.depthWrite = true;
+					}
 				}
+
+				const materials = [
+					'r35_paint',
+					'Meo_turbo_black',
+					'Meo_turbo_Gray',
+					'Meo_turbo_chrome',
+					'Meo_turbo_gold',
+					'Meo_turbo_matblack',
+					'r35_badges',
+					'grille',
+					'r35_plastic',
+					'r35_interior',
+					'r35_symbols_2017',
+					'r35_leather',
+					'r35_lejather_perf',
+					'r35_leather_stitching',
+					'r35_steeringwheel',
+					'mirror',
+					'r35_cf',
+					'r35_taillight_2017',
+					'r35_signal_R_2017',
+					'r35_dash_2017_r35_cf',
+					'r35_leather'
+				];
+
+				materials.forEach((materialName) => {
+					if (model.materials[materialName]) {
+						alphaFix(model.materials[materialName]);
+					}
+				});
+
+				gltf = model;
+			} catch (e) {
+				console.error('Failed to load main Nissan model:', e);
+			} finally {
+				isLoading = false;
 			}
-
-			const materials = [
-				'r35_paint',
-				'Meo_turbo_black',
-				'Meo_turbo_Gray',
-				'Meo_turbo_chrome',
-				'Meo_turbo_gold',
-				'Meo_turbo_matblack',
-				'r35_badges',
-				'grille',
-				'r35_plastic',
-				'r35_interior',
-				'r35_symbols_2017',
-				'r35_leather',
-				'r35_lejather_perf',
-				'r35_leather_stitching',
-				'r35_steeringwheel',
-				'mirror',
-				'r35_cf',
-				'r35_taillight_2017',
-				'r35_signal_R_2017',
-				'r35_dash_2017_r35_cf',
-				'r35_leather'
-			];
-
-			materials.forEach((materialName) => {
-				if (model.materials[materialName]) {
-					alphaFix(model.materials[materialName]);
-				}
-			});
-			initialized = true;
 		}
 	});
 </script>
 
 <T is={ref} dispose={false} {...rest}>
-	{#if $gltfStore}
+	{#if gltf}
 		<T.Group scale={0.01}>
 			<T.Group rotation={[-Math.PI / 2, 0, 0]} scale={100}>
-				{#if $gltfStore.nodes.r35_turbos_r35_paint_0}
+				{#if gltf.nodes.r35_turbos_r35_paint_0}
 					<T.Mesh
-						geometry={$gltfStore.nodes.r35_turbos_r35_paint_0.geometry}
-						material={$gltfStore.materials.r35_paint}
+						geometry={gltf.nodes.r35_turbos_r35_paint_0.geometry}
+						material={gltf.materials.r35_paint}
 					/>
 				{/if}
-				{#if $gltfStore.nodes.r35_turbos_Meo_turbo_black_0}
+				{#if gltf.nodes.r35_turbos_Meo_turbo_black_0}
 					<T.Mesh
-						geometry={$gltfStore.nodes.r35_turbos_Meo_turbo_black_0.geometry}
-						material={$gltfStore.materials.Meo_turbo_black}
+						geometry={gltf.nodes.r35_turbos_Meo_turbo_black_0.geometry}
+						material={gltf.materials.Meo_turbo_black}
 					/>
 				{/if}
-				{#if $gltfStore.nodes.r35_turbos_Meo_turbo_Gray_0}
+				{#if gltf.nodes.r35_turbos_Meo_turbo_Gray_0}
 					<T.Mesh
-						geometry={$gltfStore.nodes.r35_turbos_Meo_turbo_Gray_0.geometry}
-						material={$gltfStore.materials.Meo_turbo_Gray}
+						geometry={gltf.nodes.r35_turbos_Meo_turbo_Gray_0.geometry}
+						material={gltf.materials.Meo_turbo_Gray}
 					/>
 				{/if}
-				{#if $gltfStore.nodes.r35_turbos_Meo_turbo_chrome_0}
+				{#if gltf.nodes.r35_turbos_Meo_turbo_chrome_0}
 					<T.Mesh
-						geometry={$gltfStore.nodes.r35_turbos_Meo_turbo_chrome_0.geometry}
-						material={$gltfStore.materials.Meo_turbo_chrome}
+						geometry={gltf.nodes.r35_turbos_Meo_turbo_chrome_0.geometry}
+						material={gltf.materials.Meo_turbo_chrome}
 					/>
 				{/if}
-				{#if $gltfStore.nodes.r35_turbos_Meo_turbo_gold_0}
+				{#if gltf.nodes.r35_turbos_Meo_turbo_gold_0}
 					<T.Mesh
-						geometry={$gltfStore.nodes.r35_turbos_Meo_turbo_gold_0.geometry}
-						material={$gltfStore.materials.Meo_turbo_gold}
+						geometry={gltf.nodes.r35_turbos_Meo_turbo_gold_0.geometry}
+						material={gltf.materials.Meo_turbo_gold}
 					/>
 				{/if}
-				{#if $gltfStore.nodes.r35_turbos_Meo_turbo_matblack_0}
+				{#if gltf.nodes.r35_turbos_Meo_turbo_matblack_0}
 					<T.Mesh
-						geometry={$gltfStore.nodes.r35_turbos_Meo_turbo_matblack_0.geometry}
-						material={$gltfStore.materials.Meo_turbo_matblack}
+						geometry={gltf.nodes.r35_turbos_Meo_turbo_matblack_0.geometry}
+						material={gltf.materials.Meo_turbo_matblack}
 					/>
 				{/if}
-				{#if $gltfStore.nodes.r35_badges_r35_badges_0}
+				{#if gltf.nodes.r35_badges_r35_badges_0}
 					<T.Mesh
-						geometry={$gltfStore.nodes.r35_badges_r35_badges_0.geometry}
-						material={$gltfStore.materials.r35_badges}
+						geometry={gltf.nodes.r35_badges_r35_badges_0.geometry}
+						material={gltf.materials.r35_badges}
 					/>
 				{/if}
-				{#if $gltfStore.nodes.grille_grille_0}
+				{#if gltf.nodes.grille_grille_0}
+					<T.Mesh geometry={gltf.nodes.grille_grille_0.geometry} material={gltf.materials.grille} />
+				{/if}
+				{#if gltf.nodes.r35_plastic_r35_plastic_0}
 					<T.Mesh
-						geometry={$gltfStore.nodes.grille_grille_0.geometry}
-						material={$gltfStore.materials.grille}
+						geometry={gltf.nodes.r35_plastic_r35_plastic_0.geometry}
+						material={gltf.materials.r35_plastic}
 					/>
 				{/if}
-				{#if $gltfStore.nodes.r35_plastic_r35_plastic_0}
+				{#if gltf.nodes.r35_interior_r35_interior_0}
 					<T.Mesh
-						geometry={$gltfStore.nodes.r35_plastic_r35_plastic_0.geometry}
-						material={$gltfStore.materials.r35_plastic}
+						geometry={gltf.nodes.r35_interior_r35_interior_0.geometry}
+						material={gltf.materials.r35_interior}
 					/>
 				{/if}
-				{#if $gltfStore.nodes.r35_interior_r35_interior_0}
+				{#if gltf.nodes.r35_symbols_2017_r35_symbols_2017_0}
 					<T.Mesh
-						geometry={$gltfStore.nodes.r35_interior_r35_interior_0.geometry}
-						material={$gltfStore.materials.r35_interior}
+						geometry={gltf.nodes.r35_symbols_2017_r35_symbols_2017_0.geometry}
+						material={gltf.materials.r35_symbols_2017}
 					/>
 				{/if}
-				{#if $gltfStore.nodes.r35_symbols_2017_r35_symbols_2017_0}
+				{#if gltf.nodes.r35_stearingwheel_r35_steeringwheel_0}
 					<T.Mesh
-						geometry={$gltfStore.nodes.r35_symbols_2017_r35_symbols_2017_0.geometry}
-						material={$gltfStore.materials.r35_symbols_2017}
+						geometry={gltf.nodes.r35_stearingwheel_r35_steeringwheel_0.geometry}
+						material={gltf.materials.r35_steeringwheel}
 					/>
 				{/if}
-				{#if $gltfStore.nodes.r35_stearingwheel_r35_steeringwheel_0}
+				{#if gltf.nodes.mirror_mirror_0}
+					<T.Mesh geometry={gltf.nodes.mirror_mirror_0.geometry} material={gltf.materials.mirror} />
+				{/if}
+				{#if gltf.nodes.r35_cf_r35_cf_0}
+					<T.Mesh geometry={gltf.nodes.r35_cf_r35_cf_0.geometry} material={gltf.materials.r35_cf} />
+				{/if}
+				{#if gltf.nodes.r35_taillight_2017_r35_taillight_2017_0}
 					<T.Mesh
-						geometry={$gltfStore.nodes.r35_stearingwheel_r35_steeringwheel_0.geometry}
-						material={$gltfStore.materials.r35_steeringwheel}
+						geometry={gltf.nodes.r35_taillight_2017_r35_taillight_2017_0.geometry}
+						material={gltf.materials.r35_taillight_2017}
 					/>
 				{/if}
-				{#if $gltfStore.nodes.mirror_mirror_0}
+				{#if gltf.nodes.r35_signal_R_2017_r35_signal_R_2017_0}
 					<T.Mesh
-						geometry={$gltfStore.nodes.mirror_mirror_0.geometry}
-						material={$gltfStore.materials.mirror}
+						geometry={gltf.nodes.r35_signal_R_2017_r35_signal_R_2017_0.geometry}
+						material={gltf.materials.r35_signal_R_2017}
 					/>
 				{/if}
-				{#if $gltfStore.nodes.r35_cf_r35_cf_0}
+				{#if gltf.nodes.r35_dash_2017_r35_cf_0}
 					<T.Mesh
-						geometry={$gltfStore.nodes.r35_cf_r35_cf_0.geometry}
-						material={$gltfStore.materials.r35_cf}
+						geometry={gltf.nodes.r35_dash_2017_r35_cf_0.geometry}
+						material={gltf.materials.r35_dash_2017_r35_cf}
 					/>
 				{/if}
-				{#if $gltfStore.nodes.r35_taillight_2017_r35_taillight_2017_0}
+				{#if gltf.nodes.r35_leather_internal_r35_leather_0}
 					<T.Mesh
-						geometry={$gltfStore.nodes.r35_taillight_2017_r35_taillight_2017_0.geometry}
-						material={$gltfStore.materials.r35_taillight_2017}
+						geometry={gltf.nodes.r35_leather_internal_r35_leather_0.geometry}
+						material={gltf.materials.r35_leather}
 					/>
 				{/if}
-				{#if $gltfStore.nodes.r35_signal_R_2017_r35_signal_R_2017_0}
+				{#if gltf.nodes.Object_100_r35_leather_0}
 					<T.Mesh
-						geometry={$gltfStore.nodes.r35_signal_R_2017_r35_signal_R_2017_0.geometry}
-						material={$gltfStore.materials.r35_signal_R_2017}
-					/>
-				{/if}
-				{#if $gltfStore.nodes.r35_dash_2017_r35_cf_0}
-					<T.Mesh
-						geometry={$gltfStore.nodes.r35_dash_2017_r35_cf_0.geometry}
-						material={$gltfStore.materials.r35_dash_2017_r35_cf}
-					/>
-				{/if}
-				{#if $gltfStore.nodes.r35_leather_internal_r35_leather_0}
-					<T.Mesh
-						geometry={$gltfStore.nodes.r35_leather_internal_r35_leather_0.geometry}
-						material={$gltfStore.materials.r35_leather}
-					/>
-				{/if}
-				{#if $gltfStore.nodes.Object_100_r35_leather_0}
-					<T.Mesh
-						geometry={$gltfStore.nodes.Object_100_r35_leather_0.geometry}
-						material={$gltfStore.materials.r35_leather}
+						geometry={gltf.nodes.Object_100_r35_leather_0.geometry}
+						material={gltf.materials.r35_leather}
 					/>
 				{/if}
 			</T.Group>

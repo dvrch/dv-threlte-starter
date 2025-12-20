@@ -1,45 +1,54 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
-	import { useGltf, useGltfAnimations } from '@threlte/extras';
+	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { browser } from '$app/environment';
 	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
 	import { onMount } from 'svelte';
+	import { AnimationMixer } from 'three';
 
 	// Receive URL and other props
 	let { url, ...restProps }: { url: string; [key: string]: any } = $props();
 
-	let resolvedUrl = $state('');
-
-	// Load GLTF at the top level with reactive URL support
-	const gltf = useGltf(() => resolvedUrl, {
-		dracoLoader: createDracoLoader()
-	});
-
-	// useGltfAnimations extracts animations and provides 'actions'.
-	const { actions } = useGltfAnimations(gltf);
+	let gltfResult = $state<any>(null);
+	let isLoading = $state(true);
+	let mixer: AnimationMixer | null = null;
 
 	onMount(async () => {
 		if (browser && url) {
-			// Extract filename from URL (which might be a full Cloudinary URL or just a name)
-			const filename = url.split('/').pop() || url;
-			// Pass 'models' as target folder to look into /models/ if local fallback is needed
-			resolvedUrl = await getWorkingAssetUrl(filename, 'models');
+			try {
+				const filename = url.split('/').pop() || url;
+				const resolved = await getWorkingAssetUrl(filename, 'models');
+
+				const loader = new GLTFLoader();
+				loader.setDRACOLoader(createDracoLoader());
+
+				const result = await loader.loadAsync(resolved);
+				gltfResult = result;
+
+				if (result.animations && result.animations.length > 0) {
+					mixer = new AnimationMixer(result.scene);
+					result.animations.forEach((clip: any) => {
+						mixer?.clipAction(clip).play();
+					});
+				}
+			} catch (e) {
+				console.error(`Failed to load GLTF from ${url}:`, e);
+			} finally {
+				isLoading = false;
+			}
 		}
 	});
 
-	// Effect to play animations once they are loaded
-	$effect(() => {
-		if ($actions) {
-			Object.values($actions).forEach((action) => {
-				action?.reset().play();
-			});
-		}
+	// Task for animation updates
+	import { useTask } from '@threlte/core';
+	useTask((delta) => {
+		if (mixer) mixer.update(delta);
 	});
 </script>
 
-{#if browser && $gltf}
-	<T is={$gltf.scene} {...restProps} />
+{#if browser && gltfResult}
+	<T is={gltfResult.scene} {...restProps} />
 {:else}
 	<T.Group />
 {/if}

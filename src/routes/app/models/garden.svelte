@@ -10,37 +10,31 @@ Title: Japanese Bridge Garden
 <script lang="ts">
 	import { Group } from 'three';
 	import { T } from '@threlte/core';
-	import { useGltf } from '@threlte/extras';
+	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
+	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
+	import { createDracoLoader } from '$lib/utils/draco-loader';
 
-	export const ref = new Group();
-	let { url = '/models/garden.glb', ...rest } = $props(); // Default to local path
+	let { ref = $bindable(new Group()), ...restProps } = $props();
 
 	let gltf = $state<any>(null);
 
-	onMount(() => {
-		const targetUrl =
-			url && browser ? getCloudinaryAssetUrl(url) : getCloudinaryAssetUrl('/models/garden.glb');
-
-		const loadModel = (modelUrl: string) => {
-			return useGltf(modelUrl).then((model) => {
-				gltf = model;
-			});
-		};
-
-		loadModel(targetUrl).catch(() => {
-			console.warn(`Failed to load model from ${targetUrl}, falling back to /models/garden.glb`);
-			// Fallback
-			loadModel(getCloudinaryAssetUrl('/models/garden.glb')).catch((err) =>
-				console.error('Failed to load fallback garden model', err)
-			);
-		});
+	onMount(async () => {
+		if (browser) {
+			try {
+				const resolved = await getWorkingAssetUrl('garden.glb', 'models');
+				const loader = new GLTFLoader();
+				loader.setDRACOLoader(createDracoLoader());
+				gltf = await loader.loadAsync(resolved);
+			} catch (e) {
+				console.error('Failed to load garden model:', e);
+			}
+		}
 	});
 </script>
 
-<T is={ref} dispose={false} {...rest}>
+<T is={ref} dispose={false} {...restProps}>
 	{#if gltf}
 		<T.Group scale={0.01}>
 			<T.Group
