@@ -3,24 +3,34 @@
 	import { useGltf, useGltfAnimations } from '@threlte/extras';
 	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { browser } from '$app/environment';
+	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
+	import { onMount } from 'svelte';
 
 	// Receive URL and other props
 	let { url, ...restProps }: { url: string; [key: string]: any } = $props();
 
-	// Load GLTF at the top level.
-	// NOTE: This assumes the component is re-created (keyed) if the URL changes.
-	const gltf = useGltf(url, {
+	let resolvedUrl = $state('');
+
+	// Load GLTF at the top level with reactive URL support
+	const gltf = useGltf(() => resolvedUrl, {
 		dracoLoader: createDracoLoader()
 	});
 
 	// useGltfAnimations extracts animations and provides 'actions'.
-	// It accepts the store returned by useGltf.
 	const { actions } = useGltfAnimations(gltf);
+
+	onMount(async () => {
+		if (browser && url) {
+			// Extract filename from URL (which might be a full Cloudinary URL or just a name)
+			const filename = url.split('/').pop() || url;
+			// Pass 'models' as target folder to look into /models/ if local fallback is needed
+			resolvedUrl = await getWorkingAssetUrl(filename, 'models');
+		}
+	});
 
 	// Effect to play animations once they are loaded
 	$effect(() => {
 		if ($actions) {
-			// Iterate over all available animations and play them
 			Object.values($actions).forEach((action) => {
 				action?.reset().play();
 			});
@@ -29,13 +39,7 @@
 </script>
 
 {#if browser && $gltf}
-	<!-- Render the scene from the loaded GLTF -->
 	<T is={$gltf.scene} {...restProps} />
-{:else if browser && !$gltf && url}
-	<!-- Log an error if GLTF failed to load and a URL was provided -->
-	{console.error(`Failed to load GLTF model from URL: ${url}`)}
-	<T.Group />
 {:else}
-	<!-- Fallback or empty group while loading -->
 	<T.Group />
 {/if}

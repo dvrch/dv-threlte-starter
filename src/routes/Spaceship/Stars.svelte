@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { T, useTask } from '@threlte/core';
-	import { Instance, InstancedMesh } from '@threlte/extras';
-	import { Color, DoubleSide, Vector3, TextureLoader } from 'three';
+	import { Instance, InstancedMesh, useTexture } from '@threlte/extras';
+	import { Color, DoubleSide, Vector3 } from 'three';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
@@ -18,13 +18,13 @@
 	}
 
 	let stars = $state<Star[]>([]);
-	let texture = $state<any>(null);
+	let starUrl = $state('');
+
+	const map = useTexture(() => starUrl || '');
 
 	onMount(async () => {
 		if (browser) {
-			const url = await getWorkingAssetUrl('star.png', 'textures');
-			const loader = new TextureLoader();
-			texture = await loader.loadAsync(url);
+			starUrl = await getWorkingAssetUrl('star.png', 'textures');
 		}
 	});
 
@@ -74,10 +74,10 @@
 	});
 </script>
 
-{#if texture}
+{#if $map}
 	<InstancedMesh limit={STARS_COUNT} range={STARS_COUNT}>
 		<T.PlaneGeometry args={[1, 0.05]} />
-		<T.MeshBasicMaterial side={DoubleSide} alphaMap={texture} transparent />
+		<T.MeshBasicMaterial side={DoubleSide} alphaMap={$map} transparent />
 
 		{#each stars as star}
 			<Instance

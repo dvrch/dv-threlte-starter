@@ -23,19 +23,28 @@
 		spaceship: () => import('../../routes/Spaceship/models/spaceship.svelte')
 	};
 
-	const DynamicComponentLoader = $derived(componentMap[geometry?.type] ?? null);
+	const DynamicComponentLoader = $derived(() => {
+		// Priority 1: Special detection for spaceship by URL mapping
+		if (geometry?.model_url?.includes('spaceship.glb')) {
+			return componentMap['spaceship'];
+		}
+		// Priority 2: Standard type mapping
+		return componentMap[geometry?.type] ?? null;
+	});
+
 	let LoadedDynamicComponent: any = $state(null); // To store the dynamically loaded component
 
 	// Load the component dynamically only on the client
 	$effect(() => {
-		if (browser && DynamicComponentLoader) {
+		const loader = DynamicComponentLoader();
+		if (browser && loader) {
 			LoadedDynamicComponent = null; // Reset before loading new component
-			DynamicComponentLoader()
+			loader()
 				.then((module) => {
 					LoadedDynamicComponent = module.default;
 				})
 				.catch((error) => {
-					console.error(`Failed to load dynamic component for type '${geometry.type}':`, error);
+					console.error(`Failed to load dynamic component for ${geometry.type}:`, error);
 					LoadedDynamicComponent = null;
 				});
 		} else {
@@ -81,10 +90,7 @@
 			</T.Mesh>
 		{:else if geometry.model_url && geometry.model_url.trim() !== ''}
 			<!-- 2. Render a generic GLTF model if model_url is present and valid -->
-			{@const modelUrl = geometry.model_url}
-			{#key modelUrl}
-				<GltfModel url={modelUrl} />
-			{/key}
+			<GltfModel url={geometry.model_url} />
 		{:else if geometry.type === 'box'}
 			<!-- 3. Render primitive shapes -->
 			<T.Mesh>
