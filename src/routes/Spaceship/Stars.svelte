@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { T, useTask } from '@threlte/core';
-	import { Instance, InstancedMesh, useTexture } from '@threlte/extras';
-	import { Color, DoubleSide, Vector3 } from 'three';
+	import { Instance, InstancedMesh } from '@threlte/extras';
+	import { Color, DoubleSide, Vector3, TextureLoader } from 'three';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
@@ -18,15 +18,15 @@
 	}
 
 	let stars = $state<Star[]>([]);
-	let starTextureUrl = $state<string | null>(null);
+	let texture = $state<any>(null);
 
 	onMount(async () => {
 		if (browser) {
-			starTextureUrl = await getWorkingAssetUrl('star.png', 'textures');
+			const url = await getWorkingAssetUrl('star.png', 'textures');
+			const loader = new TextureLoader();
+			texture = await loader.loadAsync(url);
 		}
 	});
-
-	const map = $derived(starTextureUrl ? useTexture(starTextureUrl) : null);
 
 	function r(min: number, max: number) {
 		return min + Math.random() * (max - min);
@@ -74,19 +74,17 @@
 	});
 </script>
 
-{#if map}
-	{#await map then value}
-		<InstancedMesh limit={STARS_COUNT} range={STARS_COUNT}>
-			<T.PlaneGeometry args={[1, 0.05]} />
-			<T.MeshBasicMaterial side={DoubleSide} alphaMap={value} transparent />
+{#if texture}
+	<InstancedMesh limit={STARS_COUNT} range={STARS_COUNT}>
+		<T.PlaneGeometry args={[1, 0.05]} />
+		<T.MeshBasicMaterial side={DoubleSide} alphaMap={texture} transparent />
 
-			{#each stars as star}
-				<Instance
-					position={[star.pos.x, star.pos.y, star.pos.z]}
-					scale={[star.len, 1, 1]}
-					color={star.color}
-				/>
-			{/each}
-		</InstancedMesh>
-	{/await}
+		{#each stars as star}
+			<Instance
+				position={[star.pos.x, star.pos.y, star.pos.z]}
+				scale={[star.len, 1, 1]}
+				color={star.color}
+			/>
+		{/each}
+	</InstancedMesh>
 {/if}

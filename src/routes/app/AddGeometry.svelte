@@ -180,6 +180,9 @@
 				formData.append('type', 'gltf_model');
 				const ext = file.name.split('.').pop()?.toLowerCase();
 				if (ext) formData.append('model_type', ext);
+			} else if (type === 'spaceship') {
+				formData.append('type', 'gltf_model');
+				formData.append('model_url', 'spaceship.glb'); // Backend helper or full URL
 			} else {
 				formData.append('type', type);
 			}

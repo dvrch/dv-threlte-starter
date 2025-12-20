@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
-	import { useGltf } from '@threlte/extras';
+	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { Group, LessEqualDepth } from 'three';
 	import Bloom from './bloom.svelte';
@@ -10,23 +10,19 @@
 
 	let { ref = $bindable(new Group()), ...restProps } = $props();
 
-	let gltfUrl = $state<string | null>(null);
+	let gltfResult = $state<any>(null);
+	let isLoading = $state(true);
 
 	onMount(async () => {
 		if (browser) {
-			gltfUrl = await getWorkingAssetUrl('nissan2.glb', 'models');
-		}
-	});
+			try {
+				const url = await getWorkingAssetUrl('nissan2.glb', 'models');
+				const loader = new GLTFLoader();
+				loader.setDRACOLoader(createDracoLoader());
 
-	const gltf = $derived(gltfUrl ? useGltf(gltfUrl, { dracoLoader: createDracoLoader() }) : null);
+				const model = await loader.loadAsync(url);
 
-	let initialized = $state(false);
-
-	$effect(() => {
-		if (gltf) {
-			gltf.then((model: any) => {
-				if (initialized) return;
-
+				// Apply alpha fix
 				function alphaFix(material: any) {
 					if (!material) return;
 					material.transparent = true;
@@ -41,8 +37,13 @@
 						alphaFix(child.material);
 					}
 				});
-				initialized = true;
-			});
+
+				gltfResult = model;
+			} catch (e) {
+				console.error('Failed to load Nissan in spaceship route:', e);
+			} finally {
+				isLoading = false;
+			}
 		}
 	});
 </script>
@@ -52,11 +53,9 @@
 {/if}
 
 <T is={ref} dispose={false} {...restProps}>
-	{#if gltf}
-		{#await gltf then value}
-			<T is={value.scene} />
-		{/await}
-	{:else}
+	{#if gltfResult}
+		<T is={gltfResult.scene} />
+	{:else if isLoading}
 		<slot name="fallback" />
 	{/if}
 </T>
