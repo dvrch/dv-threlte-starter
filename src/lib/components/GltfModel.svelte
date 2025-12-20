@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { T } from '@threlte/core';
+	import { T, useTask } from '@threlte/core';
 	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { browser } from '$app/environment';
@@ -10,7 +10,7 @@
 	// Receive URL and other props
 	let { url, ...restProps }: { url: string; [key: string]: any } = $props();
 
-	let gltfResult = $state<any>(null);
+	let gltfScene = $state<any>(null);
 	let isLoading = $state(true);
 	let mixer: AnimationMixer | null = null;
 
@@ -24,7 +24,7 @@
 				loader.setDRACOLoader(createDracoLoader());
 
 				const result = await loader.loadAsync(resolved);
-				gltfResult = result;
+				gltfScene = result;
 
 				if (result.animations && result.animations.length > 0) {
 					mixer = new AnimationMixer(result.scene);
@@ -40,15 +40,13 @@
 		}
 	});
 
-	// Task for animation updates
-	import { useTask } from '@threlte/core';
 	useTask((delta) => {
 		if (mixer) mixer.update(delta);
 	});
 </script>
 
-{#if browser && gltfResult}
-	<T is={gltfResult.scene} {...restProps} />
+{#if browser && gltfScene}
+	<T is={gltfScene.scene} {...restProps} />
 {:else}
 	<T.Group />
 {/if}

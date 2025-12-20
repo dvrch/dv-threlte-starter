@@ -9,8 +9,8 @@
 
 	let { ref = $bindable(new Group()), ...restProps } = $props();
 
-	let gltfResult = $state<any>(null);
-	let mapResult = $state<any>(null);
+	let gltfResultData = $state<any>(null);
+	let mapResultData = $state<any>(null);
 	let isLoading = $state(true);
 
 	onMount(async () => {
@@ -37,11 +37,11 @@
 				if (rawGltf.materials.spaceship_racer) alphaFix(rawGltf.materials.spaceship_racer);
 				if (rawGltf.materials.cockpit) alphaFix(rawGltf.materials.cockpit);
 
-				gltfResult = rawGltf;
+				gltfResultData = rawGltf;
 
 				// Load Texture manually
 				const texLoader = new TextureLoader();
-				mapResult = await texLoader.loadAsync(mapUrl);
+				mapResultData = await texLoader.loadAsync(mapUrl);
 			} catch (e) {
 				console.error('Failed to load spaceship assets:', e);
 			} finally {
@@ -52,15 +52,15 @@
 </script>
 
 <T is={ref} dispose={false} {...restProps}>
-	{#if gltfResult}
+	{#if gltfResultData}
 		<T.Group scale={0.01}>
-			<T is={gltfResult.scene} />
+			<T is={gltfResultData.scene} />
 		</T.Group>
 
-		{#if mapResult}
+		{#if mapResultData}
 			<T.Mesh position={[0, -0.6, -13.5]} rotation.x={Math.PI * 0.5} scale={100}>
 				<T.CylinderGeometry args={[0.7, 0.25, 16, 15]} />
-				<T.MeshBasicMaterial color="#ff6605" alphaMap={mapResult} transparent />
+				<T.MeshBasicMaterial color="#ff6605" alphaMap={mapResultData} transparent />
 			</T.Mesh>
 		{/if}
 	{:else if isLoading}

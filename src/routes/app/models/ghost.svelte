@@ -6,33 +6,37 @@ Command: npx @threlte/gltf@2.0.3 /home/ubt/DpDIST/Web_site_3D_anime_By_DV/static
 <script>
 	import { Group } from 'three';
 	import { T } from '@threlte/core';
-	import { useGltf } from '@threlte/extras';
-	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
-
+	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
+	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 
-	export const ref = new Group();
-	let { ...rest } = $props();
+	let { ref = $bindable(new Group()), ...rest } = $props();
 
-	let gltf = $state(null);
+	let gltfGhostValue = $state(null);
 
-	onMount(() => {
-		useGltf(getCloudinaryAssetUrl('/models/ghost.glb'))
-			.then((model) => {
-				gltf = model;
-			})
-			.catch((err) => {
-				console.error('Failed to load Ghost model', err);
-			});
+	onMount(async () => {
+		if (browser) {
+			try {
+				const resolved = await getWorkingAssetUrl('ghost.glb', 'models');
+				const loader = new GLTFLoader();
+				loader.setDRACOLoader(createDracoLoader());
+				gltfGhostValue = await loader.loadAsync(resolved);
+			} catch (e) {
+				console.error('Failed to load Ghost model', e);
+			}
+		}
 	});
 </script>
 
 <T is={ref} dispose={false} {...rest}>
-	{#if gltf}
-		<T.Mesh geometry={gltf.nodes.Ghost002.geometry} material={gltf.materials.Outline} />
+	{#if gltfGhostValue}
+		<T.Mesh
+			geometry={gltfGhostValue.nodes.Ghost002.geometry}
+			material={gltfGhostValue.materials.Outline}
+		/>
 	{/if}
-
-	<slot {ref} />
 
 	<slot {ref} />
 </T>

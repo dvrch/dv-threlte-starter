@@ -5,62 +5,58 @@ Command: npx @threlte/gltf@2.0.3 /home/ubt/DpDIST/Web_site_3D_anime_By_DV/static
 
 <script>
 	import { Group } from 'three';
-	import { T, forwardEventHandlers } from '@threlte/core';
-	import { useGltf } from '@threlte/extras';
-	import { getCloudinaryAssetUrl, 
+	import { T } from '@threlte/core';
+	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
+	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 
-	export const ref = new Group();
-	let gltf;
-	let component;
+	let { ref = $bindable(new Group()), ...restProps } = $props();
 
-	onMount(() => {
-		
-		gltf = useGltf(getCloudinaryAssetUrl('/models/DcYcU.glb'));
-		component = forwardEventHandlers();
+	let gltfDcYcUModel = $state(null);
+
+	onMount(async () => {
+		if (browser) {
+			try {
+				const resolved = await getWorkingAssetUrl('DcYcU.glb', 'models');
+				const loader = new GLTFLoader();
+				loader.setDRACOLoader(createDracoLoader());
+				gltfDcYcUModel = await loader.loadAsync(resolved);
+			} catch (e) {
+				console.error('Failed to load DcYcU model', e);
+			}
+		}
 	});
 </script>
 
-<T is={ref} dispose={false} {...restProps} bind:this={$component}>
-	{#await gltf}
-		<slot name="fallback" />
-	{:then gltf}
+<T is={ref} dispose={false} {...restProps}>
+	{#if gltfDcYcUModel}
 		<T.PointLight
 			intensity={54351.41}
 			decay={2}
 			position={[4.08, 5.9, -1.01]}
 			rotation={[-1.84, 0.6, 1.93]}
 		/>
-		<T.PerspectiveCamera
-			makeDefault={false}
-			far={100}
-			near={0.1}
-			fov={22.9}
-			position={[7.36, 4.96, 6.93]}
-			rotation={[-0.63, 0.71, 0.44]}
-		/>
 		<T.Mesh
-			geometry={gltf.nodes.Cube.geometry}
-			material={gltf.materials.Material}
+			geometry={gltfDcYcUModel.nodes.Cube.geometry}
+			material={gltfDcYcUModel.materials.Material}
 			rotation={[-Math.PI, 0, -Math.PI]}
 			scale={[-1, -2.68, -1]}
 		/>
 		<T.Mesh
-			geometry={gltf.nodes.Cube001.geometry}
-			material={gltf.materials.Material}
+			geometry={gltfDcYcUModel.nodes.Cube001.geometry}
+			material={gltfDcYcUModel.materials.Material}
 			position={[0, 2.48, -2.88]}
 			rotation={[-Math.PI, 0, -Math.PI]}
 			scale={[-1, -2.68, -1]}
 		/>
-
 		<T.Mesh
-			geometry={gltf.nodes.Sphère.geometry}
-			material={gltf.materials.Matériau}
+			geometry={gltfDcYcUModel.nodes.Sphère.geometry}
+			material={gltfDcYcUModel.materials.Matériau}
 			position={[4.13, 0, 0]}
 		/>
-	{:catch error}
-		<slot name="error" {error} />
-	{/await}
+	{/if}
 
 	<slot {ref} />
 </T>

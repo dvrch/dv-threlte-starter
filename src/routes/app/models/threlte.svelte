@@ -4,25 +4,40 @@ Command: npx @threlte/gltf@2.0.0 C:\Users\Utente\Desktop\Trasferimento-PC\Projec
 -->
 
 <script>
-  import { Group } from 'three'
-  import { T, forwardEventHandlers } from '@threlte/core'
-  import { useGltf } from '@threlte/extras'
-  import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
-  
+	import { Group } from 'three';
+	import { T } from '@threlte/core';
+	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
+	import { createDracoLoader } from '$lib/utils/draco-loader';
+	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 
-  export const ref = new Group()
+	let { ref = $bindable(new Group()), ...restProps } = $props();
 
-  const gltf = useGltf(getCloudinaryAssetUrl('/models/threlte.glb')
+	let gltfThrelteData = $state(null);
+
+	onMount(async () => {
+		if (browser) {
+			try {
+				const resolved = await getWorkingAssetUrl('threlte.glb', 'models');
+				const loader = new GLTFLoader();
+				loader.setDRACOLoader(createDracoLoader());
+				gltfThrelteData = await loader.loadAsync(resolved);
+			} catch (e) {
+				console.error('Failed to load Threlte logo model', e);
+			}
+		}
+	});
 </script>
 
-<T is={ref} dispose={false} {...restProps} bind:this={$component}>
-  {#await gltf}
-    <slot name="fallback" />
-  {:then gltf}
-    <T.Mesh geometry={gltf.nodes.Cube.geometry} material={gltf.materials.Material} position={[0, 1, 2]} />
-  {:catch error}
-    <slot name="error" {error} />
-  {/await}
+<T is={ref} dispose={false} {...restProps}>
+	{#if gltfThrelteData}
+		<T.Mesh
+			geometry={gltfThrelteData.nodes.Cube.geometry}
+			material={gltfThrelteData.materials.Material}
+			position={[0, 1, 2]}
+		/>
+	{/if}
 
-  <slot {ref} />
+	<slot {ref} />
 </T>
