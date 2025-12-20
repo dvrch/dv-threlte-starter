@@ -15,6 +15,7 @@ Title: Nissan Skyline GTR r35
 	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
+	import { buildSceneGraph } from '$lib/utils/cloudinaryAssets';
 
 	let { ref = $bindable(new Group()), ...rest } = $props();
 
@@ -28,7 +29,11 @@ Title: Nissan Skyline GTR r35
 				const loader = new GLTFLoader();
 				loader.setDRACOLoader(createDracoLoader());
 
-				const model = await loader.loadAsync(url);
+				const rawGltf = await loader.loadAsync(url);
+				const { nodes, materials } = buildSceneGraph(rawGltf);
+
+				// Add nodes and materials to the object to mimic Threlte structure
+				const processed = { ...rawGltf, nodes, materials };
 
 				// Apply alpha fix
 				function alphaFix(material: any) {
@@ -39,7 +44,7 @@ Title: Nissan Skyline GTR r35
 					}
 				}
 
-				const materials = [
+				const materialNames = [
 					'r35_paint',
 					'Meo_turbo_black',
 					'Meo_turbo_Gray',
@@ -63,13 +68,13 @@ Title: Nissan Skyline GTR r35
 					'r35_leather'
 				];
 
-				materials.forEach((materialName) => {
-					if (model.materials[materialName]) {
-						alphaFix(model.materials[materialName]);
+				materialNames.forEach((name) => {
+					if (materials[name]) {
+						alphaFix(materials[name]);
 					}
 				});
 
-				gltfData = model;
+				gltfData = processed;
 			} catch (e) {
 				console.error('Failed to load main Nissan model:', e);
 			} finally {

@@ -11,6 +11,7 @@ Command: npx @threlte/gltf@2.0.3 /home/ubt/DpDIST/Web_site_3D_anime_By_DV/static
 	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
+	import { buildSceneGraph } from '$lib/utils/cloudinaryAssets';
 
 	let { ref = $bindable(new Group()), ...rest } = $props();
 
@@ -22,7 +23,9 @@ Command: npx @threlte/gltf@2.0.3 /home/ubt/DpDIST/Web_site_3D_anime_By_DV/static
 				const resolved = await getWorkingAssetUrl('ghost.glb', 'models');
 				const loader = new GLTFLoader();
 				loader.setDRACOLoader(createDracoLoader());
-				gltfGhostValue = await loader.loadAsync(resolved);
+				const raw = await loader.loadAsync(resolved);
+				const { nodes, materials } = buildSceneGraph(raw);
+				gltfGhostValue = { ...raw, nodes, materials };
 			} catch (e) {
 				console.error('Failed to load Ghost model', e);
 			}

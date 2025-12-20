@@ -15,6 +15,7 @@ Title: Japanese Bridge Garden
 	import { browser } from '$app/environment';
 	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
 	import { createDracoLoader } from '$lib/utils/draco-loader';
+	import { buildSceneGraph } from '$lib/utils/cloudinaryAssets';
 
 	let { ref = $bindable(new Group()), ...restProps } = $props();
 
@@ -26,7 +27,9 @@ Title: Japanese Bridge Garden
 				const resolved = await getWorkingAssetUrl('garden.glb', 'models');
 				const loader = new GLTFLoader();
 				loader.setDRACOLoader(createDracoLoader());
-				gltfGarden = await loader.loadAsync(resolved);
+				const rawGltf = await loader.loadAsync(resolved);
+                const { nodes, materials } = buildSceneGraph(rawGltf);
+                gltfGarden = { ...rawGltf, nodes, materials };
 			} catch (e) {
 				console.error('Failed to load garden model:', e);
 			}
@@ -627,4 +630,4 @@ Title: Japanese Bridge Garden
 	{/if}
 
 	<slot {ref} />
-</T>
+</T.Group>

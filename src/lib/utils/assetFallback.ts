@@ -1,20 +1,40 @@
-export async function getWorkingAssetUrl(fileName: string, type: 'models' | 'textures'): Promise<string> {
-    const { getCloudinaryAssetUrl } = await import('./cloudinaryAssets');
-    const cloudinaryUrl = getCloudinaryAssetUrl(fileName);
+import { getCloudinaryAssetUrl } from './cloudinaryAssets';
+
+export async function getWorkingAssetUrl(
+    fileName: string,
+    type: 'models' | 'textures'
+): Promise<string> {
+    // 1. Extract pure filename if full URL is passed
+    let pureName = fileName;
+    if (fileName.includes('/')) {
+        pureName = fileName.split('/').pop() || fileName;
+    }
+    // Strip version junk if any (v12345/filename)
+    pureName = pureName.replace(/^v\d+[\/\-_]/, '');
+
+    // 2. Try the primary intended Cloudinary folder
+    const primaryFolder = type === 'models' ? 'dv-threlte/models' : 'dv-threlte/textures';
+    const primaryUrl = getCloudinaryAssetUrl(pureName, primaryFolder);
 
     try {
-        const response = await fetch(cloudinaryUrl, { method: 'HEAD' });
-        if (response.ok) {
-            return cloudinaryUrl;
-        }
+        const response = await fetch(primaryUrl, { method: 'HEAD' });
+        if (response.ok) return primaryUrl;
     } catch (e) {
-        console.warn(`Cloudinary check failed for ${fileName}, searching local fallbacks.`);
+        console.warn(`Primary Cloudinary check failed for ${pureName}`);
     }
 
-    // Check various local paths
-    const localPaths = type === 'models'
-        ? [`/models/${fileName}`, `/public/${fileName}`, `/${fileName}`]
-        : [`/textures/${fileName}`, `/public/${fileName}`, `/${fileName}`];
+    // 3. Try the secondary (fallback) Cloudinary folder 'dv-threlte/public'
+    const secondaryUrl = getCloudinaryAssetUrl(pureName, 'dv-threlte/public');
+    try {
+        const response = await fetch(secondaryUrl, { method: 'HEAD' });
+        if (response.ok) return secondaryUrl;
+    } catch (e) { }
+
+    // 4. Check local fallbacks
+    const localPaths =
+        type === 'models'
+            ? [`/models/${pureName}`, `/public/${pureName}`, `/${pureName}`]
+            : [`/textures/${pureName}`, `/public/${pureName}`, `/${pureName}`];
 
     for (const path of localPaths) {
         try {
@@ -23,6 +43,6 @@ export async function getWorkingAssetUrl(fileName: string, type: 'models' | 'tex
         } catch (e) { }
     }
 
-    // Default to first guess if all fail
-    return localPaths[0];
+    // 5. Hard fallback to the primary guessed Cloudinary URL if even locals fail
+    return primaryUrl;
 }

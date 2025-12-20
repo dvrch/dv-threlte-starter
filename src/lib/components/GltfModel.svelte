@@ -6,6 +6,7 @@
 	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
 	import { onMount } from 'svelte';
 	import { AnimationMixer } from 'three';
+	import { buildSceneGraph } from '$lib/utils/cloudinaryAssets';
 
 	// Receive URL and other props
 	let { url, ...restProps }: { url: string; [key: string]: any } = $props();
@@ -23,12 +24,13 @@
 				const loader = new GLTFLoader();
 				loader.setDRACOLoader(createDracoLoader());
 
-				const result = await loader.loadAsync(resolved);
-				gltfScene = result;
+				const raw = await loader.loadAsync(resolved);
+				const { nodes, materials } = buildSceneGraph(raw);
+				gltfScene = { ...raw, nodes, materials };
 
-				if (result.animations && result.animations.length > 0) {
-					mixer = new AnimationMixer(result.scene);
-					result.animations.forEach((clip: any) => {
+				if (raw.animations && raw.animations.length > 0) {
+					mixer = new AnimationMixer(raw.scene);
+					raw.animations.forEach((clip: any) => {
 						mixer?.clipAction(clip).play();
 					});
 				}

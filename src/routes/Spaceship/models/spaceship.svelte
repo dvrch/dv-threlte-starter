@@ -6,6 +6,7 @@
 	import { browser } from '$app/environment';
 	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
 	import { createDracoLoader } from '$lib/utils/draco-loader';
+	import { buildSceneGraph } from '$lib/utils/cloudinaryAssets';
 
 	let { ref = $bindable(new Group()), ...restProps } = $props();
 
@@ -19,11 +20,12 @@
 				const gltfUrl = await getWorkingAssetUrl('spaceship.glb', 'models');
 				const mapUrl = await getWorkingAssetUrl('energy-beam-opacity.png', 'textures');
 
-				// Load GLTF manually to avoid lifecycle hook issues with async URLs
 				const loader = new GLTFLoader();
 				loader.setDRACOLoader(createDracoLoader());
 
 				const rawGltf = await loader.loadAsync(gltfUrl);
+				const { nodes, materials } = buildSceneGraph(rawGltf);
+				const processed = { ...rawGltf, nodes, materials };
 
 				// Apply alpha fix
 				function alphaFix(material: any) {
@@ -34,12 +36,11 @@
 					material.depthTest = true;
 					material.depthWrite = true;
 				}
-				if (rawGltf.materials.spaceship_racer) alphaFix(rawGltf.materials.spaceship_racer);
-				if (rawGltf.materials.cockpit) alphaFix(rawGltf.materials.cockpit);
+				if (materials.spaceship_racer) alphaFix(materials.spaceship_racer);
+				if (materials.cockpit) alphaFix(materials.cockpit);
 
-				gltfResultData = rawGltf;
+				gltfResultData = processed;
 
-				// Load Texture manually
 				const texLoader = new TextureLoader();
 				mapResultData = await texLoader.loadAsync(mapUrl);
 			} catch (e) {

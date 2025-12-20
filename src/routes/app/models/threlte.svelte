@@ -11,6 +11,7 @@ Command: npx @threlte/gltf@2.0.0 C:\Users\Utente\Desktop\Trasferimento-PC\Projec
 	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
+	import { buildSceneGraph } from '$lib/utils/cloudinaryAssets';
 
 	let { ref = $bindable(new Group()), ...restProps } = $props();
 
@@ -22,7 +23,9 @@ Command: npx @threlte/gltf@2.0.0 C:\Users\Utente\Desktop\Trasferimento-PC\Projec
 				const resolved = await getWorkingAssetUrl('threlte.glb', 'models');
 				const loader = new GLTFLoader();
 				loader.setDRACOLoader(createDracoLoader());
-				gltfThrelteData = await loader.loadAsync(resolved);
+				const raw = await loader.loadAsync(resolved);
+				const { nodes, materials } = buildSceneGraph(raw);
+				gltfThrelteData = { ...raw, nodes, materials };
 			} catch (e) {
 				console.error('Failed to load Threlte logo model', e);
 			}

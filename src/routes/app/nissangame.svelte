@@ -3,6 +3,7 @@
 	import { HTML } from '@threlte/extras';
 	import Nissan from './models/Nissan.svelte';
 	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
 
 	let { geometry } = $props();
 
@@ -57,6 +58,31 @@
 			rotationY -= rotSpeed;
 		}
 	});
+
+	// Handle touch events non-passively to stop scrolling
+	let buttons: Record<string, HTMLButtonElement> = {};
+	onMount(() => {
+		Object.entries(buttons).forEach(([key, btn]) => {
+			if (!btn) return;
+			const k = key as keyof typeof keys;
+			btn.addEventListener(
+				'touchstart',
+				(e) => {
+					e.preventDefault();
+					setKeyState(k, true);
+				},
+				{ passive: false }
+			);
+			btn.addEventListener(
+				'touchend',
+				(e) => {
+					e.preventDefault();
+					setKeyState(k, false);
+				},
+				{ passive: false }
+			);
+		});
+	});
 </script>
 
 <svelte:window on:keydown={handleKeyDown} on:keyup={handleKeyUp} />
@@ -70,60 +96,44 @@
 			<div class="dpad">
 				<div class="row cent">
 					<button
+						bind:this={buttons.ArrowUp}
 						class="control-btn up"
 						class:active={keys.ArrowUp}
 						onmousedown={() => setKeyState('ArrowUp', true)}
 						onmouseup={() => setKeyState('ArrowUp', false)}
 						onmouseleave={() => setKeyState('ArrowUp', false)}
-						ontouchstart={(e) => {
-							e.preventDefault();
-							setKeyState('ArrowUp', true);
-						}}
-						ontouchend={() => setKeyState('ArrowUp', false)}
 					>
 						<span class="icon">▲</span>
 					</button>
 				</div>
 				<div class="row">
 					<button
+						bind:this={buttons.ArrowLeft}
 						class="control-btn left"
 						class:active={keys.ArrowLeft}
 						onmousedown={() => setKeyState('ArrowLeft', true)}
 						onmouseup={() => setKeyState('ArrowLeft', false)}
 						onmouseleave={() => setKeyState('ArrowLeft', false)}
-						ontouchstart={(e) => {
-							e.preventDefault();
-							setKeyState('ArrowLeft', true);
-						}}
-						ontouchend={() => setKeyState('ArrowLeft', false)}
 					>
 						<span class="icon">◀</span>
 					</button>
 					<button
+						bind:this={buttons.ArrowDown}
 						class="control-btn down"
 						class:active={keys.ArrowDown}
 						onmousedown={() => setKeyState('ArrowDown', true)}
 						onmouseup={() => setKeyState('ArrowDown', false)}
 						onmouseleave={() => setKeyState('ArrowDown', false)}
-						ontouchstart={(e) => {
-							e.preventDefault();
-							setKeyState('ArrowDown', true);
-						}}
-						ontouchend={() => setKeyState('ArrowDown', false)}
 					>
 						<span class="icon">▼</span>
 					</button>
 					<button
+						bind:this={buttons.ArrowRight}
 						class="control-btn right"
 						class:active={keys.ArrowRight}
 						onmousedown={() => setKeyState('ArrowRight', true)}
 						onmouseup={() => setKeyState('ArrowRight', false)}
 						onmouseleave={() => setKeyState('ArrowRight', false)}
-						ontouchstart={(e) => {
-							e.preventDefault();
-							setKeyState('ArrowRight', true);
-						}}
-						ontouchend={() => setKeyState('ArrowRight', false)}
 					>
 						<span class="icon">▶</span>
 					</button>
