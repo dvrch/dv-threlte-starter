@@ -7,7 +7,7 @@
 	import { browser } from '$app/environment';
 
 	// Store to manage texture state
-	let currentTexture = writable(null);
+	let currentTexture = writable<THREE.Texture | null>(null);
 
 	let model = $state<THREE.Group | null>(null); // To store the loaded 3D model
 	let mixer = $state<THREE.AnimationMixer | null>(null); // For animations

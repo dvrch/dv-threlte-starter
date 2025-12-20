@@ -15,7 +15,7 @@
 		requestAnimationFrame(levitate);
 	}
 
-	useTask((_, delta) => {
+	useTask((delta) => {
 		rotation += delta * 0.4;
 	});
 
@@ -35,10 +35,10 @@
 	<T is={ghost.scene} position={[0, y, 0]} scale={0.4} />
 {/await}
 
-{#await useGltf(getCloudinaryAssetUrl('garden.glb')) then garden}
+{#await useGltf(getCloudinaryAssetUrl('garden1.glb')) then garden}
 	<T is={garden.scene} rotation.y={rotation} />
 {/await}
 
-{#await useGltf(getCloudinaryAssetUrl('nissan2.glb')) then nissan}
+{#await useGltf(getCloudinaryAssetUrl('nissan.glb')) then nissan}
 	<T is={nissan.scene} position={[2, y, 1]} scale={0.4} />
 {/await}
