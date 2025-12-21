@@ -24,12 +24,27 @@
 	};
 
 	const DynamicComponentLoader = $derived(() => {
-		// Priority 1: Special detection for spaceship by URL mapping
-		if (geometry?.model_url?.includes('spaceship.glb')) {
+		// Priority 1: Special detection by URL or Name for Spaceship
+		const name = (geometry?.name || '').toLowerCase();
+		const url = (geometry?.model_url || '').toLowerCase();
+		const type = (geometry?.type || '').toLowerCase();
+
+		if (
+			type === 'spaceship' ||
+			name.includes('spaceship') ||
+			url.includes('spaceship.glb') ||
+			(name.includes('ship') && type !== 'bibi')
+		) {
 			return componentMap['spaceship'];
 		}
-		// Priority 2: Standard type mapping
-		return componentMap[geometry?.type] ?? null;
+
+		// Priority 2: Detection for Nissan Game
+		if (type === 'nissangame' || name.includes('nissangame')) {
+			return componentMap['nissangame'];
+		}
+
+		// Priority 3: Standard type mapping
+		return componentMap[type] ?? null;
 	});
 
 	let LoadedDynamicComponent: any = $state(null); // To store the dynamically loaded component
