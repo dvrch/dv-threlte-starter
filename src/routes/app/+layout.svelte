@@ -28,8 +28,8 @@
         <div class="canvas-container">
             <Canvas renderMode="always">
                 <T.Color attach="background" args={['#1E1E1E']} />
-                <T.PerspectiveCamera makeDefault position={[-10, 10, 10]} fov={70}>
-                    <OrbitControls autoRotate enableZoom={true} minDistance={0} maxDistance={80} target={[0, 1.5, 0]} />
+                <T.PerspectiveCamera makeDefault position={[-15, 15, 15]} fov={50}>
+                    <OrbitControls enableDamping enableZoom={true} />
                 </T.PerspectiveCamera>
 
                 <T.DirectionalLight intensity={0.8} position={[5, 10, 0]} />

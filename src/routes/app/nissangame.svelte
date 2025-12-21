@@ -21,6 +21,7 @@
 	const turnEase = 0.9;
 	const rotSpeed = 0.04; // Restore rotSpeed
 	let currentRotationSpeed = $state(0);
+	let isChaseCamActive = $state(false); // Off by default to not break editor controls
 
 	// Keyboard/Touch state
 	let keys = $state({
@@ -110,17 +111,19 @@
 <T.Group position={[x, 0, z]} rotation={[0, rotationY, 0]}>
 	<Nissan />
 
-	<!-- Chase Camera (Fixed relative to the car since it's in the same group) -->
-	<T.PerspectiveCamera
-		makeDefault
-		position={[0, 4, -8]}
-		fov={60}
-		on:create={({ ref }) => {
-			ref.lookAt(0, 1, 5); // Look slightly ahead of the car
-		}}
-	>
-		<OrbitControls enableDamping enableZoom={false} target={[0, 1, 2]} />
-	</T.PerspectiveCamera>
+	<!-- Chase Camera (Only active if toggled) -->
+	{#if isChaseCamActive}
+		<T.PerspectiveCamera
+			makeDefault
+			position={[0, 4, -8]}
+			fov={60}
+			on:create={({ ref }) => {
+				ref.lookAt(0, 1, 5); // Look slightly ahead of the car
+			}}
+		>
+			<OrbitControls enableDamping target={[0, 1, 2]} />
+		</T.PerspectiveCamera>
+	{/if}
 
 	<!-- Virtual Controls Overlay -->
 	<HTML portal={portalTarget}>
@@ -130,6 +133,13 @@
 					<span class="value">{Math.abs(Math.round(speed_current * 1000))}</span>
 					<span class="unit">KM/H</span>
 				</div>
+				<button
+					class="cam-toggle"
+					class:active={isChaseCamActive}
+					onclick={() => (isChaseCamActive = !isChaseCamActive)}
+				>
+					{isChaseCamActive ? 'CAM: CHASE' : 'CAM: EDITOR'}
+				</button>
 			</div>
 
 			<div class="controls-container">
@@ -232,6 +242,30 @@
 		font-size: 0.7rem;
 		opacity: 0.7;
 		letter-spacing: 2px;
+		margin-bottom: 10px;
+	}
+
+	.cam-toggle {
+		background: rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		color: white;
+		padding: 5px 10px;
+		border-radius: 8px;
+		font-size: 0.6rem;
+		cursor: pointer;
+		pointer-events: auto;
+		transition: all 0.2s;
+		width: 100%;
+	}
+
+	.cam-toggle:hover {
+		background: rgba(255, 255, 255, 0.2);
+	}
+
+	.cam-toggle.active {
+		background: #4287f5;
+		border-color: #4287f5;
+		box-shadow: 0 0 10px rgba(66, 135, 245, 0.5);
 	}
 
 	.dpad {
