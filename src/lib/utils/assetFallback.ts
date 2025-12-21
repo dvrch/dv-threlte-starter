@@ -18,19 +18,6 @@ export async function getWorkingAssetUrl(
     }
     pureName = pureName.replace(/^v\d+[\/\-_]/, '');
 
-    // 🛡️ FORCE LOCAL FOR SPACESHIP (User request: size > 10MB)
-    if (pureName.toLowerCase() === 'spaceship.glb') {
-        return '/models/spaceship.glb';
-    }
-
-    const preferLocal = [
-        'nissan.glb',
-        'garden1.glb',
-        'bibi3.glb',
-        'bibi.png',
-        'energy-beam-opacity.png'
-    ].includes(pureName.toLowerCase());
-
     const checkLocal = async (name: string) => {
         const paths =
             type === 'models'
@@ -45,12 +32,7 @@ export async function getWorkingAssetUrl(
         return null;
     };
 
-    if (preferLocal) {
-        const localPath = await checkLocal(pureName);
-        if (localPath) return localPath;
-    }
-
-    // 2. Try Cloudinary folders
+    // 1. Try Cloudinary folders
     const foldersToTry = [
         type === 'models' ? 'dv-threlte/models' : 'dv-threlte/textures',
         'dv-threlte/public',
@@ -65,12 +47,11 @@ export async function getWorkingAssetUrl(
         } catch (e) { }
     }
 
-    // 3. Secondary Local check (if not already checked or if preferLocal failed)
-    if (!preferLocal) {
-        const localPath = await checkLocal(pureName);
-        if (localPath) return localPath;
-    }
+    // 2. Secondary Local check (if Cloudinary fails)
+    const localPath = await checkLocal(pureName);
+    if (localPath) return localPath;
 
-    // 4. Default to Cloudinary if all else fails
+
+    // 3. Default to Cloudinary if all else fails
     return getCloudinaryAssetUrl(pureName, foldersToTry[0]);
 }
