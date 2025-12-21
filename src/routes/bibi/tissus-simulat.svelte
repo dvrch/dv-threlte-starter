@@ -22,7 +22,7 @@
 		const { MeshStandardMaterial } = await import('three');
 		const textureLoader = new TextureLoader();
 
-		const texUrl = await getWorkingAssetUrl('bibi.png', 'textures');
+		const texUrl = '/textures/bibi.png';
 
 		textureLoader.load(
 			texUrl,
