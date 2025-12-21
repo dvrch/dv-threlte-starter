@@ -56,7 +56,7 @@ export async function getWorkingAssetUrl(
     };
 
     // 1. Priority check for local files (Dev speed)
-    const prioritizeLocal = ['spaceship.glb', 'nissan2.glb', 'bibi3.glb', 'bibi.png'].includes(pureName.toLowerCase());
+    const prioritizeLocal = ['spaceship.glb', 'nissan2.glb', 'bibi3.glb', 'bibi.png', 'cloth_sim.glb', 'zaki.png'].includes(pureName.toLowerCase());
 
     if (prioritizeLocal) {
         for (const candidate of namesToTry) {
@@ -67,8 +67,8 @@ export async function getWorkingAssetUrl(
 
     // 2. CLOUDINARY (The new main storage)
     const foldersToTry = [
-        type === 'models' ? 'dv-threlte/models' : 'dv-threlte/textures',
         'dv-threlte/public',
+        type === 'models' ? 'dv-threlte/models' : 'dv-threlte/textures',
         'dv-threlte'
     ];
 
