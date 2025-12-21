@@ -20,7 +20,7 @@
 		garden: () => import('../../routes/app/models/garden.svelte'),
 		nissangame: () => import('../../routes/app/nissangame.svelte'),
 		bibigame: () => import('../../routes/app/bibigame.svelte'),
-		spaceship: () => import('../../routes/Spaceship/models/spaceship.svelte')
+		spaceship: () => import('../../routes/app/models/spaceship.svelte')
 	};
 
 	const DynamicComponentLoader = $derived(() => {

@@ -14,15 +14,15 @@
 
 	// Physical State
 	let speed_current = $state(0);
-	const acceleration = 0.01;
+	const acceleration = 0.005; // Reduced by half
 	const friction = 0.98; // Smoother friction
-	const maxSpeed = 0.6; // A bit faster
+	const maxSpeed = 0.5; // Slightly slower for more control
 	const backSpeed = 0.2;
 	const turnEase = 0.9;
-	const rotSpeed = 0.04; // Restore rotSpeed
+	const rotSpeed = 0.03; // Slightly slower rotation for precision
 	let currentRotationSpeed = $state(0);
-	let isChaseCamActive = $state(false); // Off by default to not break editor controls
-	let mouseXPercentage = $state(0); // -1 to 1 based on mouse position
+	let isChaseCamActive = $state(false);
+	let mouseXPercentage = $state(0);
 
 	// Keyboard/Touch state
 	let keys = $state({
@@ -69,11 +69,10 @@
 
 		// Steering
 		if (keys.ArrowLeft) {
-			currentRotationSpeed += rotSpeed * 0.2;
+			currentRotationSpeed += rotSpeed * 0.25;
 		} else if (keys.ArrowRight) {
-			currentRotationSpeed -= rotSpeed * 0.2;
+			currentRotationSpeed -= rotSpeed * 0.25;
 		} else if (Math.abs(mouseXPercentage) > 0.1) {
-			// Mouse steering: only if not using keys and mouse is significantly off-center
 			currentRotationSpeed -= mouseXPercentage * rotSpeed * 0.5;
 		} else {
 			currentRotationSpeed *= turnEase;
@@ -83,9 +82,11 @@
 		if (currentRotationSpeed > rotSpeed) currentRotationSpeed = rotSpeed;
 		if (currentRotationSpeed < -rotSpeed) currentRotationSpeed = -rotSpeed;
 
-		// Apply movement (only rotate if moving)
-		const turningFactor = Math.abs(speed_current) > 0.01 ? (speed_current > 0 ? 1 : -1) : 0;
-		rotationY += currentRotationSpeed * turningFactor * (Math.abs(speed_current) / maxSpeed + 0.5);
+		// Apply movement (Allow rotation even at standstill but reduced)
+		const turningFactor = Math.abs(speed_current) > 0.001 ? (speed_current > 0 ? 1 : -1) : 0.4;
+		// If at standstill, still allow a bit of rotation (tank steering style fallback)
+
+		rotationY += currentRotationSpeed * turningFactor * (Math.abs(speed_current) / maxSpeed + 0.8);
 
 		x += Math.sin(rotationY) * speed_current;
 		z += Math.cos(rotationY) * speed_current;

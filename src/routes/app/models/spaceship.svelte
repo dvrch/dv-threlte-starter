@@ -5,63 +5,108 @@
 		Group,
 		LessEqualDepth,
 		OneFactor,
-		TextureLoader
+		TextureLoader,
+		Vector2,
+		Vector3
 	} from 'three';
-	import { T } from '@threlte/core';
+	import { T, useTask } from '@threlte/core';
 	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { buildSceneGraph } from '$lib/utils/cloudinaryAssets';
+	import Stars from '../../Spaceship/Stars.svelte';
 
-	let { ref = $bindable(new Group()), ...restProps } = $props();
+	let { ref = $bindable(new Group()), geometry, ...restProps } = $props();
 
 	let gltfResultData = $state<any>(null);
 	let mapResultData = $state<any>(null);
 	let isLoading = $state(true);
 
-	onMount(async () => {
+	// Reactivity state
+	let mouse = new Vector2(0, 0);
+	let targetRotation = new Vector3(0, 0, 0);
+	let currentRotation = $state(new Vector3(0, 0, 0));
+	let currentPosition = $state(new Vector3(0, 0, 0));
+
+	const handleMouseMove = (e: MouseEvent) => {
+		mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+		mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+	};
+
+	useTask((delta) => {
+		// Smoothing the movement
+		targetRotation.z = -mouse.x * 0.5; // Roll
+		targetRotation.x = -mouse.y * 0.3; // Pitch
+
+		currentRotation.x += (targetRotation.x - currentRotation.x) * 0.1;
+		currentRotation.z += (targetRotation.z - currentRotation.z) * 0.1;
+
+		currentPosition.y += (mouse.y * 2 - currentPosition.y) * 0.05;
+		currentPosition.z += (-mouse.x * 2 - currentPosition.z) * 0.05;
+	});
+
+	onMount(() => {
 		if (browser) {
-			try {
-				const gltfUrl = await getWorkingAssetUrl('spaceship.glb', 'models');
-				const mapUrl = await getWorkingAssetUrl('energy-beam-opacity.png', 'textures');
-
-				const loader = new GLTFLoader();
-				loader.setDRACOLoader(createDracoLoader());
-
-				const rawGltf = await loader.loadAsync(gltfUrl);
-				const { nodes, materials } = buildSceneGraph(rawGltf);
-				const processed = { ...rawGltf, nodes, materials };
-
-				// Apply alpha fix
-				function alphaFix(material: any) {
-					if (!material) return;
-					material.transparent = true;
-					material.alphaToCoverage = true;
-					material.depthFunc = LessEqualDepth;
-					material.depthTest = true;
-					material.depthWrite = true;
-				}
-				if (materials.spaceship_racer) alphaFix(materials.spaceship_racer);
-				if (materials.cockpit) alphaFix(materials.cockpit);
-
-				gltfResultData = processed;
-
-				const texLoader = new TextureLoader();
-				mapResultData = await texLoader.loadAsync(mapUrl);
-			} catch (e) {
-				console.error('Failed to load spaceship in app route:', e);
-			} finally {
-				isLoading = false;
-			}
+			window.addEventListener('mousemove', handleMouseMove);
+			loadAssets();
 		}
 	});
+
+	onDestroy(() => {
+		if (browser) {
+			window.removeEventListener('mousemove', handleMouseMove);
+		}
+	});
+
+	async function loadAssets() {
+		try {
+			const gltfUrl = await getWorkingAssetUrl('spaceship.glb', 'models');
+			const mapUrl = await getWorkingAssetUrl('energy-beam-opacity.png', 'textures');
+
+			const loader = new GLTFLoader();
+			loader.setDRACOLoader(createDracoLoader());
+
+			const rawGltf = await loader.loadAsync(gltfUrl);
+			const { nodes, materials } = buildSceneGraph(rawGltf);
+			const processed = { ...rawGltf, nodes, materials };
+
+			// Apply alpha fix
+			function alphaFix(material: any) {
+				if (!material) return;
+				material.transparent = true;
+				material.alphaToCoverage = true;
+				material.depthFunc = LessEqualDepth;
+				material.depthTest = true;
+				material.depthWrite = true;
+			}
+			if (materials.spaceship_racer) alphaFix(materials.spaceship_racer);
+			if (materials.cockpit) alphaFix(materials.cockpit);
+
+			gltfResultData = processed;
+
+			const texLoader = new TextureLoader();
+			mapResultData = await texLoader.loadAsync(mapUrl);
+		} catch (e) {
+			console.error('Failed to load spaceship in app route:', e);
+		} finally {
+			isLoading = false;
+		}
+	}
 </script>
 
 <T is={ref} dispose={false} {...restProps}>
+	<T.Group rotation={[0, Math.PI * 0.5, 0]}>
+		<Stars />
+	</T.Group>
+
 	{#if gltfResultData}
-		<T.Group scale={1} rotation={[0, -Math.PI * 0.5, 0]} position={[0.95, 0, -2.235]}>
+		<T.Group
+			scale={0.001}
+			rotation={[currentRotation.x, -Math.PI * 0.5, currentRotation.z]}
+			position={[currentPosition.x, currentPosition.y, currentPosition.z]}
+		>
 			{#if gltfResultData.nodes.Cube001_spaceship_racer_0}
 				<T.Mesh
 					castShadow
