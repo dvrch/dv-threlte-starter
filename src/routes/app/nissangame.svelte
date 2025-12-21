@@ -11,6 +11,7 @@
 	let x = $state(0);
 	let z = $state(0);
 	let rotationY = $state(0);
+	let sceneRotationZ = $state(0);
 
 	// Physical State
 	let speed_current = $state(0);
@@ -89,6 +90,9 @@
 
 		x += Math.sin(rotationY) * speed_current;
 		z += Math.cos(rotationY) * speed_current;
+
+		// Continuous slow rotation on Z
+		sceneRotationZ += 0.005;
 	});
 
 	// Handle touch events non-passively to stop scrolling
@@ -123,8 +127,10 @@
 	on:pointermove={handlePointerMove}
 />
 
-<T.Group position={[x, 0, z]} rotation={[0, rotationY, 0]}>
-	<Nissan />
+<T.Group position={[x, 0, z]} rotation={[0, rotationY, 0]} on:create={() => {}}>
+	<T.Group rotation.z={sceneRotationZ}>
+		<Nissan />
+	</T.Group>
 
 	<!-- Chase Camera (Only active if toggled) -->
 	{#if isChaseCamActive}
@@ -236,13 +242,22 @@
 
 	.dashboard {
 		align-self: flex-start;
-		background: rgba(0, 0, 0, 0.5);
-		backdrop-filter: blur(10px);
-		padding: 15px 25px;
-		border-radius: 20px;
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		color: white;
+		background: rgba(0, 0, 0, 0.2);
+		backdrop-filter: blur(5px);
+		padding: 10px 15px;
+		border-radius: 12px;
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		color: rgba(255, 255, 255, 0.5);
 		font-family: 'Orbitron', sans-serif;
+		transform: scale(0.8);
+		transform-origin: top left;
+		transition: opacity 0.3s;
+		opacity: 0.4;
+	}
+
+	.dashboard:hover {
+		opacity: 1;
+		background: rgba(0, 0, 0, 0.4);
 	}
 
 	.speed-gauge {
@@ -291,13 +306,20 @@
 	.dpad {
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
-		background: rgba(255, 255, 255, 0.05);
-		backdrop-filter: blur(10px);
-		padding: 20px;
-		border-radius: 24px;
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+		gap: 8px;
+		background: rgba(255, 255, 255, 0.02);
+		backdrop-filter: blur(5px);
+		padding: 12px;
+		border-radius: 20px;
+		border: 1px solid rgba(255, 255, 255, 0.03);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+		opacity: 0.3;
+		transition: opacity 0.3s;
+		transform: scale(0.9);
+	}
+
+	.dpad:hover {
+		opacity: 0.8;
 	}
 
 	.row {
