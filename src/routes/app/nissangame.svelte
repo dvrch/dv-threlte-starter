@@ -22,6 +22,7 @@
 	const rotSpeed = 0.04; // Restore rotSpeed
 	let currentRotationSpeed = $state(0);
 	let isChaseCamActive = $state(false); // Off by default to not break editor controls
+	let mouseXPercentage = $state(0); // -1 to 1 based on mouse position
 
 	// Keyboard/Touch state
 	let keys = $state({
@@ -44,6 +45,13 @@
 		if (e.key in keys) keys[e.key as keyof typeof keys] = false;
 	}
 
+	function handlePointerMove(e: PointerEvent) {
+		if (browser) {
+			// Calculate normalized mouse X position (-1 to 1)
+			mouseXPercentage = (e.clientX / window.innerWidth) * 2 - 1;
+		}
+	}
+
 	// Game loop
 	useTask(() => {
 		// Movement logic
@@ -64,6 +72,9 @@
 			currentRotationSpeed += rotSpeed * 0.2;
 		} else if (keys.ArrowRight) {
 			currentRotationSpeed -= rotSpeed * 0.2;
+		} else if (Math.abs(mouseXPercentage) > 0.1) {
+			// Mouse steering: only if not using keys and mouse is significantly off-center
+			currentRotationSpeed -= mouseXPercentage * rotSpeed * 0.5;
 		} else {
 			currentRotationSpeed *= turnEase;
 		}
@@ -106,7 +117,11 @@
 	});
 </script>
 
-<svelte:window on:keydown={handleKeyDown} on:keyup={handleKeyUp} />
+<svelte:window
+	on:keydown={handleKeyDown}
+	on:keyup={handleKeyUp}
+	on:pointermove={handlePointerMove}
+/>
 
 <T.Group position={[x, 0, z]} rotation={[0, rotationY, 0]}>
 	<Nissan />
@@ -121,7 +136,12 @@
 				ref.lookAt(0, 1, 5); // Look slightly ahead of the car
 			}}
 		>
-			<OrbitControls enableDamping target={[0, 1, 2]} />
+			<OrbitControls
+				enableDamping
+				autoRotate={!isChaseCamActive}
+				autoRotateSpeed={0.5}
+				target={[0, 1, 2]}
+			/>
 		</T.PerspectiveCamera>
 	{/if}
 
