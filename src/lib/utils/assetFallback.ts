@@ -4,7 +4,8 @@ import { getCloudinaryAssetUrl } from './cloudinaryAssets';
 const ASSET_MAPPING: Record<string, string> = {
     'nissan.glb': 'nissan2.glb',
     'nissant.glb': 'nissan2.glb',
-    'garden.glb': 'garden1.glb'
+    'garden.glb': 'garden1.glb',
+    'clothe_sim_rffdfn.glb': 'cloth_sim.glb'
 };
 
 // Fallback chain for assets that might be missing in their new versions
