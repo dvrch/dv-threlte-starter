@@ -8,6 +8,7 @@
 
 	import { addToast } from '$lib/stores/toasts';
 	import Bloom from './models/bloom.svelte';
+	import Spaceship from '../Spaceship/models/spaceship.svelte';
 
 	interface GeometryItem {
 		id: string;
@@ -102,6 +103,11 @@
 	<T.SphereGeometry args={[0.5, 32, 32]} />
 	<T.MeshStandardMaterial color="red" emissive="red" emissiveIntensity={2} />
 </T.Mesh>
+
+<!-- Spaceship - Statically added -->
+<Float floatIntensity={2} floatingRange={[-0.1, 0.1]}>
+	<Spaceship />
+</Float>
 
 {#if isBloomEnabled}
 	<Bloom />

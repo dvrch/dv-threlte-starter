@@ -23,7 +23,9 @@ export async function getWorkingAssetUrl(
         return '/models/spaceship.glb';
     }
 
-    const preferLocal = ['nissan.glb', 'garden1.glb'].includes(pureName.toLowerCase());
+    const preferLocal = ['nissan.glb', 'garden1.glb', 'bibi3.glb', 'bibi.png'].includes(
+        pureName.toLowerCase()
+    );
 
     const checkLocal = async (name: string) => {
         const paths =
