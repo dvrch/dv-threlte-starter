@@ -16,11 +16,12 @@
 	// import { BloomEffect } from 'postprocessing';
 
 	const { scene, camera, renderer } = useThrelte();
-	let spaceShipRef;
-	let intersectionPoint;
-	let translY = 0;
+	let spaceShipRef = $state();
+	let nissanRef = $state();
+	let intersectionPoint = $state();
+	let translY = $state(0);
 	let translAccelleration = 0;
-	let angleZ = 0;
+	let angleZ = $state(0);
 	let angleAccelleration = 0;
 	let pmrem = new PMREMGenerator(renderer);
 	let envMapRT;
@@ -58,18 +59,22 @@
 
 		if (envMapRT) envMapRT.dispose();
 
-		spaceShipRef.visible = false;
+		const activeRefs = [spaceShipRef, nissanRef].filter(Boolean);
+
+		activeRefs.forEach((r) => (r.visible = false));
 		scene.background = null;
 		envMapRT = pmrem.fromScene(scene, 0, 0.1, 1000);
 		scene.background = new Color('#598889').multiplyScalar(0.05);
-		spaceShipRef.visible = true;
+		activeRefs.forEach((r) => (r.visible = true));
 
-		spaceShipRef.traverse((child) => {
-			if (child?.material?.envMapIntensity) {
-				child.material.envMap = envMapRT.texture;
-				child.material.envMapIntensity = 100;
-				child.material.normalScale.set(0.3, 0.3);
-			}
+		activeRefs.forEach((ref) => {
+			ref.traverse((child) => {
+				if (child?.material?.envMapIntensity !== undefined) {
+					child.material.envMap = envMapRT.texture;
+					child.material.envMapIntensity = 100;
+					child.material.normalScale?.set(0.3, 0.3);
+				}
+			});
 		});
 
 		composer.render();
@@ -120,7 +125,11 @@
 <Bloom />
 <Stars />
 
-<Nissan bind:ref={spaceShipRef} position={[0, translY, 0]} rotation={[angleZ, 80, angleZ, 'ZXY']} />
+<Nissan
+	bind:ref={nissanRef}
+	position={[0, translY, 0]}
+	rotation={[angleZ, 80 * (Math.PI / 180), angleZ, 'ZXY']}
+/>
 
 <!-- <NissanSkylineGtrR35
 	bind:ref={spaceShipRef}
