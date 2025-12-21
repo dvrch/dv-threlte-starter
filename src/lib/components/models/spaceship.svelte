@@ -46,7 +46,7 @@
 <T is={ref} dispose={false} {...restProps}>
 	{#if gltf}
 		{#await gltf then value}
-			<T.Group scale={0.003} rotation={[0, -Math.PI * 0.5, 0]} position={[0.95, 0, -2.235]}>
+			<T.Group scale={1} rotation={[0, -Math.PI * 0.5, 0]} position={[0.95, 0, -2.235]}>
 				{#if value.nodes.Cube001_spaceship_racer_0}
 					<T.Mesh
 						castShadow

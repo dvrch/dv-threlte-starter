@@ -3,6 +3,7 @@ import { getCloudinaryAssetUrl } from './cloudinaryAssets';
 // Map for files that have been renamed or replaced but we still want to support old names
 const ASSET_MAPPING: Record<string, string> = {
     'nissan.glb': 'nissan2.glb',
+    'nissant.glb': 'nissan2.glb',
     'garden.glb': 'garden1.glb'
 };
 
@@ -37,6 +38,7 @@ export async function getWorkingAssetUrl(
 
     const namesToTry = [pureName, ...(FALLBACK_CHAIN[pureName.toLowerCase()] || [])];
 
+    // 1. Try to find local files (Dev speed)
     const checkLocal = async (name: string) => {
         const paths =
             type === 'models'
@@ -52,17 +54,17 @@ export async function getWorkingAssetUrl(
         return null;
     };
 
-    // 1. Try to find any of the candidate names locally first for large/important assets
-    const prioritizeLocal = ['spaceship.glb', 'nissan2.glb', 'nissan1.glb', 'nissan.glb', 'garden1.glb', 'star.png', 'bibi.png'].includes(pureName.toLowerCase());
+    // 1. Priority check for local files (Dev speed)
+    const prioritizeLocal = ['spaceship.glb', 'nissan2.glb', 'bibi3.glb', 'bibi.png'].includes(pureName.toLowerCase());
 
     if (prioritizeLocal) {
         for (const candidate of namesToTry) {
-            const localPath = await checkLocal(candidate);
-            if (localPath) return localPath;
+            const path = await checkLocal(candidate);
+            if (path) return path;
         }
     }
 
-    // 2. Try Cloudinary for all candidates
+    // 2. CLOUDINARY (The new main storage)
     const foldersToTry = [
         type === 'models' ? 'dv-threlte/models' : 'dv-threlte/textures',
         'dv-threlte/public',
@@ -79,12 +81,14 @@ export async function getWorkingAssetUrl(
         }
     }
 
-    // 3. Last resort local check for all candidates
-    for (const candidate of namesToTry) {
-        const localPath = await checkLocal(candidate);
-        if (localPath) return localPath;
+    // 3. Last fallback local
+    if (!prioritizeLocal) {
+        for (const candidate of namesToTry) {
+            const path = await checkLocal(candidate);
+            if (path) return path;
+        }
     }
 
-    // 4. Default fallback to the first Cloudinary URL
+    // 4. Default to Cloudinary even if HEAD failed (might be CORS or temporary)
     return getCloudinaryAssetUrl(pureName, foldersToTry[0]);
 }
