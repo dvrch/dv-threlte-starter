@@ -8,6 +8,7 @@
     import { Canvas } from '@threlte/core';
     import { T } from '@threlte/core';
     import { Grid, OrbitControls, ContactShadows } from '@threlte/extras';
+    import RotatingWorld from './components/RotatingWorld.svelte';
     import Bloom from './models/bloom.svelte';
 
     // UI state
@@ -34,9 +35,11 @@
 
                 <T.DirectionalLight intensity={0.8} position={[5, 10, 0]} />
                 <T.AmbientLight intensity={0.2} />
-                <Grid position={[0, -0.001, 0]} cellColor="#ffffff" sectionColor="#ffffff" sectionThickness={0} fadeDistance={25} cellSize={2} />
-                <ContactShadows scale={10} blur={2} far={2.5} opacity={0.5} />
-                {@render children()}
+                <RotatingWorld>
+                    <Grid position={[0, -0.001, 0]} cellColor="#ffffff" sectionColor="#ffffff" sectionThickness={0} fadeDistance={25} cellSize={2} />
+                    <ContactShadows scale={10} blur={2} far={2.5} opacity={0.5} />
+                    {@render children()}
+                </RotatingWorld>
             </Canvas>
         </div>
         <!-- UI Controls -->

@@ -11,7 +11,6 @@
 	let x = $state(0);
 	let z = $state(0);
 	let rotationY = $state(0);
-	let sceneRotationZ = $state(0);
 
 	// Physical State
 	let speed_current = $state(0);
@@ -90,9 +89,6 @@
 
 		x += Math.sin(rotationY) * speed_current;
 		z += Math.cos(rotationY) * speed_current;
-
-		// Continuous slow rotation on Z
-		sceneRotationZ += 0.005;
 	});
 
 	// Handle touch events non-passively to stop scrolling
@@ -128,9 +124,7 @@
 />
 
 <T.Group position={[x, 0, z]} rotation={[0, rotationY, 0]} on:create={() => {}}>
-	<T.Group rotation.z={sceneRotationZ}>
-		<Nissan />
-	</T.Group>
+	<Nissan />
 
 	<!-- Chase Camera (Only active if toggled) -->
 	{#if isChaseCamActive}
@@ -242,22 +236,23 @@
 
 	.dashboard {
 		align-self: flex-start;
-		background: rgba(0, 0, 0, 0.2);
-		backdrop-filter: blur(5px);
-		padding: 10px 15px;
-		border-radius: 12px;
-		border: 1px solid rgba(255, 255, 255, 0.05);
-		color: rgba(255, 255, 255, 0.5);
+		background: rgba(0, 0, 0, 0.1);
+		backdrop-filter: blur(2px);
+		padding: 8px 12px;
+		border-radius: 10px;
+		border: 1px solid rgba(255, 255, 255, 0.03);
+		color: rgba(255, 255, 255, 0.3);
 		font-family: 'Orbitron', sans-serif;
-		transform: scale(0.8);
+		transform: scale(0.7);
 		transform-origin: top left;
-		transition: opacity 0.3s;
-		opacity: 0.4;
+		transition: all 0.4s ease;
+		opacity: 0.15;
 	}
 
 	.dashboard:hover {
-		opacity: 1;
-		background: rgba(0, 0, 0, 0.4);
+		opacity: 0.8;
+		background: rgba(0, 0, 0, 0.3);
+		color: white;
 	}
 
 	.speed-gauge {
@@ -306,20 +301,21 @@
 	.dpad {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
-		background: rgba(255, 255, 255, 0.02);
-		backdrop-filter: blur(5px);
-		padding: 12px;
-		border-radius: 20px;
-		border: 1px solid rgba(255, 255, 255, 0.03);
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-		opacity: 0.3;
-		transition: opacity 0.3s;
-		transform: scale(0.9);
+		gap: 6px;
+		background: rgba(255, 255, 255, 0.01);
+		backdrop-filter: blur(2px);
+		padding: 8px;
+		border-radius: 16px;
+		border: 1px solid rgba(255, 255, 255, 0.01);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		opacity: 0.1;
+		transition: all 0.4s ease;
+		transform: scale(0.8);
 	}
 
 	.dpad:hover {
-		opacity: 0.8;
+		opacity: 0.6;
+		background: rgba(255, 255, 255, 0.05);
 	}
 
 	.row {
