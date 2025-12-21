@@ -33,7 +33,7 @@
 
 <T is={ref} dispose={false} {...rest}>
 	{#if gltfData}
-		<T.Group scale={0.01}>
+		<T.Group scale={1}>
 			<T is={gltfData.scene} />
 		</T.Group>
 	{/if}

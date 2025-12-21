@@ -54,7 +54,7 @@
 
 <T is={ref} dispose={false} {...restProps}>
 	{#if gltfResult}
-		<T.Group scale={0.01}>
+		<T.Group scale={1}>
 			<T is={gltfResult.scene} />
 		</T.Group>
 	{:else if isLoading}

@@ -119,7 +119,7 @@
 />
 <Bloom />
 <Stars />
-<!-- <Vague /> -->
+
 <Nissan bind:ref={spaceShipRef} position={[0, translY, 0]} rotation={[angleZ, 80, angleZ, 'ZXY']} />
 
 <!-- <NissanSkylineGtrR35

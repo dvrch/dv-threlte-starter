@@ -54,13 +54,13 @@
 
 <T is={ref} dispose={false} {...restProps}>
 	{#if gltfResultData}
-		<T.Group scale={0.01}>
+		<T.Group scale={1}>
 			<T is={gltfResultData.scene} />
 		</T.Group>
 
 		{#if mapResultData}
-			<T.Mesh position={[0, -0.6, -13.5]} rotation.x={Math.PI * 0.5} scale={1}>
-				<T.CylinderGeometry args={[0.7, 0.25, 16, 15]} />
+			<T.Mesh position={[7.8, -0.5, -22.5]} rotation.x={Math.PI * 0.5} scale={1}>
+				<T.CylinderGeometry args={[0.7, 0.25, 36, 15]} />
 				<T.MeshBasicMaterial color="#ff6605" alphaMap={mapResultData} transparent />
 			</T.Mesh>
 		{/if}
