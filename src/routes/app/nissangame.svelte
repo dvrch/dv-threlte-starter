@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { T, useTask } from '@threlte/core';
-	import { HTML } from '@threlte/extras';
+	import { HTML, OrbitControls } from '@threlte/extras';
 	import Nissan from './models/Nissan.svelte';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
@@ -12,8 +12,15 @@
 	let z = $state(0);
 	let rotationY = $state(0);
 
-	const speed = 0.2; // Slightly faster for better feel
-	const rotSpeed = 0.05;
+	// Physical State
+	let speed_current = $state(0);
+	const acceleration = 0.01;
+	const friction = 0.98; // Smoother friction
+	const maxSpeed = 0.6; // A bit faster
+	const backSpeed = 0.2;
+	const turnEase = 0.9;
+	const rotSpeed = 0.04; // Restore rotSpeed
+	let currentRotationSpeed = $state(0);
 
 	// Keyboard/Touch state
 	let keys = $state({
@@ -36,27 +43,40 @@
 		if (e.key in keys) keys[e.key as keyof typeof keys] = false;
 	}
 
-	// Update key state for touch/mouse
-	const setKeyState = (key: keyof typeof keys, value: boolean) => {
-		keys[key] = value;
-	};
-
 	// Game loop
 	useTask(() => {
+		// Movement logic
 		if (keys.ArrowUp) {
-			x += Math.sin(rotationY) * speed;
-			z += Math.cos(rotationY) * speed;
+			speed_current += acceleration;
+		} else if (keys.ArrowDown) {
+			speed_current -= acceleration;
+		} else {
+			speed_current *= friction;
 		}
-		if (keys.ArrowDown) {
-			x -= Math.sin(rotationY) * speed;
-			z -= Math.cos(rotationY) * speed;
-		}
+
+		// Clamp speed
+		if (speed_current > maxSpeed) speed_current = maxSpeed;
+		if (speed_current < -backSpeed) speed_current = -backSpeed;
+
+		// Steering
 		if (keys.ArrowLeft) {
-			rotationY += rotSpeed;
+			currentRotationSpeed += rotSpeed * 0.2;
+		} else if (keys.ArrowRight) {
+			currentRotationSpeed -= rotSpeed * 0.2;
+		} else {
+			currentRotationSpeed *= turnEase;
 		}
-		if (keys.ArrowRight) {
-			rotationY -= rotSpeed;
-		}
+
+		// Clamp rotation speed
+		if (currentRotationSpeed > rotSpeed) currentRotationSpeed = rotSpeed;
+		if (currentRotationSpeed < -rotSpeed) currentRotationSpeed = -rotSpeed;
+
+		// Apply movement (only rotate if moving)
+		const turningFactor = Math.abs(speed_current) > 0.01 ? (speed_current > 0 ? 1 : -1) : 0;
+		rotationY += currentRotationSpeed * turningFactor * (Math.abs(speed_current) / maxSpeed + 0.5);
+
+		x += Math.sin(rotationY) * speed_current;
+		z += Math.cos(rotationY) * speed_current;
 	});
 
 	// Handle touch events non-passively to stop scrolling
@@ -69,7 +89,7 @@
 				'touchstart',
 				(e) => {
 					e.preventDefault();
-					setKeyState(k, true);
+					keys[k] = true;
 				},
 				{ passive: false }
 			);
@@ -77,7 +97,7 @@
 				'touchend',
 				(e) => {
 					e.preventDefault();
-					setKeyState(k, false);
+					keys[k] = false;
 				},
 				{ passive: false }
 			);
@@ -87,56 +107,77 @@
 
 <svelte:window on:keydown={handleKeyDown} on:keyup={handleKeyUp} />
 
-<T.Group position={[x, geometry?.position?.y ?? 0, z]} rotation={[0, rotationY, 0]}>
+<T.Group position={[x, 0, z]} rotation={[0, rotationY, 0]}>
 	<Nissan />
+
+	<!-- Chase Camera (Fixed relative to the car since it's in the same group) -->
+	<T.PerspectiveCamera
+		makeDefault
+		position={[0, 4, -8]}
+		fov={60}
+		on:create={({ ref }) => {
+			ref.lookAt(0, 1, 5); // Look slightly ahead of the car
+		}}
+	>
+		<OrbitControls enableDamping enableZoom={false} target={[0, 1, 2]} />
+	</T.PerspectiveCamera>
 
 	<!-- Virtual Controls Overlay -->
 	<HTML portal={portalTarget}>
-		<div class="controls-container">
-			<div class="dpad">
-				<div class="row cent">
-					<button
-						bind:this={buttons.ArrowUp}
-						class="control-btn up"
-						class:active={keys.ArrowUp}
-						onmousedown={() => setKeyState('ArrowUp', true)}
-						onmouseup={() => setKeyState('ArrowUp', false)}
-						onmouseleave={() => setKeyState('ArrowUp', false)}
-					>
-						<span class="icon">▲</span>
-					</button>
+		<div class="game-ui">
+			<div class="dashboard">
+				<div class="speed-gauge">
+					<span class="value">{Math.abs(Math.round(speed_current * 1000))}</span>
+					<span class="unit">KM/H</span>
 				</div>
-				<div class="row">
-					<button
-						bind:this={buttons.ArrowLeft}
-						class="control-btn left"
-						class:active={keys.ArrowLeft}
-						onmousedown={() => setKeyState('ArrowLeft', true)}
-						onmouseup={() => setKeyState('ArrowLeft', false)}
-						onmouseleave={() => setKeyState('ArrowLeft', false)}
-					>
-						<span class="icon">◀</span>
-					</button>
-					<button
-						bind:this={buttons.ArrowDown}
-						class="control-btn down"
-						class:active={keys.ArrowDown}
-						onmousedown={() => setKeyState('ArrowDown', true)}
-						onmouseup={() => setKeyState('ArrowDown', false)}
-						onmouseleave={() => setKeyState('ArrowDown', false)}
-					>
-						<span class="icon">▼</span>
-					</button>
-					<button
-						bind:this={buttons.ArrowRight}
-						class="control-btn right"
-						class:active={keys.ArrowRight}
-						onmousedown={() => setKeyState('ArrowRight', true)}
-						onmouseup={() => setKeyState('ArrowRight', false)}
-						onmouseleave={() => setKeyState('ArrowRight', false)}
-					>
-						<span class="icon">▶</span>
-					</button>
+			</div>
+
+			<div class="controls-container">
+				<div class="dpad">
+					<div class="row cent">
+						<button
+							bind:this={buttons.ArrowUp}
+							class="control-btn up"
+							class:active={keys.ArrowUp}
+							onmousedown={() => (keys.ArrowUp = true)}
+							onmouseup={() => (keys.ArrowUp = false)}
+							onmouseleave={() => (keys.ArrowUp = false)}
+						>
+							<span class="icon">▲</span>
+						</button>
+					</div>
+					<div class="row">
+						<button
+							bind:this={buttons.ArrowLeft}
+							class="control-btn left"
+							class:active={keys.ArrowLeft}
+							onmousedown={() => (keys.ArrowLeft = true)}
+							onmouseup={() => (keys.ArrowLeft = false)}
+							onmouseleave={() => (keys.ArrowLeft = false)}
+						>
+							<span class="icon">◀</span>
+						</button>
+						<button
+							bind:this={buttons.ArrowDown}
+							class="control-btn down"
+							class:active={keys.ArrowDown}
+							onmousedown={() => (keys.ArrowDown = true)}
+							onmouseup={() => (keys.ArrowDown = false)}
+							onmouseleave={() => (keys.ArrowDown = false)}
+						>
+							<span class="icon">▼</span>
+						</button>
+						<button
+							bind:this={buttons.ArrowRight}
+							class="control-btn right"
+							class:active={keys.ArrowRight}
+							onmousedown={() => (keys.ArrowRight = true)}
+							onmouseup={() => (keys.ArrowRight = false)}
+							onmouseleave={() => (keys.ArrowRight = false)}
+						>
+							<span class="icon">▶</span>
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -151,6 +192,46 @@
 		user-select: none;
 		pointer-events: auto;
 		z-index: 1000;
+	}
+
+	.game-ui {
+		position: fixed;
+		inset: 0;
+		pointer-events: none;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		padding: 40px;
+	}
+
+	.dashboard {
+		align-self: flex-start;
+		background: rgba(0, 0, 0, 0.5);
+		backdrop-filter: blur(10px);
+		padding: 15px 25px;
+		border-radius: 20px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		color: white;
+		font-family: 'Orbitron', sans-serif;
+	}
+
+	.speed-gauge {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.speed-gauge .value {
+		font-size: 2rem;
+		font-weight: bold;
+		color: #4287f5;
+		text-shadow: 0 0 10px rgba(66, 135, 245, 0.5);
+	}
+
+	.speed-gauge .unit {
+		font-size: 0.7rem;
+		opacity: 0.7;
+		letter-spacing: 2px;
 	}
 
 	.dpad {
