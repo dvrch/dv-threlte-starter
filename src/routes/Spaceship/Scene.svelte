@@ -154,39 +154,25 @@
 	});
 </script>
 
-<div class="div">
-	<T.PerspectiveCamera makeDefault position={[-15, 10, 25]} fov={30}>
-		<OrbitControls enableDamping target={[0, 0, 0]} />
-	</T.PerspectiveCamera>
+<T.PerspectiveCamera makeDefault position={[-15, 10, 25]} fov={30}>
+	<OrbitControls enableDamping target={[0, 0, 0]} />
+</T.PerspectiveCamera>
 
-	<T.DirectionalLight intensity={3} position={[5, 15, 5]} castShadow />
-	<T.AmbientLight intensity={0.5} />
+<T.DirectionalLight intensity={3} position={[5, 15, 5]} castShadow />
+<T.AmbientLight intensity={0.5} />
 
-	<Spaceship
-		bind:ref={spaceShipRef}
-		position={[0, translY, 0]}
-		rotation={[angleZ, 0, angleZ, 'ZXY']}
-	/>
+<Spaceship bind:ref={spaceShipRef} position={[0, translY, 0]} rotation={[angleZ, 0, angleZ]} />
 
-	<Vaguend position={[0, -2, 0]} scale={20} />
+<Vaguend position={[0, -2, 0]} scale={20} />
 
-	<Stars />
+<Stars />
 
-	<Nissan
-		bind:ref={nissanRef}
-		position={[2, translY + 0.5, -2]}
-		rotation={[angleZ, rotationY, angleZ, 'ZXY']}
-		scale={0.5}
-	/>
-</div>
+<Nissan
+	bind:ref={nissanRef}
+	position={[2, translY + 0.5, -2]}
+	rotation={[angleZ, rotationY, angleZ]}
+	scale={0.5}
+/>
 
 <style>
-	.div {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		z-index: -1;
-	}
 </style>

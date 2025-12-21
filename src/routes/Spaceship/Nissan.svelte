@@ -54,7 +54,9 @@
 
 <T is={ref} dispose={false} {...restProps}>
 	{#if gltfResult}
-		<T is={gltfResult.scene} />
+		<T.Group scale={0.01}>
+			<T is={gltfResult.scene} />
+		</T.Group>
 	{:else if isLoading}
 		<slot name="fallback" />
 	{/if}

@@ -16,10 +16,12 @@
 		if (browser) {
 			try {
 				const url = await getWorkingAssetUrl('nissan2.glb', 'models');
+				console.log('🚗 Loading Nissan Game GLB from:', url);
 				const loader = new GLTFLoader();
 				loader.setDRACOLoader(createDracoLoader());
 
 				const rawGltf = await loader.loadAsync(url);
+				console.log('✅ Nissan Game GLB loaded:', rawGltf);
 				buildSceneGraph(rawGltf); // 🛡️ Fixes all materials in-place
 				gltfData = rawGltf;
 			} catch (e) {

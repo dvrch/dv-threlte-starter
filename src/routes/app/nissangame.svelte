@@ -7,9 +7,9 @@
 
 	let { geometry } = $props();
 
-	// State for position and rotation
-	let x = $state(geometry?.position?.x ?? 0);
-	let z = $state(geometry?.position?.z ?? 0);
+	// State for position and rotation (Relative to parent Dynamic3DModel)
+	let x = $state(0);
+	let z = $state(0);
 	let rotationY = $state(0);
 
 	const speed = 0.2; // Slightly faster for better feel

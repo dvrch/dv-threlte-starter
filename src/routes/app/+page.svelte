@@ -97,6 +97,9 @@
 	{/if}
 </HTML>
 
+<T.AmbientLight intensity={0.5} />
+<T.DirectionalLight position={[10, 10, 10]} intensity={1} castShadow />
+
 <!-- Sphère au centre -->
 <T.Mesh position={[0, 0.5, 0]}>
 	<T.SphereGeometry args={[0.5, 32, 32]} />
