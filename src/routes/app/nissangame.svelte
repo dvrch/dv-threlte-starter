@@ -72,7 +72,8 @@
 			currentRotationSpeed += rotSpeed * 0.25;
 		} else if (keys.ArrowRight) {
 			currentRotationSpeed -= rotSpeed * 0.25;
-		} else if (Math.abs(mouseXPercentage) > 0.1) {
+		} else if (speed_current > 0.1 && Math.abs(mouseXPercentage) > 0.1) {
+			// Mouse steering ONLY when moving forward significantly
 			currentRotationSpeed -= mouseXPercentage * rotSpeed * 0.5;
 		} else {
 			currentRotationSpeed *= turnEase;
@@ -82,11 +83,10 @@
 		if (currentRotationSpeed > rotSpeed) currentRotationSpeed = rotSpeed;
 		if (currentRotationSpeed < -rotSpeed) currentRotationSpeed = -rotSpeed;
 
-		// Apply movement (Allow rotation even at standstill but reduced)
-		const turningFactor = Math.abs(speed_current) > 0.001 ? (speed_current > 0 ? 1 : -1) : 0.4;
-		// If at standstill, still allow a bit of rotation (tank steering style fallback)
+		// Apply movement: Only rotate if moving significantly
+		const turningFactor = Math.abs(speed_current) > 0.05 ? (speed_current > 0 ? 1 : -1) : 0;
 
-		rotationY += currentRotationSpeed * turningFactor * (Math.abs(speed_current) / maxSpeed + 0.8);
+		rotationY += currentRotationSpeed * turningFactor * (Math.abs(speed_current) / maxSpeed + 0.5);
 
 		x += Math.sin(rotationY) * speed_current;
 		z += Math.cos(rotationY) * speed_current;

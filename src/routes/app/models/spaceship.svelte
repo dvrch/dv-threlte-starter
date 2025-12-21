@@ -36,15 +36,18 @@
 	};
 
 	useTask((delta) => {
-		// Smoothing the movement
-		targetRotation.z = -mouse.x * 0.5; // Roll
-		targetRotation.x = -mouse.y * 0.3; // Pitch
+		// Proximity reactivity: effect is stronger when mouse is closer to the center
+		const dist = mouse.length();
+		const proximityFactor = Math.max(0, 1 - dist * 0.85);
+
+		targetRotation.z = -mouse.x * 0.5 * proximityFactor; // Roll
+		targetRotation.x = -mouse.y * 0.3 * proximityFactor; // Pitch
 
 		currentRotation.x += (targetRotation.x - currentRotation.x) * 0.1;
 		currentRotation.z += (targetRotation.z - currentRotation.z) * 0.1;
 
-		currentPosition.y += (mouse.y * 2 - currentPosition.y) * 0.05;
-		currentPosition.z += (-mouse.x * 2 - currentPosition.z) * 0.05;
+		currentPosition.y += (mouse.y * 2 * proximityFactor - currentPosition.y) * 0.05;
+		currentPosition.z += (-mouse.x * 2 * proximityFactor - currentPosition.z) * 0.05;
 	});
 
 	onMount(() => {
@@ -97,7 +100,7 @@
 </script>
 
 <T is={ref} dispose={false} {...restProps}>
-	<T.Group rotation={[0, Math.PI * 0.5, 0]}>
+	<T.Group rotation={[0, Math.PI, 0]}>
 		<Stars />
 	</T.Group>
 
