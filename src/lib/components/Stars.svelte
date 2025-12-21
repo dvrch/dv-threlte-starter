@@ -82,8 +82,8 @@
 		{#each stars as star}
 			<Instance
 				position={[star.pos.x, star.pos.y, star.pos.z]}
-				rotation={[Math.PI * 1, Math.PI * 0.5, 0]}
-				scale={[star.len, 50, 50]}
+				rotation={[Math.PI * 0.5, 0, 0]}
+				scale={[star.len, 1, 1]}
 				color={star.color}
 			/>
 		{/each}

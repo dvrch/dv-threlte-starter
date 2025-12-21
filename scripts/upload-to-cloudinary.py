@@ -27,6 +27,7 @@ SOURCE_DIRS = [
     'static/assets',
     'static/public',
     'static/fkisios',
+    'static/textures',
 ]
 
 def check_credentials():

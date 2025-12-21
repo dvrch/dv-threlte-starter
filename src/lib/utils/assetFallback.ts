@@ -56,7 +56,7 @@ export async function getWorkingAssetUrl(
     };
 
     // 1. Priority check for local files (Dev speed)
-    const prioritizeLocal = ['spaceship.glb', 'nissan2.glb', 'bibi3.glb', 'bibi.png', 'cloth_sim.glb', 'zaki.png'].includes(pureName.toLowerCase());
+    const prioritizeLocal = ([] as string[]).includes(pureName.toLowerCase()); // Forced Cloudinary for major assets
 
     if (prioritizeLocal) {
         for (const candidate of namesToTry) {

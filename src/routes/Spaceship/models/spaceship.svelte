@@ -8,7 +8,7 @@
 	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { buildSceneGraph } from '$lib/utils/cloudinaryAssets';
 
-	let { ref = $bindable(new Group()), ...restProps } = $props();
+	let { ref = $bindable(new Group()), fallback, children, ...restProps } = $props();
 
 	let gltfResultData = $state<any>(null);
 	let mapResultData = $state<any>(null);
@@ -17,7 +17,7 @@
 	onMount(async () => {
 		if (browser) {
 			try {
-				const gltfUrl = '/models/spaceship.glb'; // FORCED LOCAL AS PER USER REQUEST
+				const gltfUrl = await getWorkingAssetUrl('spaceship.glb', 'models');
 				const mapUrl = await getWorkingAssetUrl('energy-beam-opacity.png', 'textures');
 
 				const loader = new GLTFLoader();
@@ -59,14 +59,18 @@
 		</T.Group>
 
 		{#if mapResultData}
-			<T.Mesh position={[0.0, -0.0, -15.5]} rotation.x={Math.PI * 0.5} scale={1}>
+			<T.Mesh position={[7.8, -0.5, -22.5]} rotation.x={Math.PI * 0.5} scale={1}>
 				<T.CylinderGeometry args={[0.7, 0.25, 36, 15]} />
 				<T.MeshBasicMaterial color="#ff6605" alphaMap={mapResultData} transparent />
 			</T.Mesh>
 		{/if}
 	{:else if isLoading}
-		<slot name="fallback" />
+		{#if fallback}
+			{@render fallback()}
+		{/if}
 	{/if}
 
-	<slot {ref} />
+	{#if children}
+		{@render children({ ref })}
+	{/if}
 </T>
