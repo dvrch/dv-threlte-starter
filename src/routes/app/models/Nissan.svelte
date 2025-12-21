@@ -15,7 +15,7 @@
 	onMount(async () => {
 		if (browser) {
 			try {
-				const url = await getWorkingAssetUrl('nissan2.glb', 'models');
+				const url = await getWorkingAssetUrl('nissan.glb', 'models');
 				const loader = new GLTFLoader();
 				loader.setDRACOLoader(createDracoLoader());
 

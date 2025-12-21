@@ -22,7 +22,7 @@
 		const { MeshStandardMaterial } = await import('three');
 		const textureLoader = new TextureLoader();
 
-		const texUrl = await getWorkingAssetUrl('zaki.png', 'textures');
+		const texUrl = await getWorkingAssetUrl('bibi.png', 'textures');
 
 		textureLoader.load(
 			texUrl,
@@ -50,7 +50,7 @@
 			const loader = new GLTFLoader();
 
 			try {
-				const glbUrl = await getWorkingAssetUrl('cloth_sim_rffdfn.glb', 'models');
+				const glbUrl = await getWorkingAssetUrl('bibi3.glb', 'models');
 				loader.load(
 					glbUrl,
 					(gltf) => {
