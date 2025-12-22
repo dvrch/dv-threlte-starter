@@ -60,9 +60,9 @@
 	};
 
 	useTask((delta) => {
-		// Translation follow mouse (Y axis)
+		// Translation follow mouse (Y axis) - Reduced acceleration as requested
 		const targetY = intersectionPoint.y;
-		translAccelleration += (targetY - translY) * 0.002;
+		translAccelleration += (targetY - translY) * 0.001; // Was 0.002
 		translAccelleration *= 0.95;
 		translY += translAccelleration;
 
@@ -74,10 +74,13 @@
 		angleAccelleration *= 0.85;
 		angleZ += angleAccelleration;
 
+		// Pitch effect: Dive when descending, Up when ascending
+		// We use translAccelleration as an indicator of vertical speed/intent
+		const kineticPitch = -translAccelleration * 15; // Adjustment factor for sensitivity
+
 		// Additional magnificent rotations (roll/tilt based on pointer lateral movement)
-		// We use pointer.x for roll and pointer.y for additional pitch
 		const targetRoll = -pointer.x * 0.8;
-		const targetPitch = pointer.y * 0.4;
+		const targetPitch = pointer.y * 0.4 + kineticPitch; // Combine mouse pitch and kinetic pitch
 
 		// Interpolate for smoothness
 		rotationRoll += (targetRoll - rotationRoll) * 0.05;
@@ -138,7 +141,7 @@
 		<!-- We apply the physics-based position and rotation (angleZ) -->
 		<!-- This matches the logic from src/routes/Spaceship/Scene.svelte -->
 		<T.Group
-			scale={0.001}
+			scale={0.01}
 			position={[0, translY, 0]}
 			rotation={[angleZ + rotationPitch, -Math.PI * 0.5, angleZ + rotationRoll]}
 		>
