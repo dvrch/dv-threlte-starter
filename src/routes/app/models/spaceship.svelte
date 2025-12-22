@@ -93,16 +93,17 @@
 		angleZ += angleAccelleration;
 
 		// Pitch effect: Airplane style (Nose UP when ascending)
-		// Reduced intensity for both kinetic and mouse pitch
+		// Much more subtle as requested.
 		const kineticPitch = translAccelleration * 3.5;
+		const kineticRoll = translAccelleration * 4.0; // The "magnificent" orthogonal roll
 
 		// Additional magnificent rotations (roll/tilt based on pointer lateral movement)
-		const targetRoll = isActive ? -pointer.x * 0.6 : 0;
-		const targetPitch = (isActive ? pointer.y * 0.12 : 0) + kineticPitch;
+		const targetRoll = (isActive ? -pointer.x * 0.5 : 0) + kineticRoll;
+		const targetPitch = isActive ? pointer.y * 0.08 : 0;
 
-		// Interpolate for smoothness
-		rotationRoll += (targetRoll - rotationRoll) * 0.04;
-		rotationPitch += (targetPitch - rotationPitch) * 0.04;
+		// Interpolate for smoothness - slightly slower easing
+		rotationRoll += (targetRoll - rotationRoll) * 0.035;
+		rotationPitch += (targetPitch - rotationPitch) * 0.035;
 	});
 
 	onMount(() => {
@@ -139,12 +140,29 @@
 				material.depthTest = true;
 				material.depthWrite = true;
 
-				// Enable very strong reflections from Environment
-				material.envMapIntensity = 60;
-				if (material.normalScale) material.normalScale.set(0.3, 0.3);
+				// Enable extremely strong reflections from Environment
+				material.envMapIntensity = 45;
+				if (material.normalScale) material.normalScale.set(0.15, 0.15); // Smoother surfaces for clearer reflections
+
+				// Ensure it picks up the scene environment
+				material.needsUpdate = true;
 			}
 
+			// Apply to all materials
 			Object.values(materials).forEach(materialFix);
+
+			// Reactive listener to re-apply reflections if the global environment changes
+			const mainScene = useThrelte().scene;
+			$effect(() => {
+				if (mainScene.environment) {
+					Object.values(materials).forEach((mat: any) => {
+						if (mat) {
+							mat.envMap = mainScene.environment;
+							mat.needsUpdate = true;
+						}
+					});
+				}
+			});
 
 			gltfResultData = processed;
 
