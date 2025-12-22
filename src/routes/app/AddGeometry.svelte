@@ -115,7 +115,8 @@
 					'spaceship',
 					'vague',
 					'nissangame',
-					'bibigame'
+					'bibigame',
+					'text_scene'
 				];
 				types = [...new Set([...baseTypes, ...fetchedTypes])];
 			}
@@ -131,7 +132,8 @@
 				'spaceship',
 				'vague',
 				'nissangame',
-				'bibigame'
+				'bibigame',
+				'text_scene'
 			];
 			addToast('Failed to load types from server. Using defaults.', 'warning');
 		}
@@ -452,10 +454,6 @@
 </script>
 
 <div class="form-container">
-	<div class="form-handle">
-		<span>{isEditing ? 'ÉDITION' : 'CONFIGURATION'}</span>
-		<span class="expand-icon">«</span>
-	</div>
 	<form
 		onsubmit={(event) => {
 			event.preventDefault();
@@ -481,479 +479,546 @@
 				}
 			}}
 		>
-			<div
-				class="upload-zone-compact"
-				class:has-file={!!file}
-				role="button"
-				tabindex="0"
-				onclick={() => fileInput?.click()}
-				title="Cliquez pour sélectionner un fichier"
-			>
-				<input
-					bind:this={fileInput}
-					type="file"
-					accept=".glb,.gltf"
-					style="display: none;"
-					onchange={(e) => {
+			<div class="upload-controls-grid">
+				<!-- Upload Zone (Left) -->
+				<div
+					class="upload-zone-compact"
+					class:has-file={!!file}
+					role="button"
+					tabindex="0"
+					onclick={() => fileInput?.click()}
+					title="Cliquez pour sélectionner un fichier"
+				>
+					<input
+						bind:this={fileInput}
+						type="file"
+						accept=".glb,.gltf"
+						style="display: none;"
+						onchange={(e) => {
 							const target = e.target as HTMLInputElement;
 							if (target.files && target.files.length > 0) {
 								file = target.files[0];
 								if (!isEditing) name = file.name.split('.')[0];
 							}
 						}}
-				/>
+					/>
 
-				{#if file}
-					<div class="file-info-compact">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="18"
-							height="18"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							class="file-icon"
-							><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline
-								points="13 2 13 9 20 9"
-							/></svg
-						>
-					</div>
-				{:else}
-					<div class="upload-placeholder-compact">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="20"
-							height="20"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							class="upload-icon"
-							><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline
-								points="17 8 12 3 7 8"
-							/><line x1="12" y1="3" x2="12" y2="15" /></svg
-						>
-					</div>
-				{/if}
-			</div>
-
-			<div class="upload-label-zone">
-				{#if file}
-					<span class="filename-small">{file.name}</span>
-				{:else}
-					<span class="drop-hint">Glisser/Déposer fichier GLB ici</span>
-				{/if}
-			</div>
-		</div>
-
-		<h3>{isEditing ? 'Update' : 'Add'} Geometry</h3>
-
-		<div class="geometry-list">
-			<!-- Custom Dropdown Menu -->
-			<div
-				class="custom-dropdown"
-				onmouseleave={() => (isDropdownOpen = false)}
-				role="region"
-				aria-label="Sélection de géométrie"
-			>
-				<!-- svelte-ignore a11y_click_events_have_key_events -->
-				<div
-					class="dropdown-header"
-					onclick={toggleDropdown}
-					onmouseenter={() => (isDropdownOpen = true)}
-					role="button"
-					tabindex="0"
-					aria-label="Sélectionner une géométrie"
-				>
-					<span style="flex: 1; text-align: left;">
-						{selectedGeometryId
-							? geometries.find((g) => g.id === selectedGeometryId)?.name || 'Unknown Geometry'
-							: '-- Select Geometry --'}
-					</span>
-					<svg
-						class="chevron"
-						class:open={isDropdownOpen}
-						xmlns="http://www.w3.org/2000/svg"
-						width="16"
-						height="16"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2"
-						stroke-linecap="round"
-						stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg
-					>
+					{#if file}
+						<div class="file-info-compact">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="24"
+								height="24"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								class="file-icon"
+								><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline
+									points="13 2 13 9 20 9"
+								/></svg
+							>
+						</div>
+					{:else}
+						<div class="upload-placeholder-compact">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="24"
+								height="24"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline
+									points="17 8 12 3 7 8"
+								/><line x1="12" y1="3" x2="12" y2="15" /></svg
+							>
+						</div>
+					{/if}
 				</div>
 
-				{#if isDropdownOpen}
-					<div class="dropdown-list">
-						<div class="dropdown-search">
-							<input
-								type="text"
-								bind:value={searchQuery}
-								placeholder="Filtrer..."
-								onclick={(e) => e.stopPropagation()}
-								onkeydown={(e) => {
-									if (e.key === 'Enter' && filteredGeometries.length > 0) {
-										loadGeometryDetails(filteredGeometries[0].id);
-										isFormOpen = false;
-										isDropdownOpen = false;
-									}
-								}}
-							/>
+				<!-- Controls Grid (Right) -->
+				<div class="mini-controls-table">
+					<!-- Row 1: Hand/Edit Icon (Top Right) -->
+					<div class="mini-control-cell top-right">
+						<div
+							class="hand-icon"
+							class:active={isEditing}
+							title={isEditing ? 'Mode Édition' : 'Mode Ajout'}
+						>
+							✍️
 						</div>
-						{#each filteredGeometries as geometry (geometry.id)}
-							<div class="dropdown-item" class:selected={selectedGeometryId === geometry.id}>
-								<!-- Name: Selects and closes form (Re-enroule le ruban) -->
-								<div
-									class="item-name"
-									onclick={() => {
-										loadGeometryDetails(geometry.id);
-										isFormOpen = false; // Close form
-										isDropdownOpen = false; // Close dropdown
-									}}
-									role="button"
-									tabindex="0"
+					</div>
+
+					<!-- Row 2: Gizmo & Modes -->
+					<div class="mini-control-cell bottom-left">
+						<button
+							type="button"
+							class="tiny-btn"
+							class:active={transformModes.includes('translate')}
+							title="Position"
+							onclick={() => {
+								if (transformModes.includes('translate'))
+									transformModes = transformModes.filter((m) => m !== 'translate');
+								else transformModes = [...transformModes, 'translate'];
+							}}>P</button
+						>
+						<button
+							type="button"
+							class="tiny-btn"
+							class:active={transformModes.includes('rotate')}
+							title="Rotation"
+							onclick={() => {
+								if (transformModes.includes('rotate'))
+									transformModes = transformModes.filter((m) => m !== 'rotate');
+								else transformModes = [...transformModes, 'rotate'];
+							}}>R</button
+						>
+						<button
+							type="button"
+							class="tiny-btn"
+							class:active={transformModes.includes('scale')}
+							title="Echelle"
+							onclick={() => {
+								if (transformModes.includes('scale'))
+									transformModes = transformModes.filter((m) => m !== 'scale');
+								else transformModes = [...transformModes, 'scale'];
+							}}>S</button
+						>
+					</div>
+
+					<div class="mini-control-cell bottom-right">
+						<button
+							type="button"
+							class="tiny-toggle"
+							class:active={isTransformControlsEnabled}
+							onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}
+							title="Activer Gizmos"
+						>
+							{isTransformControlsEnabled ? '✜ ON' : '✜'}
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<h3>{isEditing ? 'Update' : 'Add'} Geometry</h3>
+
+			<div class="geometry-list">
+				<!-- Custom Dropdown Menu -->
+				<div
+					class="custom-dropdown"
+					onmouseleave={() => (isDropdownOpen = false)}
+					role="region"
+					aria-label="Sélection de géométrie"
+				>
+					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					<div
+						class="dropdown-header"
+						onclick={toggleDropdown}
+						onmouseenter={() => (isDropdownOpen = true)}
+						role="button"
+						tabindex="0"
+						aria-label="Sélectionner une géométrie"
+					>
+						<span style="flex: 1; text-align: left;">
+							{selectedGeometryId
+								? geometries.find((g) => g.id === selectedGeometryId)?.name || 'Unknown Geometry'
+								: '-- Select Geometry --'}
+						</span>
+						<svg
+							class="chevron"
+							class:open={isDropdownOpen}
+							xmlns="http://www.w3.org/2000/svg"
+							width="16"
+							height="16"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg
+						>
+					</div>
+
+					{#if isDropdownOpen}
+						<div class="dropdown-list">
+							<div class="dropdown-search">
+								<input
+									type="text"
+									bind:value={searchQuery}
+									placeholder="Filtrer..."
+									onclick={(e) => e.stopPropagation()}
 									onkeydown={(e) => {
-										if (e.key === 'Enter' || e.key === ' ') {
-											loadGeometryDetails(geometry.id);
+										if (e.key === 'Enter' && filteredGeometries.length > 0) {
+											loadGeometryDetails(filteredGeometries[0].id);
 											isFormOpen = false;
 											isDropdownOpen = false;
 										}
 									}}
-								>
-									{geometry.name}
-								</div>
-
-								<!-- Eye: Toggles Visibility (stays open or just updates state) -->
-								<button
-									type="button"
-									class="visibility-toggle"
-									class:visible={geometry.visible}
-									class:hidden={!geometry.visible}
-									onclick={(e) => {
-										e.stopPropagation();
-										toggleGeometryVisibility(geometry.id);
-									}}
-									aria-label={geometry.visible ? 'Hide' : 'Show'}
-								>
-									{#if geometry.visible}
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											width="14"
-											height="14"
-											viewBox="0 0 24 24"
-											fill="none"
-											stroke="currentColor"
-											stroke-width="2"
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle
-												cx="12"
-												cy="12"
-												r="3"
-											/></svg
-										>
-									{:else}
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											width="14"
-											height="14"
-											viewBox="0 0 24 24"
-											fill="none"
-											stroke="currentColor"
-											stroke-width="2"
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											><path
-												d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
-											/><line x1="1" y1="1" x2="23" y2="23" /></svg
-										>
-									{/if}
-								</button>
+								/>
 							</div>
-						{/each}
+							{#each filteredGeometries as geometry (geometry.id)}
+								<div class="dropdown-item" class:selected={selectedGeometryId === geometry.id}>
+									<!-- Name: Selects and closes form (Re-enroule le ruban) -->
+									<div
+										class="item-name"
+										onclick={() => {
+											loadGeometryDetails(geometry.id);
+											isFormOpen = false; // Close form
+											isDropdownOpen = false; // Close dropdown
+										}}
+										role="button"
+										tabindex="0"
+										onkeydown={(e) => {
+											if (e.key === 'Enter' || e.key === ' ') {
+												loadGeometryDetails(geometry.id);
+												isFormOpen = false;
+												isDropdownOpen = false;
+											}
+										}}
+									>
+										{geometry.name}
+									</div>
 
-						{#if geometries.length === 0}
-							<div class="dropdown-item empty">No geometries found</div>
-						{/if}
-					</div>
-				{/if}
-			</div>
+									<!-- Eye: Toggles Visibility (stays open or just updates state) -->
+									<button
+										type="button"
+										class="visibility-toggle"
+										class:visible={geometry.visible}
+										class:hidden={!geometry.visible}
+										onclick={(e) => {
+											e.stopPropagation();
+											toggleGeometryVisibility(geometry.id);
+										}}
+										aria-label={geometry.visible ? 'Hide' : 'Show'}
+									>
+										{#if geometry.visible}
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												width="14"
+												height="14"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												stroke-width="2"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle
+													cx="12"
+													cy="12"
+													r="3"
+												/></svg
+											>
+										{:else}
+											<svg
+												xmlns="http://www.w3.org/2000/svg"
+												width="14"
+												height="14"
+												viewBox="0 0 24 24"
+												fill="none"
+												stroke="currentColor"
+												stroke-width="2"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												><path
+													d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
+												/><line x1="1" y1="1" x2="23" y2="23" /></svg
+											>
+										{/if}
+									</button>
+								</div>
+							{/each}
 
-			<button
-				type="button"
-				class="add-new-button"
-				onclick={() => {
-					resetForm();
-					isEditing = false;
-				}}
-			>
-				+ Add New Geometry
-			</button>
-
-			<!-- Type Selection -->
-			{#if !file}
-				<div class="type-select-row">
-					<select bind:value={type}>
-						{#each types as geometryType}
-							<option value={geometryType}>{geometryType}</option>
-						{/each}
-						<option value="text">text</option>
-						<!-- Explicitly add text option -->
-					</select>
-
-					{#if type === 'text'}
-						<input
-							type="text"
-							bind:value={name}
-							placeholder="Enter text..."
-							class="text-content-input"
-						/>
-					{:else}
-						<input type="text" bind:value={name} placeholder="Name" required />
+							{#if geometries.length === 0}
+								<div class="dropdown-item empty">No geometries found</div>
+							{/if}
+						</div>
 					{/if}
-					<input type="color" bind:value={color} class="color-input" />
-				</div>
-			{:else}
-				<input type="text" bind:value={name} placeholder="Name" required />
-				<input type="color" bind:value={color} />
-			{/if}
-
-			<!-- Transform Controls: 3 Columns (Pos | Rot | Scl) -->
-			<div class="transforms-grid">
-				<!-- Header Row -->
-				<div class="grid-header">
-					<div class="col-header">
-						<span>Pos</span>
-						<button type="button" class="icon-btn tiny" onclick={randomizePosition} title="Rnd Pos"
-							>🎲</button
-						>
-					</div>
-					<div class="col-header">
-						<span>Rot</span>
-						<button type="button" class="icon-btn tiny" onclick={randomizeRotation} title="Rnd Rot"
-							>🎲</button
-						>
-					</div>
-					<div class="col-header">
-						<span>Scl</span>
-						<button type="button" class="icon-btn tiny" onclick={randomizeScale} title="Rnd Scl"
-							>🎲</button
-						>
-						<button
-							type="button"
-							class="icon-btn tiny"
-							class:active={isUniformScale}
-							onclick={() => (isUniformScale = !isUniformScale)}
-							title="Uniform">🔗</button
-						>
-					</div>
 				</div>
 
-				<!-- X Row -->
-				<div class="grid-row">
-					<div class="cell">
-						<input
-							type="number"
-							bind:value={position.x}
-							step="0.01"
-							class="mini-input"
-							placeholder="X"
-						/>
-					</div>
-					<div class="cell">
-						<input
-							type="number"
-							bind:value={rotation.x}
-							step="0.01"
-							class="mini-input"
-							placeholder="X"
-						/>
-					</div>
-					<div class="cell">
-						<input
-							type="number"
-							bind:value={scale.x}
-							step="0.01"
-							class="mini-input"
-							placeholder="X"
-							oninput={(e) => updateScale('x', parseFloat(e.currentTarget.value) || 1)}
-						/>
-					</div>
-				</div>
+				<button
+					type="button"
+					class="add-new-button"
+					onclick={() => {
+						resetForm();
+						isEditing = false;
+					}}
+				>
+					+ Add New Geometry
+				</button>
 
-				<!-- Y Row -->
-				<div class="grid-row">
-					<div class="cell">
-						<input
-							type="number"
-							bind:value={position.y}
-							step="0.01"
-							class="mini-input"
-							placeholder="Y"
-						/>
+				<!-- Type Selection -->
+				{#if !file}
+					<div class="type-select-row">
+						<select bind:value={type}>
+							{#each types as geometryType}
+								<option value={geometryType}>{geometryType}</option>
+							{/each}
+							<option value="text">text</option>
+							<!-- Explicitly add text option -->
+						</select>
+
+						{#if type === 'text'}
+							<input
+								type="text"
+								bind:value={name}
+								placeholder="Enter text..."
+								class="text-content-input"
+							/>
+						{:else}
+							<input type="text" bind:value={name} placeholder="Name" required />
+						{/if}
+						<input type="color" bind:value={color} class="color-input" />
 					</div>
-					<div class="cell">
-						<input
-							type="number"
-							bind:value={rotation.y}
-							step="0.01"
-							class="mini-input"
-							placeholder="Y"
-						/>
+				{:else}
+					<input type="text" bind:value={name} placeholder="Name" required />
+					<input type="color" bind:value={color} />
+				{/if}
+
+				<!-- Transform Controls: 3 Columns (Pos | Rot | Scl) -->
+				<div class="transforms-grid">
+					<!-- Header Row -->
+					<div class="grid-header">
+						<div class="col-header">
+							<span>Pos</span>
+							<button
+								type="button"
+								class="icon-btn tiny"
+								onclick={randomizePosition}
+								title="Rnd Pos">🎲</button
+							>
+						</div>
+						<div class="col-header">
+							<span>Rot</span>
+							<button
+								type="button"
+								class="icon-btn tiny"
+								onclick={randomizeRotation}
+								title="Rnd Rot">🎲</button
+							>
+						</div>
+						<div class="col-header">
+							<span>Scl</span>
+							<button type="button" class="icon-btn tiny" onclick={randomizeScale} title="Rnd Scl"
+								>🎲</button
+							>
+							<button
+								type="button"
+								class="icon-btn tiny"
+								class:active={isUniformScale}
+								onclick={() => (isUniformScale = !isUniformScale)}
+								title="Uniform">🔗</button
+							>
+						</div>
 					</div>
-					{#if isUniformScale}
-						<div class="cell empty" />
-					{:else}
+
+					<!-- X Row -->
+					<div class="grid-row">
 						<div class="cell">
 							<input
 								type="number"
-								bind:value={scale.y}
+								bind:value={position.x}
+								step="0.01"
+								class="mini-input"
+								placeholder="X"
+							/>
+						</div>
+						<div class="cell">
+							<input
+								type="number"
+								bind:value={rotation.x}
+								step="0.01"
+								class="mini-input"
+								placeholder="X"
+							/>
+						</div>
+						<div class="cell">
+							<input
+								type="number"
+								bind:value={scale.x}
+								step="0.01"
+								class="mini-input"
+								placeholder="X"
+								oninput={(e) => updateScale('x', parseFloat(e.currentTarget.value) || 1)}
+							/>
+						</div>
+					</div>
+
+					<!-- Y Row -->
+					<div class="grid-row">
+						<div class="cell">
+							<input
+								type="number"
+								bind:value={position.y}
 								step="0.01"
 								class="mini-input"
 								placeholder="Y"
 							/>
 						</div>
-					{/if}
-				</div>
-
-				<!-- Z Row -->
-				<div class="grid-row">
-					<div class="cell">
-						<input
-							type="number"
-							bind:value={position.z}
-							step="0.01"
-							class="mini-input"
-							placeholder="Z"
-						/>
-					</div>
-					<div class="cell">
-						<input
-							type="number"
-							bind:value={rotation.z}
-							step="0.01"
-							class="mini-input"
-							placeholder="Z"
-						/>
-					</div>
-					{#if isUniformScale}
 						<div class="cell">
 							<input
 								type="number"
-								value={scale.z}
+								bind:value={rotation.y}
 								step="0.01"
-								class="mini-input readonly"
-								placeholder="Z"
-								readonly
+								class="mini-input"
+								placeholder="Y"
 							/>
 						</div>
-					{:else}
+						{#if isUniformScale}
+							<div class="cell empty" />
+						{:else}
+							<div class="cell">
+								<input
+									type="number"
+									bind:value={scale.y}
+									step="0.01"
+									class="mini-input"
+									placeholder="Y"
+								/>
+							</div>
+						{/if}
+					</div>
+
+					<!-- Z Row -->
+					<div class="grid-row">
 						<div class="cell">
 							<input
 								type="number"
-								bind:value={scale.z}
+								bind:value={position.z}
 								step="0.01"
 								class="mini-input"
 								placeholder="Z"
 							/>
 						</div>
-					{/if}
-				</div>
-			</div>
-
-			<button type="submit" class={isEditing ? 'update-button' : 'add-button'} disabled={isLoading}>
-				{isLoading ? 'Saving...' : isEditing ? 'Update' : 'Add'}
-			</button>
-			{#if isEditing}
-				<button type="button" onclick={resetForm} class="cancel-button">Cancel</button>
-			{/if}
-		</div>
-
-		<!-- Scene Controls -->
-		<div class="scene-controls">
-			<div class="control-item">
-				<span>Bloom Effect</span>
-				<button
-					type="button"
-					class="toggle-btn"
-					class:active={isBloomActive}
-					onclick={() => (isBloomActive = !isBloomActive)}
-				>
-					{isBloomActive ? 'Enabled' : 'Disabled'}
-				</button>
-			</div>
-
-			<div class="control-item transform-controls-row">
-				<span>Manipuler (Direct)</span>
-				<div class="transform-actions-v2">
-					<button
-						type="button"
-						class="mode-btn toggle"
-						class:active={isTransformControlsEnabled}
-						onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}
-						title="Activer Gizmo"
-					>
-						{isTransformControlsEnabled ? 'ON' : 'OFF'}
-					</button>
-
-					<div class="mode-selector-group" class:disabled={!isTransformControlsEnabled}>
-						<button
-							type="button"
-							class="mode-btn"
-							class:active={transformModes.includes('translate')}
-							onclick={() => {
-								if (transformModes.includes('translate')) {
-									transformModes = transformModes.filter((m) => m !== 'translate');
-								} else {
-									transformModes = [...transformModes, 'translate'];
-								}
-							}}>Pos</button
-						>
-						<button
-							type="button"
-							class="mode-btn"
-							class:active={transformModes.includes('rotate')}
-							onclick={() => {
-								if (transformModes.includes('rotate')) {
-									transformModes = transformModes.filter((m) => m !== 'rotate');
-								} else {
-									transformModes = [...transformModes, 'rotate'];
-								}
-							}}>Rot</button
-						>
-						<button
-							type="button"
-							class="mode-btn"
-							class:active={transformModes.includes('scale')}
-							onclick={() => {
-								if (transformModes.includes('scale')) {
-									transformModes = transformModes.filter((m) => m !== 'scale');
-								} else {
-									transformModes = [...transformModes, 'scale'];
-								}
-							}}>Scl</button
-						>
+						<div class="cell">
+							<input
+								type="number"
+								bind:value={rotation.z}
+								step="0.01"
+								class="mini-input"
+								placeholder="Z"
+							/>
+						</div>
+						{#if isUniformScale}
+							<div class="cell">
+								<input
+									type="number"
+									value={scale.z}
+									step="0.01"
+									class="mini-input readonly"
+									placeholder="Z"
+									readonly
+								/>
+							</div>
+						{:else}
+							<div class="cell">
+								<input
+									type="number"
+									bind:value={scale.z}
+									step="0.01"
+									class="mini-input"
+									placeholder="Z"
+								/>
+							</div>
+						{/if}
 					</div>
 				</div>
+
+				<button
+					type="submit"
+					class={isEditing ? 'update-button' : 'add-button'}
+					disabled={isLoading}
+				>
+					{isLoading ? 'Saving...' : isEditing ? 'Update' : 'Add'}
+				</button>
+				{#if isEditing}
+					<button type="button" onclick={resetForm} class="cancel-button">Cancel</button>
+				{/if}
 			</div>
 
-			<div class="control-item">
-				<span>Premium Effects</span>
-				<button
-					type="button"
-					class="toggle-btn"
-					class:active={isPremiumActive}
-					onclick={() => (isPremiumActive = !isPremiumActive)}
-				>
-					{isPremiumActive ? 'ON' : 'OFF'}
-				</button>
+			<!-- Scene Controls -->
+			<div class="scene-controls">
+				<div class="control-item">
+					<span>Bloom Effect</span>
+					<button
+						type="button"
+						class="toggle-btn"
+						class:active={isBloomActive}
+						onclick={() => (isBloomActive = !isBloomActive)}
+					>
+						{isBloomActive ? 'Enabled' : 'Disabled'}
+					</button>
+				</div>
+
+				<div class="control-item transform-controls-row">
+					<span>Manipuler (Direct)</span>
+					<div class="transform-actions-v2">
+						<button
+							type="button"
+							class="mode-btn toggle"
+							class:active={isTransformControlsEnabled}
+							onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}
+							title="Activer Gizmo"
+						>
+							{isTransformControlsEnabled ? 'ON' : 'OFF'}
+						</button>
+
+						<div class="mode-selector-group" class:disabled={!isTransformControlsEnabled}>
+							<button
+								type="button"
+								class="mode-btn"
+								class:active={transformModes.includes('translate')}
+								onclick={() => {
+									if (transformModes.includes('translate')) {
+										transformModes = transformModes.filter((m) => m !== 'translate');
+									} else {
+										transformModes = [...transformModes, 'translate'];
+									}
+								}}>Pos</button
+							>
+							<button
+								type="button"
+								class="mode-btn"
+								class:active={transformModes.includes('rotate')}
+								onclick={() => {
+									if (transformModes.includes('rotate')) {
+										transformModes = transformModes.filter((m) => m !== 'rotate');
+									} else {
+										transformModes = [...transformModes, 'rotate'];
+									}
+								}}>Rot</button
+							>
+							<button
+								type="button"
+								class="mode-btn"
+								class:active={transformModes.includes('scale')}
+								onclick={() => {
+									if (transformModes.includes('scale')) {
+										transformModes = transformModes.filter((m) => m !== 'scale');
+									} else {
+										transformModes = [...transformModes, 'scale'];
+									}
+								}}>Scl</button
+							>
+						</div>
+					</div>
+				</div>
+
+				<div class="control-item">
+					<span>Premium Effects</span>
+					<button
+						type="button"
+						class="toggle-btn"
+						class:active={isPremiumActive}
+						onclick={() => (isPremiumActive = !isPremiumActive)}
+					>
+						{isPremiumActive ? 'ON' : 'OFF'}
+					</button>
+				</div>
 			</div>
 		</div>
 	</form>
@@ -1329,25 +1394,26 @@
 		transition: all 0.2s;
 	}
 
-	/* Compact Upload Zone */
+	/* Compact Upload Zone & Controls Grid */
 	.upload-container-wrapper {
-		display: flex;
-		align-items: center;
-		gap: 12px;
 		background: rgba(0, 0, 0, 0.2);
 		border: 1px dashed rgba(255, 255, 255, 0.2);
 		border-radius: 8px;
-		padding: 6px 12px;
+		padding: 4px;
 		margin-bottom: 10px;
 		transition: all 0.2s ease;
 	}
-	.upload-container-wrapper.dragging {
-		border-color: #4db6ac;
-		background: rgba(77, 182, 172, 0.1);
+
+	.upload-controls-grid {
+		display: grid;
+		grid-template-columns: 48px 1fr; /* Upload icon width + remaining space */
+		gap: 8px;
+		align-items: stretch;
 	}
+
 	.upload-zone-compact {
-		width: 40px;
-		height: 40px;
+		width: 100%;
+		height: 48px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -1358,6 +1424,78 @@
 		color: #4db6ac;
 		transition: transform 0.1s;
 	}
+
+	.mini-controls-table {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		grid-template-rows: 1fr 1fr;
+		gap: 2px;
+	}
+
+	.mini-control-cell {
+		display: flex;
+		align-items: center;
+	}
+
+	.top-right {
+		grid-column: 2;
+		grid-row: 1;
+		justify-content: flex-end;
+	}
+
+	.bottom-left {
+		grid-column: 1;
+		grid-row: 2;
+		gap: 2px;
+	}
+
+	.bottom-right {
+		grid-column: 2;
+		grid-row: 2;
+		justify-content: flex-end;
+	}
+
+	.tiny-btn {
+		padding: 1px 4px;
+		font-size: 0.6rem;
+		background: rgba(255, 255, 255, 0.1);
+		border: none;
+		border-radius: 2px;
+		color: #999;
+		cursor: pointer;
+	}
+
+	.tiny-btn:hover,
+	.tiny-btn.active {
+		background: #4db6ac;
+		color: black;
+	}
+
+	.tiny-toggle {
+		padding: 1px 6px;
+		font-size: 0.65rem;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: 10px;
+		color: #aaa;
+		cursor: pointer;
+	}
+
+	.tiny-toggle.active {
+		border-color: #4db6ac;
+		color: #4db6ac;
+		background: rgba(77, 182, 172, 0.1);
+	}
+
+	.hand-icon {
+		font-size: 0.9rem;
+		opacity: 0.3;
+	}
+	.hand-icon.active {
+		opacity: 1;
+		filter: drop-shadow(0 0 2px #4db6ac);
+	}
+
 	.upload-zone-compact:hover {
 		background: rgba(255, 255, 255, 0.1);
 		transform: scale(1.05);

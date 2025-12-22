@@ -26,7 +26,8 @@
 		garden: () => import('../../routes/app/models/garden.svelte'),
 		nissangame: () => import('../../routes/app/nissangame.svelte'),
 		bibigame: () => import('../../routes/app/bibigame.svelte'),
-		spaceship: () => import('../../routes/app/models/spaceship.svelte')
+		spaceship: () => import('../../routes/app/models/spaceship.svelte'),
+		text_scene: () => import('../../routes/Text/scene.svelte')
 	};
 
 	const DynamicComponentLoader = $derived(() => {
@@ -108,7 +109,21 @@
 		{#if LoadedDynamicComponent}
 			<!-- 1. Render the dynamically loaded Svelte component when available -->
 			{@const Component = LoadedDynamicComponent}
-			<Component {geometry} />
+			{#if geometry.type === 'text_scene'}
+				<Component
+					cvLines={[
+						'# Welcome',
+						'## To the 3D Editor',
+						'Interactive Elements',
+						'- Drag & Drop GLB',
+						'- Real-time Sync',
+						'- Physics Games'
+					]}
+					{geometry}
+				/>
+			{:else}
+				<Component {geometry} />
+			{/if}
 		{:else if geometry.type === 'text'}
 			<T.Mesh scale={[geometry.scale?.x ?? 1, 1, 0.001]}>
 				<Text3DGeometry

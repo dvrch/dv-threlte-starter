@@ -192,7 +192,7 @@
 	{/if}
 </HTML>
 
-<T.AmbientLight intensity={0.8} />
+<T.AmbientLight intensity={isPremiumEnabled ? 0.2 : 1.5} />
 <T.DirectionalLight position={[10, 10, 10]} intensity={4} castShadow />
 <T.DirectionalLight position={[-10, 5, -10]} intensity={2} color="#4287f5" />
 
@@ -201,20 +201,9 @@
 	isBackground={true}
 />
 <Stars />
-<Stars />
 {#if isPremiumEnabled}
 	<ScenePremiumEffects />
 {/if}
-<SceneText2
-	cvLines={[
-		'# Welcome',
-		'## To the 3D Editor',
-		'Interactive Elements',
-		'- Drag & Drop GLB',
-		'- Real-time Sync',
-		'- Physics Games'
-	]}
-/>
 
 <!-- Sphère au centre -->
 <T.Mesh position={[0, 0.5, 0]}>
