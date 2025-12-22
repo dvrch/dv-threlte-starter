@@ -71,7 +71,7 @@
 </script>
 
 {#if texture}
-	<InstancedMesh limit={STARS_COUNT} range={STARS_COUNT}>
+	<InstancedMesh limit={STARS_COUNT} range={STARS_COUNT} name="Starfield">
 		<T.PlaneGeometry args={[1, 0.05]} />
 		<T.MeshBasicMaterial side={DoubleSide} alphaMap={texture} transparent />
 

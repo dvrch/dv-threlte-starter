@@ -15,8 +15,8 @@
 	import { onMount } from 'svelte';
 
 	let {
-		intensity = 0.8, // More subtle bloom
-		luminanceThreshold = 0.3, // Filters out more, keeps only highlights
+		intensity = 1.2, // Slightly more pronounced bloom
+		luminanceThreshold = 0.2, // More sensitive to light
 		height = 1024,
 		width = 1024,
 		luminanceSmoothing = 0.1,

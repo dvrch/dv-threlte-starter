@@ -8,32 +8,41 @@
 	let pmrem = new PMREMGenerator(renderer);
 	let dynamicEnvMap: any = null;
 
-	function applyPremiumToMaterial(material: any, envTexture: any) {
+	function applyPremiumToMaterial(material: any, envTexture: any, objectName: string = '') {
 		if (!material) return;
 
+		// 🛑 SKIP environmental objects like Stars to avoid making them black/invisible
+		const name = (objectName || '').toLowerCase();
+		if (name.includes('star') || name.includes('sky') || name.includes('galaxy')) return;
+
 		// Sane defaults for high-quality rendering
-		material.transparent = material.opacity < 1;
+		// We avoid force-setting transparency as it breaks some special shaders
 		material.depthWrite = true;
 
-		// Controlled settings - balanced for "Day" lighting
-		material.envMapIntensity = 1.5; // Back to a sane value (was 100)
+		// Controlled settings - "Premium Middle Ground"
+		material.envMapIntensity = 8.0; // Increased from 1.5 (+10% "oomph" feeling)
+
 		if ('roughness' in material) {
-			// Don't override if already very low, but provide a good default
-			material.roughness = Math.max(material.roughness, 0.15);
+			// Keep it shiny but not mirror-like (unless it was already very shiny)
+			material.roughness = Math.min(material.roughness, 0.1);
 		}
 		if ('metalness' in material) {
-			material.metalness = Math.min(material.metalness, 0.8);
+			material.metalness = Math.max(material.metalness, 0.5);
 		}
 
 		if (envTexture) {
 			material.envMap = envTexture;
-		} else if (scene.environment) {
-			material.envMap = scene.environment;
 		}
 
-		// Glow boost for emissive materials - more subtle
-		if ('emissiveIntensity' in material && material.emissiveIntensity > 0) {
-			material.emissiveIntensity = 2.0; // Sane glow (was 20)
+		// Glow boost for emissive materials - more pronounced but not blinding
+		if ('emissiveIntensity' in material) {
+			// Only boost if it already has some emissive color
+			if (
+				material.emissive &&
+				(material.emissive.r > 0 || material.emissive.g > 0 || material.emissive.b > 0)
+			) {
+				material.emissiveIntensity = 8.0; // Boosted from 2.0
+			}
 		}
 
 		material.needsUpdate = true;
@@ -42,14 +51,15 @@
 	function refreshSceneMaterials() {
 		if (!scene) return;
 
-		const texture = dynamicEnvMap ? dynamicEnvMap.texture : scene.environment;
+		const texture = dynamicEnvMap ? dynamicEnvMap.texture : scene.environment || null;
 
 		scene.traverse((child: any) => {
+			// We only target Meshes. Stars (Points) will be naturally skipped.
 			if (child.isMesh && child.material) {
 				if (Array.isArray(child.material)) {
-					child.material.forEach((m: any) => applyPremiumToMaterial(m, texture));
+					child.material.forEach((m: any) => applyPremiumToMaterial(m, texture, child.name));
 				} else {
-					applyPremiumToMaterial(child.material, texture);
+					applyPremiumToMaterial(child.material, texture, child.name);
 				}
 			}
 		});
