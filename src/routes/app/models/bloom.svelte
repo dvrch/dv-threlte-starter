@@ -15,8 +15,8 @@
 	import { onMount } from 'svelte';
 
 	let {
-		intensity = 1.5, // Balanced for realism (Image 2 style)
-		luminanceThreshold = 0.85, // Only bloom very bright lights/reflections, not white surfaces
+		intensity = 1.0, // Slightly more pronounced bloom
+		luminanceThreshold = 0.2, // More sensitive to light
 		height = 1024,
 		width = 1024,
 		luminanceSmoothing = 0.1,
@@ -32,42 +32,34 @@
 	function setupEffectComposer(cam: THREE.Camera) {
 		if (!cam || !scene) return;
 		composer.removeAllPasses();
-		const bloom = new BloomEffect({
-			intensity,
-			luminanceThreshold,
-			height,
-			width,
-			luminanceSmoothing,
-			mipmapBlur,
-			kernelSize: KernelSize.MEDIUM
-		});
-
-		const styleEffects = [
-			new ChromaticAberrationEffect({
-				offset: new THREE.Vector2(0.001, 0.001),
-				radialModulation: false,
-				modulationOffset: 0
-			}),
-			new VignetteEffect({
-				eskil: false,
-				offset: 0.35,
-				darkness: 0.5
-			})
-		];
-
-		const smaaEffect = new SMAAEffect({
-			preset: SMAAPreset.HIGH
-		});
-
-		// Split passes to verify if merging is the issue
-		const bloomPass = new EffectPass(cam, bloom);
-		const stylePass = new EffectPass(cam, ...styleEffects);
-		const smaaPass = new EffectPass(cam, smaaEffect);
-
 		composer.addPass(new RenderPass(scene, cam));
-		composer.addPass(bloomPass);
-		composer.addPass(stylePass);
-		composer.addPass(smaaPass);
+		composer.addPass(
+			new EffectPass(
+				cam,
+				new BloomEffect({
+					intensity,
+					luminanceThreshold,
+					height,
+					width,
+					luminanceSmoothing,
+					mipmapBlur,
+					kernelSize: KernelSize.MEDIUM
+				}),
+				new ChromaticAberrationEffect({
+					offset: new THREE.Vector2(0.001, 0.001),
+					radialModulation: false,
+					modulationOffset: 0
+				}),
+				new VignetteEffect({
+					eskil: false,
+					offset: 0.35,
+					darkness: 0.5
+				}),
+				new SMAAEffect({
+					preset: SMAAPreset.HIGH
+				})
+			)
+		);
 	}
 
 	// Dynamic resizing

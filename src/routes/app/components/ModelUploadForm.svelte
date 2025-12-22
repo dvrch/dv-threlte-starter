@@ -41,22 +41,46 @@
 		success = '';
 
 		const formData = new FormData();
-		formData.append('file', file);
+
+		// Extract name from filename (without extension)
+		const baseName = file.name.split('.')[0];
+		const ext = file.name.split('.').pop()?.toLowerCase();
+
+		// Required fields matching Django backend expectations
+		formData.append('name', baseName);
+		formData.append(
+			'color',
+			'#' +
+				Math.floor(Math.random() * 16777215)
+					.toString(16)
+					.padStart(6, '0')
+		);
+		formData.append('position', JSON.stringify({ x: 0, y: 0, z: 0 }));
+		formData.append('rotation', JSON.stringify({ x: 0, y: 0, z: 0 }));
+		formData.append('scale', JSON.stringify({ x: 1, y: 1, z: 1 }));
+		formData.append('visible', 'true');
+		formData.append('type', 'gltf_model');
+		if (ext) formData.append('model_type', ext);
+		formData.append('model_file', file);
 
 		try {
-			const response = await fetch(API_ENDPOINTS.UPLOAD_BLOB, {
+			const response = await fetch(ENDPOINTS.GEOMETRIES, {
 				method: 'POST',
 				body: formData
 			});
 
 			if (!response.ok) {
 				const errorData = await response.json().catch(() => ({}));
-				throw new Error(errorData.error || 'Upload failed');
+				throw new Error(errorData.name?.[0] || errorData.detail || 'Upload failed');
 			}
 
 			const data = await response.json();
 			success = 'Modèle uploadé avec succès !';
 			notification.show(success, 'success');
+
+			// Trigger scene refresh
+			window.dispatchEvent(new Event('modelAdded'));
+
 			resetForm();
 			setTimeout(() => toggleForm(), 2000);
 		} catch (e) {
