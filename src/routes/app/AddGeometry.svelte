@@ -57,7 +57,7 @@
 		isDropdownOpen = !isDropdownOpen;
 	};
 
-	let isBloomActive = $state(false);
+	let isBloomActive = $state(true);
 	$effect(() => {
 		window.dispatchEvent(
 			new CustomEvent('toggleBloomEffect', {

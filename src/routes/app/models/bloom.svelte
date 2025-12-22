@@ -6,18 +6,20 @@
 		KernelSize,
 		RenderPass,
 		SMAAEffect,
-		SMAAPreset
+		SMAAPreset,
+		ChromaticAberrationEffect,
+		VignetteEffect
 	} from 'postprocessing';
 	import { useThrelte, useTask } from '@threlte/core';
 	import * as THREE from 'three';
 	import { onMount } from 'svelte';
 
 	let {
-		intensity = 0.8,
-		luminanceThreshold = 0,
-		height = 1024, // Increased resolution
-		width = 1024, // Increased resolution
-		luminanceSmoothing = 0,
+		intensity = 1.2, // Stronger bloom
+		luminanceThreshold = 0.1,
+		height = 1024,
+		width = 1024,
+		luminanceSmoothing = 0.1,
 		mipmapBlur = true
 	} = $props();
 
@@ -42,14 +44,19 @@
 					luminanceSmoothing,
 					mipmapBlur,
 					kernelSize: KernelSize.MEDIUM
-				})
-			)
-		);
-		composer.addPass(
-			new EffectPass(
-				cam,
+				}),
+				new ChromaticAberrationEffect({
+					offset: new THREE.Vector2(0.001, 0.001),
+					radialModulation: false,
+					modulationOffset: 0
+				}),
+				new VignetteEffect({
+					eskil: false,
+					offset: 0.35,
+					darkness: 0.5
+				}),
 				new SMAAEffect({
-					preset: SMAAPreset.HIGH // Better quality
+					preset: SMAAPreset.HIGH
 				})
 			)
 		);
