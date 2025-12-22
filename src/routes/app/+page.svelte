@@ -9,6 +9,7 @@
 	import { addToast } from '$lib/stores/toasts';
 	import Bloom from './models/bloom.svelte';
 	import Stars from '../Spaceship/Stars.svelte';
+	import ScenePremiumEffects from './components/ScenePremiumEffects.svelte';
 
 	interface GeometryItem {
 		id: string;
@@ -107,6 +108,7 @@
 	isBackground={false}
 />
 <Stars />
+<ScenePremiumEffects />
 
 <!-- Sphère au centre -->
 <T.Mesh position={[0, 0.5, 0]}>

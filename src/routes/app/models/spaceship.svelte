@@ -3,26 +3,23 @@
 		AddEquation,
 		CustomBlending,
 		Group,
-		LessEqualDepth,
-		OneFactor,
 		TextureLoader,
 		Vector2,
 		Vector3,
 		Raycaster,
 		Mesh,
-		PlaneGeometry,
-		PMREMGenerator
+		PlaneGeometry
 	} from 'three';
 	import { T, useTask, useThrelte } from '@threlte/core';
 	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
-	import { onMount, onDestroy, untrack } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { buildSceneGraph } from '$lib/utils/cloudinaryAssets';
 
 	let { ref = $bindable(new Group()), geometry, ...restProps } = $props();
-	const { camera, scene, renderer } = useThrelte();
+	const { camera } = useThrelte();
 
 	let gltfResultData = $state<any>(null);
 	let mapResultData = $state<any>(null);
@@ -46,10 +43,6 @@
 	const pointer = new Vector2();
 	const planeMesh = new Mesh(new PlaneGeometry(2000, 2000));
 	planeMesh.rotation.y = Math.PI * 0.5;
-
-	// Dynamic Env Map (Capturing stars & scene glow)
-	let pmrem = new PMREMGenerator(renderer);
-	let dynamicEnvMap: any = null;
 
 	const handlePointerMove = (event: PointerEvent) => {
 		if (!browser) return;
@@ -113,68 +106,12 @@
 		rotationPitch += (targetPitch - rotationPitch) * 0.04;
 	});
 
-	// Robust material update function
-	function materialFix(material: any, envTexture: any = null) {
-		if (!material) return;
-		material.transparent = true;
-		material.alphaToCoverage = true;
-		material.depthFunc = LessEqualDepth;
-		material.depthTest = true;
-		material.depthWrite = true;
-
-		// Extreme reflections logic from /Spaceship
-		material.envMapIntensity = 100; // Max intensity
-		if ('roughness' in material) material.roughness = 0.02; // Super shiny
-		if ('metalness' in material) material.metalness = 1.0;
-		if (material.normalScale) material.normalScale.set(0.1, 0.1); // Smoother
-
-		if (envTexture) {
-			material.envMap = envTexture;
-		} else if (scene.environment) {
-			material.envMap = scene.environment;
-		}
-
-		// Emissive boost
-		if ('emissive' in material && material.emissive) {
-			material.emissiveIntensity = 15; // Make the lights shine!
-		}
-
-		material.needsUpdate = true;
-	}
-
-	function updateAllMaterials(envTexture: any = null) {
-		if (!gltfResultData) return;
-		gltfResultData.scene.traverse((child: any) => {
-			if (child.isMesh && child.material) {
-				materialFix(child.material, envTexture);
-			}
-		});
-	}
-
-	// Dynamic Env Map capturing stars
-	const captureEnvMap = () => {
-		if (!renderer || !scene) return;
-		if (dynamicEnvMap) dynamicEnvMap.dispose();
-		dynamicEnvMap = pmrem.fromScene(scene, 0, 0.1, 1000);
-		updateAllMaterials(dynamicEnvMap.texture);
-	};
-
-	$effect(() => {
-		if (gltfResultData) {
-			updateAllMaterials();
-		}
-	});
-
 	onMount(() => {
 		if (browser) {
 			window.addEventListener('pointermove', handlePointerMove);
 			window.addEventListener('keydown', handleKeyDown);
 			window.addEventListener('keyup', handleKeyUp);
 			loadAssets();
-
-			// Periodic env map capture to catch stars
-			const interval = setInterval(captureEnvMap, 3000);
-			return () => clearInterval(interval);
 		}
 	});
 
@@ -183,8 +120,6 @@
 			window.removeEventListener('pointermove', handlePointerMove);
 			window.removeEventListener('keydown', handleKeyDown);
 			window.removeEventListener('keyup', handleKeyUp);
-			if (dynamicEnvMap) dynamicEnvMap.dispose();
-			pmrem.dispose();
 		}
 	});
 
@@ -197,10 +132,8 @@
 			loader.setDRACOLoader(createDracoLoader());
 
 			const rawGltf = await loader.loadAsync(gltfUrl);
-			buildSceneGraph(rawGltf); // ensure internal nodes/materials are ready if needed
+			buildSceneGraph(rawGltf);
 			gltfResultData = rawGltf;
-
-			updateAllMaterials();
 
 			const texLoader = new TextureLoader();
 			mapResultData = await texLoader.loadAsync(mapUrl);
