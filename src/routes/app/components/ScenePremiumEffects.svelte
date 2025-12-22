@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useThrelte, useTask } from '@threlte/core';
+	import { useThrelte } from '@threlte/core';
 	import { PMREMGenerator, LessEqualDepth } from 'three';
 	import { onMount, onDestroy } from 'svelte';
 
@@ -11,17 +11,19 @@
 	function applyPremiumToMaterial(material: any, envTexture: any) {
 		if (!material) return;
 
-		// Ensure standard material properties for reflections
-		material.transparent = true;
-		material.alphaToCoverage = true;
-		material.depthFunc = LessEqualDepth;
-		material.depthTest = true;
+		// Sane defaults for high-quality rendering
+		material.transparent = material.opacity < 1;
 		material.depthWrite = true;
 
-		// Premium settings
-		material.envMapIntensity = 10;
-		if ('roughness' in material) material.roughness = 0.05;
-		if ('metalness' in material) material.metalness = 1.0;
+		// Controlled settings - balanced for "Day" lighting
+		material.envMapIntensity = 1.5; // Back to a sane value (was 100)
+		if ('roughness' in material) {
+			// Don't override if already very low, but provide a good default
+			material.roughness = Math.max(material.roughness, 0.15);
+		}
+		if ('metalness' in material) {
+			material.metalness = Math.min(material.metalness, 0.8);
+		}
 
 		if (envTexture) {
 			material.envMap = envTexture;
@@ -29,9 +31,9 @@
 			material.envMap = scene.environment;
 		}
 
-		// Glow boost for emissive materials
-		if ('emissiveIntensity' in material) {
-			material.emissiveIntensity = 2;
+		// Glow boost for emissive materials - more subtle
+		if ('emissiveIntensity' in material && material.emissiveIntensity > 0) {
+			material.emissiveIntensity = 2.0; // Sane glow (was 20)
 		}
 
 		material.needsUpdate = true;
@@ -56,23 +58,26 @@
 	const captureEnvironment = () => {
 		if (!renderer || !scene) return;
 
-		// Temporarily hide things if we wanted a cleaner map, but seeing them is fine too
 		if (dynamicEnvMap) dynamicEnvMap.dispose();
+		// Capture scene to allow reflections of stars and light
 		dynamicEnvMap = pmrem.fromScene(scene, 0, 0.1, 1000);
 
 		refreshSceneMaterials();
 	};
 
 	onMount(() => {
-		// Start periodic capture to catch new objects and movement (stars, ships)
-		const interval = setInterval(captureEnvironment, 2000);
-		return () => clearInterval(interval);
+		// Run once after models load
+		const timeout = setTimeout(captureEnvironment, 1000);
+		// Periodically refresh to catch dynamic movement (less frequent)
+		const interval = setInterval(captureEnvironment, 5000);
+		return () => {
+			clearTimeout(timeout);
+			clearInterval(interval);
+		};
 	});
 
 	onDestroy(() => {
 		if (dynamicEnvMap) dynamicEnvMap.dispose();
 		pmrem.dispose();
 	});
-
-	// Also run on every task for very fast updates? Maybe overkill, but 2s is safe.
 </script>

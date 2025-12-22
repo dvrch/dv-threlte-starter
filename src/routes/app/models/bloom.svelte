@@ -15,8 +15,8 @@
 	import { onMount } from 'svelte';
 
 	let {
-		intensity = 2.5, // Ultra-strong bloom to match Spaceship comparison
-		luminanceThreshold = 0.05, // Catch almost all bright spots
+		intensity = 0.8, // More subtle bloom
+		luminanceThreshold = 0.3, // Filters out more, keeps only highlights
 		height = 1024,
 		width = 1024,
 		luminanceSmoothing = 0.1,
