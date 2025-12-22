@@ -37,20 +37,20 @@
 			}
 		}
 
-		// 2. High-end Reflections - Reduced to allow more ambient influence
-		material.envMapIntensity = 1.5;
+		// 2. High-end Reflections - Boosted for premium feel
+		material.envMapIntensity = 2.0;
 
 		if (envTexture) {
 			material.envMap = envTexture;
 		}
 
-		// 3. Emissive Boost (The "Glow" effect) - Slightly more balanced
+		// 3. Emissive Boost (The "Glow" effect) - Stronger
 		if ('emissiveIntensity' in material) {
 			if (
 				material.emissive &&
 				(material.emissive.r > 0.1 || material.emissive.g > 0.1 || material.emissive.b > 0.1)
 			) {
-				material.emissiveIntensity = Math.max(material.emissiveIntensity, 5.0);
+				material.emissiveIntensity = Math.max(material.emissiveIntensity, 6.0);
 			}
 		}
 
