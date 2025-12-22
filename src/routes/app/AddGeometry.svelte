@@ -60,6 +60,12 @@
 	let isBloomActive = $state(true);
 	let isTransformControlsEnabled = $state(false);
 	let transformMode = $state<'translate' | 'rotate' | 'scale'>('translate');
+	let searchQuery = $state('');
+
+	// Derived state for filtered geometries
+	let filteredGeometries = $derived(
+		geometries.filter((g) => g.name.toLowerCase().includes(searchQuery.toLowerCase()))
+	);
 
 	$effect(() => {
 		window.dispatchEvent(
@@ -560,7 +566,22 @@
 
 				{#if isDropdownOpen}
 					<div class="dropdown-list">
-						{#each geometries as geometry (geometry.id)}
+						<div class="dropdown-search">
+							<input
+								type="text"
+								bind:value={searchQuery}
+								placeholder="Filtrer..."
+								onclick={(e) => e.stopPropagation()}
+								onkeydown={(e) => {
+									if (e.key === 'Enter' && filteredGeometries.length > 0) {
+										loadGeometryDetails(filteredGeometries[0].id);
+										isFormOpen = false;
+										isDropdownOpen = false;
+									}
+								}}
+							/>
+						</div>
+						{#each filteredGeometries as geometry (geometry.id)}
 							<div class="dropdown-item" class:selected={selectedGeometryId === geometry.id}>
 								<!-- Name: Selects and closes form (Re-enroule le ruban) -->
 								<div
@@ -1108,13 +1129,36 @@
 		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 	}
 
+	.dropdown-search {
+		padding: 6px;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+		background: rgba(0, 0, 0, 0.1);
+	}
+
+	.dropdown-search input {
+		width: 100%;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 4px;
+		padding: 4px 8px;
+		color: #eee;
+		font-size: 0.75rem;
+		outline: none;
+	}
+
+	.dropdown-search input:focus {
+		border-color: #4db6ac;
+		background: rgba(77, 182, 172, 0.05);
+	}
+
 	.dropdown-item {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 8px 10px;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-		transition: background 0.1s;
+		padding: 6px 10px;
+		cursor: pointer;
+		transition: background 0.2s;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.02);
 	}
 
 	.dropdown-item:last-child {
