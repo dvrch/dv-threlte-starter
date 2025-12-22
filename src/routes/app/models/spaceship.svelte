@@ -7,9 +7,12 @@
 		OneFactor,
 		TextureLoader,
 		Vector2,
-		Vector3
+		Vector3,
+		Raycaster,
+		Mesh,
+		PlaneGeometry
 	} from 'three';
-	import { T, useTask } from '@threlte/core';
+	import { T, useTask, useThrelte } from '@threlte/core';
 	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
 	import { onMount, onDestroy } from 'svelte';
@@ -19,47 +22,67 @@
 	import Stars from '../../Spaceship/Stars.svelte';
 
 	let { ref = $bindable(new Group()), geometry, ...restProps } = $props();
+	const { camera } = useThrelte();
 
 	let gltfResultData = $state<any>(null);
 	let mapResultData = $state<any>(null);
 	let isLoading = $state(true);
 
-	// Reactivity state
-	let mouse = new Vector2(0, 0);
-	let targetRotation = new Vector3(0, 0, 0);
-	let currentRotation = $state(new Vector3(0, 0, 0));
-	let currentPosition = $state(new Vector3(0, 0, 0));
+	// --- Flight Simulation State (matching src/routes/Spaceship/Scene.svelte) ---
+	let intersectionPoint = new Vector3(0, 0, 0);
+	let translY = $state(0);
+	let translAccelleration = $state(0);
+	let angleZ = $state(0);
+	let angleAccelleration = $state(0);
 
-	const handleMouseMove = (e: MouseEvent) => {
-		mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-		mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+	const raycaster = new Raycaster();
+	const pointer = new Vector2();
+	const planeMesh = new Mesh(new PlaneGeometry(100, 100)); // Invisible plane for raycasting
+	planeMesh.rotation.y = Math.PI * 0.5; // Rotate to face the default side camera better if needed, but in the original it's flat
+
+	const handlePointerMove = (event: PointerEvent) => {
+		if (!browser) return;
+		pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+		pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+		const currentCamera = (camera as any)?.current || camera;
+		if (currentCamera && currentCamera.isCamera) {
+			raycaster.setFromCamera(pointer, currentCamera);
+			const intersects = raycaster.intersectObject(planeMesh);
+			if (intersects[0]) {
+				intersectionPoint.copy(intersects[0].point);
+				// Contrain X like in the original Spaceship scene
+				intersectionPoint.x = 3;
+			}
+		}
 	};
 
 	useTask((delta) => {
-		// Proximity reactivity: effect is stronger when mouse is closer to the center
-		const dist = mouse.length();
-		const proximityFactor = Math.max(0, 1 - dist * 0.85);
+		// Translation follow mouse (Y axis)
+		const targetY = intersectionPoint.y;
+		translAccelleration += (targetY - translY) * 0.002;
+		translAccelleration *= 0.95;
+		translY += translAccelleration;
 
-		targetRotation.z = -mouse.x * 0.5 * proximityFactor; // Roll
-		targetRotation.x = -mouse.y * 0.3 * proximityFactor; // Pitch
-
-		currentRotation.x += (targetRotation.x - currentRotation.x) * 0.1;
-		currentRotation.z += (targetRotation.z - currentRotation.z) * 0.1;
-
-		currentPosition.y += (mouse.y * 2 * proximityFactor - currentPosition.y) * 0.05;
-		currentPosition.z += (-mouse.x * 2 * proximityFactor - currentPosition.z) * 0.05;
+		// Rotation follow (Z axis bank)
+		const dir = intersectionPoint.clone().sub(new Vector3(0, translY, 0)).normalize();
+		const dirCos = dir.dot(new Vector3(0, 1, 0));
+		const angle = Math.acos(dirCos) - Math.PI * 0.5;
+		angleAccelleration += (angle - angleZ) * 0.01;
+		angleAccelleration *= 0.85;
+		angleZ += angleAccelleration;
 	});
 
 	onMount(() => {
 		if (browser) {
-			window.addEventListener('mousemove', handleMouseMove);
+			window.addEventListener('pointermove', handlePointerMove);
 			loadAssets();
 		}
 	});
 
 	onDestroy(() => {
 		if (browser) {
-			window.removeEventListener('mousemove', handleMouseMove);
+			window.removeEventListener('pointermove', handlePointerMove);
 		}
 	});
 
@@ -105,11 +128,9 @@
 	</T.Group>
 
 	{#if gltfResultData}
-		<T.Group
-			scale={0.001}
-			rotation={[currentRotation.x, -Math.PI * 0.5, currentRotation.z]}
-			position={[currentPosition.x, currentPosition.y, currentPosition.z]}
-		>
+		<!-- We apply the physics-based position and rotation (angleZ) -->
+		<!-- This matches the logic from src/routes/Spaceship/Scene.svelte -->
+		<T.Group scale={0.001} position={[0, translY, 0]} rotation={[angleZ, -Math.PI * 0.5, angleZ]}>
 			{#if gltfResultData.nodes.Cube001_spaceship_racer_0}
 				<T.Mesh
 					castShadow
