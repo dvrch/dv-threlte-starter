@@ -60,31 +60,50 @@
 	};
 
 	useTask((delta) => {
-		// Translation follow mouse (Y axis) - Reduced acceleration as requested
-		const targetY = intersectionPoint.y;
-		translAccelleration += (targetY - translY) * 0.001; // Was 0.002
-		translAccelleration *= 0.95;
+		const mouseRadius = pointer.length();
+		const activationRadius = 0.7; // Only react if mouse is within this radius
+		const isActive = mouseRadius < activationRadius;
+
+		// Translation follow mouse (Y axis) - Even slower as requested
+		const targetY = isActive ? intersectionPoint.y : 0;
+		translAccelleration += (targetY - translY) * 0.0007; // Extra dampened
+		translAccelleration *= 0.94;
 		translY += translAccelleration;
+
+		// Fictive bounding box for vertical movement
+		const boxLimit = 8;
+		if (translY > boxLimit) {
+			translY = boxLimit;
+			translAccelleration = 0;
+		}
+		if (translY < -boxLimit) {
+			translY = -boxLimit;
+			translAccelleration = 0;
+		}
 
 		// Rotation follow (Z axis bank / angleZ)
 		const dir = intersectionPoint.clone().sub(new Vector3(0, translY, 0)).normalize();
 		const dirCos = dir.dot(new Vector3(0, 1, 0));
 		const angle = Math.acos(dirCos) - Math.PI * 0.5;
-		angleAccelleration += (angle - angleZ) * 0.01;
-		angleAccelleration *= 0.85;
+
+		// Reaction only if active, otherwise return to neutral
+		const targetAngle = isActive ? angle : 0;
+		angleAccelleration += (targetAngle - angleZ) * 0.008;
+		angleAccelleration *= 0.82;
 		angleZ += angleAccelleration;
 
-		// Pitch effect: Dive when descending, Up when ascending
-		// We use translAccelleration as an indicator of vertical speed/intent
-		const kineticPitch = -translAccelleration * 15; // Adjustment factor for sensitivity
+		// Pitch effect: Airplane style (Nose UP when ascending)
+		// We use translAccelleration. Positive acceleration (upward) -> positive pitch (nose up)
+		// Reduced intensity as requested
+		const kineticPitch = translAccelleration * 10;
 
 		// Additional magnificent rotations (roll/tilt based on pointer lateral movement)
-		const targetRoll = -pointer.x * 0.8;
-		const targetPitch = pointer.y * 0.4 + kineticPitch; // Combine mouse pitch and kinetic pitch
+		const targetRoll = isActive ? -pointer.x * 0.6 : 0;
+		const targetPitch = (isActive ? pointer.y * 0.25 : 0) + kineticPitch;
 
 		// Interpolate for smoothness
-		rotationRoll += (targetRoll - rotationRoll) * 0.05;
-		rotationPitch += (targetPitch - rotationPitch) * 0.05;
+		rotationRoll += (targetRoll - rotationRoll) * 0.04;
+		rotationPitch += (targetPitch - rotationPitch) * 0.04;
 	});
 
 	onMount(() => {
