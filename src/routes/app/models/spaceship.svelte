@@ -140,11 +140,14 @@
 				material.depthTest = true;
 				material.depthWrite = true;
 
-				// Enable extremely strong reflections from Environment
-				material.envMapIntensity = 45;
-				if (material.normalScale) material.normalScale.set(0.15, 0.15); // Smoother surfaces for clearer reflections
+				// Enable extremely strong reflections from Environment (matching Spaceship tab)
+				material.envMapIntensity = 100;
+				if (material.normalScale) material.normalScale.set(0.1, 0.1);
 
-				// Ensure it picks up the scene environment
+				// Force metallic/glossy look for clearer reflections
+				if ('roughness' in material) material.roughness = 0.05;
+				if ('metalness' in material) material.metalness = 1.0;
+
 				material.needsUpdate = true;
 			}
 
