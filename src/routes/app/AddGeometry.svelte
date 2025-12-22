@@ -58,10 +58,25 @@
 	};
 
 	let isBloomActive = $state(true);
+	let isTransformControlsEnabled = $state(false);
+	let transformMode = $state<'translate' | 'rotate' | 'scale'>('translate');
+
 	$effect(() => {
 		window.dispatchEvent(
 			new CustomEvent('toggleBloomEffect', {
 				detail: { enabled: isBloomActive }
+			})
+		);
+	});
+
+	$effect(() => {
+		window.dispatchEvent(
+			new CustomEvent('toggleTransformControls', {
+				detail: {
+					enabled: isTransformControlsEnabled,
+					id: selectedGeometryId,
+					mode: transformMode
+				}
 			})
 		);
 	});
@@ -84,14 +99,25 @@
 					'text',
 					'spaceship',
 					'vague',
-					'nissangame'
+					'nissangame',
+					'bibigame'
 				];
 				types = [...new Set([...baseTypes, ...fetchedTypes])];
 			}
 		} catch (error) {
 			console.error('Error loading types:', error);
 			// Fallback types
-			types = ['box', 'sphere', 'torus', 'icosahedron', 'text', 'spaceship', 'vague', 'nissangame'];
+			types = [
+				'box',
+				'sphere',
+				'torus',
+				'icosahedron',
+				'text',
+				'spaceship',
+				'vague',
+				'nissangame',
+				'bibigame'
+			];
 			addToast('Failed to load types from server. Using defaults.', 'warning');
 		}
 	};
@@ -474,7 +500,7 @@
 				{#if file}
 					<span class="filename-small">{file.name}</span>
 				{:else}
-					<span class="drop-hint">Glisser/Déposer ici</span>
+					<span class="drop-hint">Glisser/Déposer fichier GLB ici</span>
 				{/if}
 			</div>
 		</div>
@@ -795,6 +821,27 @@
 				>
 					{isBloomActive ? 'Enabled' : 'Disabled'}
 				</button>
+			</div>
+
+			<div class="control-item transform-controls-row">
+				<span>Manipuler (Direct)</span>
+				<div class="transform-actions">
+					<button
+						type="button"
+						class="toggle-btn"
+						class:active={isTransformControlsEnabled}
+						onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}
+					>
+						{isTransformControlsEnabled ? 'ON' : 'OFF'}
+					</button>
+					{#if isTransformControlsEnabled}
+						<select bind:value={transformMode} class="mode-select">
+							<option value="translate">Pos</option>
+							<option value="rotate">Rot</option>
+							<option value="scale">Scl</option>
+						</select>
+					{/if}
+				</div>
 			</div>
 		</div>
 	</form>
@@ -1178,6 +1225,22 @@
 	}
 	.drop-hint {
 		font-style: italic;
+	}
+
+	.transform-controls-row {
+		margin-top: 8px;
+	}
+
+	.transform-actions {
+		display: flex;
+		gap: 4px;
+		align-items: center;
+	}
+
+	.mode-select {
+		width: auto !important;
+		padding: 1px 4px !important;
+		font-size: 0.65rem !important;
 	}
 
 	.toggle-btn.active {

@@ -57,10 +57,22 @@
         }
     };
 
+    let isCameraLocked = $state(false);
+
     onMount(() => {
         if (typeof document !== 'undefined') {
             document.body.style.overflow = '';
         }
+        
+        const handleLock = () => (isCameraLocked = true);
+        const handleUnlock = () => (isCameraLocked = false);
+        window.addEventListener('lockCamera', handleLock);
+        window.addEventListener('unlockCamera', handleUnlock);
+
+        return () => {
+            window.removeEventListener('lockCamera', handleLock);
+            window.removeEventListener('unlockCamera', handleUnlock);
+        };
     });
 </script>
 
@@ -86,11 +98,12 @@
                 <T.Color attach="background" args={['#12121e']} />
                 <T.PerspectiveCamera makeDefault position={[-15, 15, 15]} fov={50}>
                     <OrbitControls 
+                        enabled={!isCameraLocked}
                         enableDamping 
                         enableZoom={true}
                         onstart={startInteraction}
                         onend={stopInteraction}
-                        autoRotate={!isInteracting}
+                        autoRotate={!isInteracting && !isCameraLocked}
                         autoRotateSpeed={0.5}
                     />
                 </T.PerspectiveCamera>

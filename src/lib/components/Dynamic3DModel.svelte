@@ -8,7 +8,9 @@
 	const font =
 		'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/fonts/helvetiker_bold.typeface.json';
 
-	let { geometry }: { geometry: any } = $props();
+	import { Group } from 'three';
+
+	let { geometry, ref = $bindable(new Group()) }: { geometry: any; ref?: Group } = $props();
 
 	// Map geometry types to their respective Svelte components using dynamic imports
 	const componentMap: { [key: string]: () => Promise<any> } = {
@@ -87,7 +89,7 @@
 </script>
 
 {#if browser && geometry}
-	<T.Group position={posArray} rotation={rotArray} scale={scaleArray}>
+	<T.Group is={ref} position={posArray} rotation={rotArray} scale={scaleArray}>
 		{#if LoadedDynamicComponent}
 			<!-- 1. Render the dynamically loaded Svelte component when available -->
 			{@const Component = LoadedDynamicComponent}

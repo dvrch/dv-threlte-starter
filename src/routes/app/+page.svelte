@@ -1,10 +1,18 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
-	import { Float, Grid, HTML, OrbitControls, Environment } from '@threlte/extras';
+	import {
+		Float,
+		Grid,
+		HTML,
+		OrbitControls,
+		Environment,
+		TransformControls
+	} from '@threlte/extras';
 	import Dynamic3DModel from '$lib/components/Dynamic3DModel.svelte';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 	import { ENDPOINTS } from '$lib/config';
+	import { Group } from 'three';
 
 	import { addToast } from '$lib/stores/toasts';
 	import Bloom from './models/bloom.svelte';
@@ -26,6 +34,16 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let isBloomEnabled = $state(true); // State to control Bloom effect
+
+	// Transform Controls State
+	let transformSettings = $state({
+		enabled: false,
+		selectedId: '',
+		mode: 'translate' as 'translate' | 'rotate' | 'scale'
+	});
+
+	// Store for model refs
+	let modelRefs = $state<Record<string, Group>>({});
 
 	// Function to fetch geometries
 	const fetchGeometries = async () => {
@@ -81,10 +99,21 @@
 		};
 		window.addEventListener('toggleBloomEffect', handleToggleBloom);
 
+		const handleToggleTransform = (event: Event) => {
+			const customEvent = event as CustomEvent;
+			transformSettings = {
+				enabled: customEvent.detail.enabled,
+				selectedId: customEvent.detail.id,
+				mode: customEvent.detail.mode || 'translate'
+			};
+		};
+		window.addEventListener('toggleTransformControls', handleToggleTransform);
+
 		return () => {
 			window.removeEventListener('modelAdded', fetchGeometries);
 			window.removeEventListener('geometryVisibilityChanged', handleVisibilityChange);
 			window.removeEventListener('toggleBloomEffect', handleToggleBloom);
+			window.removeEventListener('toggleTransformControls', handleToggleTransform);
 		};
 	});
 </script>
@@ -123,12 +152,39 @@
 {#if geometries.length > 0}
 	{#each geometries as geometry (geometry.id)}
 		{#if geometry && geometry.visible}
+			{@const isTransformed =
+				transformSettings.enabled && transformSettings.selectedId == geometry.id}
+
 			{#if typeof window !== 'undefined'}
-				<Float floatIntensity={1} floatingRange={[0, 1]}>
-					<Dynamic3DModel {geometry} />
-				</Float>
+				<!-- We wrap in Group to provide a stable ref for TransformControls even if Float is active -->
+				<T.Group>
+					<Float floatIntensity={isTransformed ? 0 : 1} floatingRange={[0, 1]}>
+						<Dynamic3DModel {geometry} bind:ref={modelRefs[geometry.id]} />
+					</Float>
+
+					{#if isTransformed && modelRefs[geometry.id]}
+						<TransformControls
+							object={modelRefs[geometry.id]}
+							mode={transformSettings.mode}
+							onstart={() => window.dispatchEvent(new CustomEvent('lockCamera'))}
+							onend={() => window.dispatchEvent(new CustomEvent('unlockCamera'))}
+							onchange={() => {
+								const obj = modelRefs[geometry.id];
+								if (obj && geometry) {
+									// Sync back to local geometry state
+									geometry.position = { x: obj.position.x, y: obj.position.y, z: obj.position.z };
+									geometry.rotation = {
+										x: obj.rotation.x * (180 / Math.PI),
+										y: obj.rotation.y * (180 / Math.PI),
+										z: obj.rotation.z * (180 / Math.PI)
+									};
+									geometry.scale = { x: obj.scale.x, y: obj.scale.y, z: obj.scale.z };
+								}
+							}}
+						/>
+					{/if}
+				</T.Group>
 			{:else}
-				<!-- Fallback for SSR -->
 				<Dynamic3DModel {geometry} />
 			{/if}
 		{/if}
