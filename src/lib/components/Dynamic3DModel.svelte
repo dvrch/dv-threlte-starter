@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { T } from '@threlte/core';
+	import { T, useLoader } from '@threlte/core';
+	import { TextureLoader, DoubleSide } from 'three';
 	import GltfModel from '$lib/components/GltfModel.svelte';
 	import { browser } from '$app/environment';
 	import { Text3DGeometry } from '@threlte/extras';
@@ -134,6 +135,14 @@
 					curveSegments={12}
 				/>
 				<T.MeshStandardMaterial color={geometry.color} />
+			</T.Mesh>
+		{:else if geometry.type === 'image_plane' && geometry.model_url}
+			<T.Mesh>
+				<T.PlaneGeometry args={[3, 3]} />
+				<!-- Default size, scale controls it -->
+				{#await useLoader(TextureLoader, geometry.model_url) then texture}
+					<T.MeshBasicMaterial map={texture as any} side={DoubleSide} transparent />
+				{/await}
 			</T.Mesh>
 		{:else if geometry.model_url && geometry.model_url.trim() !== ''}
 			<!-- 2. Render a generic GLTF model if model_url is present and valid -->

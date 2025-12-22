@@ -51,7 +51,7 @@
         if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
             const file = e.dataTransfer.files[0];
             const ext = file.name.split('.').pop()?.toLowerCase();
-            if (ext === 'glb' || ext === 'gltf') {
+            if (ext === 'glb' || ext === 'gltf' || ext === 'jpg' || ext === 'jpeg' || ext === 'png') {
                 window.dispatchEvent(new CustomEvent('directSceneUpload', { detail: { file } }));
             }
         }
@@ -111,6 +111,7 @@
 
                 <T.DirectionalLight intensity={0.8} position={[5, 10, 0]} />
                 <T.AmbientLight intensity={0.2} />
+                <T.HemisphereLight intensity={0.5} groundColor="#333333" skyColor="#ffffff" />
                 
                 <RotatingWorld isPaused={isInteracting}>
                     <Grid position={[0, -0.001, 0]} cellColor="#ffffff" sectionColor="#ffffff" sectionThickness={0} fadeDistance={25} cellSize={2} />

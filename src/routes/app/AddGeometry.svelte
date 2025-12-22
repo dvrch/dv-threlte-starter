@@ -259,8 +259,12 @@
 
 			if (file) {
 				formData.append('model_file', file);
-				formData.append('type', 'gltf_model');
 				const ext = file.name.split('.').pop()?.toLowerCase();
+				if (['jpg', 'jpeg', 'png'].includes(ext || '')) {
+					formData.append('type', 'image_plane');
+				} else {
+					formData.append('type', 'gltf_model');
+				}
 				if (ext) formData.append('model_type', ext);
 			} else if (type === 'spaceship') {
 				formData.append('type', 'gltf_model');
