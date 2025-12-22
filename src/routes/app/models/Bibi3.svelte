@@ -24,7 +24,7 @@
 				console.log('✅ Bibi Game GLB loaded:', rawGltf);
 				buildSceneGraph(rawGltf);
 				gltfData = rawGltf;
-				window.dispatchEvent(new Event('modelAdded'));
+				window.dispatchEvent(new Event('modelVisualLoaded'));
 			} catch (e) {
 				console.error('Failed to load Bibi model:', e);
 			}

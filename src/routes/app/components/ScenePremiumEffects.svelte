@@ -74,13 +74,16 @@
 	onMount(() => {
 		// Just run once after a delay to ensure assets are loaded
 		const timeout = setTimeout(refreshSceneMaterials, 1000);
-		// Listen for modelAdded to refresh
-		const handleModelAdded = () => setTimeout(refreshSceneMaterials, 500);
-		window.addEventListener('modelAdded', handleModelAdded);
+		// Listen for modelAdded (new item) AND modelVisualLoaded (visual ready) to refresh
+		const handleModelRefresh = () => setTimeout(refreshSceneMaterials, 500);
+
+		window.addEventListener('modelAdded', handleModelRefresh);
+		window.addEventListener('modelVisualLoaded', handleModelRefresh);
 
 		return () => {
 			clearTimeout(timeout);
-			window.removeEventListener('modelAdded', handleModelAdded);
+			window.removeEventListener('modelAdded', handleModelRefresh);
+			window.removeEventListener('modelVisualLoaded', handleModelRefresh);
 		};
 	});
 </script>
