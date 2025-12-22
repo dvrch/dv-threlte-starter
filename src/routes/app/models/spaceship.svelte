@@ -19,16 +19,15 @@
 	import { browser } from '$app/environment';
 	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { buildSceneGraph } from '$lib/utils/cloudinaryAssets';
-	import Stars from '../../Spaceship/Stars.svelte';
 
 	let { ref = $bindable(new Group()), geometry, ...restProps } = $props();
-	const { camera } = useThrelte();
+	const { camera, scene } = useThrelte();
 
 	let gltfResultData = $state<any>(null);
 	let mapResultData = $state<any>(null);
 	let isLoading = $state(true);
 
-	// --- Flight Simulation State (matching src/routes/Spaceship/Scene.svelte) ---
+	// --- Flight Simulation State ---
 	let intersectionPoint = new Vector3(0, 0, 0);
 	let translY = $state(0);
 	let translAccelleration = $state(0);
@@ -37,10 +36,15 @@
 	let rotationRoll = $state(0);
 	let rotationPitch = $state(0);
 
+	let keys = {
+		ArrowLeft: false,
+		ArrowRight: false
+	};
+
 	const raycaster = new Raycaster();
 	const pointer = new Vector2();
-	const planeMesh = new Mesh(new PlaneGeometry(100, 100)); // Invisible plane for raycasting
-	planeMesh.rotation.y = Math.PI * 0.5; // Rotate to face the default side camera better if needed, but in the original it's flat
+	const planeMesh = new Mesh(new PlaneGeometry(500, 500));
+	planeMesh.rotation.y = Math.PI * 0.5;
 
 	const handlePointerMove = (event: PointerEvent) => {
 		if (!browser) return;
@@ -53,25 +57,34 @@
 			const intersects = raycaster.intersectObject(planeMesh);
 			if (intersects[0]) {
 				intersectionPoint.copy(intersects[0].point);
-				// Contrain X like in the original Spaceship scene
-				intersectionPoint.x = 3;
+				intersectionPoint.x = 0; // Keep it centered in the global app view
 			}
 		}
 	};
 
+	const handleKeyDown = (e: KeyboardEvent) => {
+		if (e.key in keys) keys[e.key as keyof typeof keys] = true;
+	};
+	const handleKeyUp = (e: KeyboardEvent) => {
+		if (e.key in keys) keys[e.key as keyof typeof keys] = false;
+	};
+
 	useTask((delta) => {
 		const mouseRadius = pointer.length();
-		const activationRadius = 2.0; // Wider detection zone
+		const activationRadius = 2.5;
 		const isActive = mouseRadius < activationRadius;
 
-		// Translation follow mouse (Y axis) - Restored some snap
-		const targetY = isActive ? intersectionPoint.y : 0;
-		translAccelleration += (targetY - translY) * 0.0015;
+		// Keyboard Override for vertical movement
+		let targetY = isActive ? intersectionPoint.y : 0;
+		if (keys.ArrowLeft) targetY -= 15;
+		if (keys.ArrowRight) targetY += 15;
+
+		translAccelleration += (targetY - translY) * 0.002;
 		translAccelleration *= 0.94;
 		translY += translAccelleration;
 
-		// Fictive bounding box for vertical movement - Much larger now
-		const boxLimit = 25;
+		// Limit movement
+		const boxLimit = 30;
 		if (translY > boxLimit) {
 			translY = boxLimit;
 			translAccelleration = 0;
@@ -81,34 +94,32 @@
 			translAccelleration = 0;
 		}
 
-		// Rotation follow (Z axis bank / angleZ)
-		const dir = intersectionPoint.clone().sub(new Vector3(0, translY, 0)).normalize();
+		// Rotation logic
+		const dir = new Vector3(0, targetY, 0).sub(new Vector3(0, translY, 0)).normalize();
 		const dirCos = dir.dot(new Vector3(0, 1, 0));
-		const angle = Math.acos(dirCos) - Math.PI * 0.5;
+		const angle = isNaN(dirCos) ? 0 : Math.acos(dirCos) - Math.PI * 0.5;
 
-		// Reaction only if active, otherwise return to neutral
-		const targetAngle = isActive ? angle : 0;
-		angleAccelleration += (targetAngle - angleZ) * 0.008;
+		const targetAngle = isActive || keys.ArrowLeft || keys.ArrowRight ? angle : 0;
+		angleAccelleration += (targetAngle - angleZ) * 0.01;
 		angleAccelleration *= 0.82;
 		angleZ += angleAccelleration;
 
-		// Pitch effect: Airplane style (Nose UP when ascending)
-		// Much more subtle as requested.
+		// Airplane kinetics
 		const kineticPitch = translAccelleration * 3.5;
-		const kineticRoll = translAccelleration * 4.0; // The "magnificent" orthogonal roll
+		const kineticRoll = translAccelleration * 5.0;
 
-		// Additional magnificent rotations (roll/tilt based on pointer lateral movement)
 		const targetRoll = (isActive ? -pointer.x * 0.5 : 0) + kineticRoll;
-		const targetPitch = isActive ? pointer.y * 0.08 : 0;
+		const targetPitch = (isActive ? pointer.y * 0.1 : 0) + kineticPitch;
 
-		// Interpolate for smoothness - slightly slower easing
-		rotationRoll += (targetRoll - rotationRoll) * 0.035;
-		rotationPitch += (targetPitch - rotationPitch) * 0.035;
+		rotationRoll += (targetRoll - rotationRoll) * 0.04;
+		rotationPitch += (targetPitch - rotationPitch) * 0.04;
 	});
 
 	onMount(() => {
 		if (browser) {
 			window.addEventListener('pointermove', handlePointerMove);
+			window.addEventListener('keydown', handleKeyDown);
+			window.addEventListener('keyup', handleKeyUp);
 			loadAssets();
 		}
 	});
@@ -116,6 +127,8 @@
 	onDestroy(() => {
 		if (browser) {
 			window.removeEventListener('pointermove', handlePointerMove);
+			window.removeEventListener('keydown', handleKeyDown);
+			window.removeEventListener('keyup', handleKeyUp);
 		}
 	});
 
@@ -129,9 +142,7 @@
 
 			const rawGltf = await loader.loadAsync(gltfUrl);
 			const { nodes, materials } = buildSceneGraph(rawGltf);
-			const processed = { ...rawGltf, nodes, materials };
 
-			// Apply alpha fix and reflection settings
 			function materialFix(material: any) {
 				if (!material) return;
 				material.transparent = true;
@@ -140,39 +151,33 @@
 				material.depthTest = true;
 				material.depthWrite = true;
 
-				// Enable extremely strong reflections from Environment (matching Spaceship tab)
-				material.envMapIntensity = 100;
-				if (material.normalScale) material.normalScale.set(0.1, 0.1);
-
-				// Force metallic/glossy look for clearer reflections
-				if ('roughness' in material) material.roughness = 0.05;
+				// Premium reflections like the original route
+				material.envMapIntensity = 50;
+				if ('roughness' in material) material.roughness = 0.1;
 				if ('metalness' in material) material.metalness = 1.0;
+				if (material.normalScale) material.normalScale.set(0.2, 0.2);
 
 				material.needsUpdate = true;
 			}
 
-			// Apply to all materials
 			Object.values(materials).forEach(materialFix);
 
-			// Reactive listener to re-apply reflections if the global environment changes
-			const mainScene = useThrelte().scene;
 			$effect(() => {
-				if (mainScene.environment) {
+				if (scene.environment) {
 					Object.values(materials).forEach((mat: any) => {
 						if (mat) {
-							mat.envMap = mainScene.environment;
+							mat.envMap = scene.environment;
 							mat.needsUpdate = true;
 						}
 					});
 				}
 			});
 
-			gltfResultData = processed;
-
+			gltfResultData = { nodes, materials, scene: rawGltf.scene };
 			const texLoader = new TextureLoader();
 			mapResultData = await texLoader.loadAsync(mapUrl);
 		} catch (e) {
-			console.error('Failed to load spaceship in app route:', e);
+			console.error('Failed to load spaceship:', e);
 		} finally {
 			isLoading = false;
 		}
@@ -181,8 +186,6 @@
 
 <T is={ref} dispose={false} {...restProps}>
 	{#if gltfResultData}
-		<!-- We apply the physics-based position and rotation (angleZ) -->
-		<!-- This matches the logic from src/routes/Spaceship/Scene.svelte -->
 		<T.Group
 			scale={0.01}
 			position={[0, translY, 0]}
