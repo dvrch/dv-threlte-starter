@@ -26,6 +26,7 @@
 		color: string;
 		position: { x: number; y: number; z: number };
 		rotation: { x: number; y: number; z: number };
+		scale: { x: number; y: number; z: number };
 		visible: boolean; // Add visible property
 		model_url?: string; // Assuming this exists for gltf_model types
 	}
@@ -67,6 +68,14 @@
 				}
 				return true;
 			});
+
+			// Pre-initialize model refs to ensure stability
+			geometries.forEach((g) => {
+				if (!modelRefs[g.id]) {
+					modelRefs[g.id] = new Group();
+				}
+			});
+
 			console.log('✅ Loaded geometries:', geometries.length);
 		} catch (e) {
 			error = (e as Error).message;
@@ -156,34 +165,75 @@
 				transformSettings.enabled && transformSettings.selectedId == geometry.id}
 
 			{#if typeof window !== 'undefined'}
-				<!-- We wrap in Group to provide a stable ref for TransformControls even if Float is active -->
-				<T.Group>
-					<Float floatIntensity={isTransformed ? 0 : 1} floatingRange={[0, 1]}>
-						<Dynamic3DModel {geometry} bind:ref={modelRefs[geometry.id]} />
-					</Float>
+				<Float floatIntensity={isTransformed ? 0 : 1} floatingRange={[0, 1]}>
+					<Dynamic3DModel
+						{geometry}
+						bind:ref={modelRefs[geometry.id]}
+						onPointerDown={() => {
+							if (transformSettings.selectedId !== geometry.id) {
+								transformSettings.selectedId = geometry.id;
+								// Inform form about selection
+								window.dispatchEvent(
+									new CustomEvent('manualTransformSync', {
+										detail: {
+											id: geometry.id,
+											position: geometry.position,
+											rotation: geometry.rotation,
+											scale: geometry.scale
+										}
+									})
+								);
+							}
+						}}
+					/>
+				</Float>
 
-					{#if isTransformed && modelRefs[geometry.id]}
-						<TransformControls
-							object={modelRefs[geometry.id]}
-							mode={transformSettings.mode}
-							onstart={() => window.dispatchEvent(new CustomEvent('lockCamera'))}
-							onend={() => window.dispatchEvent(new CustomEvent('unlockCamera'))}
-							onchange={() => {
-								const obj = modelRefs[geometry.id];
-								if (obj && geometry) {
-									// Sync back to local geometry state
-									geometry.position = { x: obj.position.x, y: obj.position.y, z: obj.position.z };
-									geometry.rotation = {
-										x: obj.rotation.x * (180 / Math.PI),
-										y: obj.rotation.y * (180 / Math.PI),
-										z: obj.rotation.z * (180 / Math.PI)
-									};
-									geometry.scale = { x: obj.scale.x, y: obj.scale.y, z: obj.scale.z };
-								}
-							}}
-						/>
-					{/if}
-				</T.Group>
+				{#if isTransformed && modelRefs[geometry.id]}
+					<TransformControls
+						object={modelRefs[geometry.id]}
+						mode={transformSettings.mode}
+						onstart={() => window.dispatchEvent(new CustomEvent('lockCamera'))}
+						onend={() => {
+							window.dispatchEvent(new CustomEvent('unlockCamera'));
+							// Force save to DB on end
+							window.dispatchEvent(
+								new CustomEvent('manualTransformSync', {
+									detail: {
+										id: geometry.id,
+										position: geometry.position,
+										rotation: geometry.rotation,
+										scale: geometry.scale,
+										save: true
+									}
+								})
+							);
+						}}
+						onchange={() => {
+							const obj = modelRefs[geometry.id];
+							if (obj && geometry) {
+								geometry.position = { x: obj.position.x, y: obj.position.y, z: obj.position.z };
+								geometry.rotation = {
+									x: obj.rotation.x * (180 / Math.PI),
+									y: obj.rotation.y * (180 / Math.PI),
+									z: obj.rotation.z * (180 / Math.PI)
+								};
+								geometry.scale = { x: obj.scale.x, y: obj.scale.y, z: obj.scale.z };
+
+								// Sync form real-time during move
+								window.dispatchEvent(
+									new CustomEvent('manualTransformSync', {
+										detail: {
+											id: geometry.id,
+											position: geometry.position,
+											rotation: geometry.rotation,
+											scale: geometry.scale
+										}
+									})
+								);
+							}
+						}}
+					/>
+				{/if}
 			{:else}
 				<Dynamic3DModel {geometry} />
 			{/if}

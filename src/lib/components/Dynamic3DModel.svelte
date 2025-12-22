@@ -10,7 +10,11 @@
 
 	import { Group } from 'three';
 
-	let { geometry, ref = $bindable(new Group()) }: { geometry: any; ref?: Group } = $props();
+	let {
+		geometry,
+		ref = $bindable(new Group()),
+		onPointerDown
+	}: { geometry: any; ref?: Group; onPointerDown?: () => void } = $props();
 
 	// Map geometry types to their respective Svelte components using dynamic imports
 	const componentMap: { [key: string]: () => Promise<any> } = {
@@ -89,7 +93,18 @@
 </script>
 
 {#if browser && geometry}
-	<T.Group is={ref} position={posArray} rotation={rotArray} scale={scaleArray}>
+	<T.Group
+		is={ref}
+		position={posArray}
+		rotation={rotArray}
+		scale={scaleArray}
+		onpointerdown={(e: any) => {
+			if (onPointerDown) {
+				e.stopPropagation();
+				onPointerDown();
+			}
+		}}
+	>
 		{#if LoadedDynamicComponent}
 			<!-- 1. Render the dynamically loaded Svelte component when available -->
 			{@const Component = LoadedDynamicComponent}

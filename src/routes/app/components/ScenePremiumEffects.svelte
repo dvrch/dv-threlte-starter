@@ -12,56 +12,46 @@
 		if (!material) return;
 
 		const name = (object.name || '').toLowerCase();
-		// skip environment
+		// skip environment and helpers/gizmos
 		if (
 			name.includes('star') ||
 			name.includes('sky') ||
 			name.includes('galaxy') ||
-			name.includes('grid')
+			name.includes('grid') ||
+			name.includes('gizmo') ||
+			name.includes('transform') ||
+			name.includes('helper') ||
+			name.includes('bone')
 		)
 			return;
 
-		// 1. Ensure the object is visible by giving it a base emissive if it's totally black
+		// 1. Better visibility for dark objects
 		if (material.color) {
 			const col = material.color;
-			// If color is black or very dark, and it has no emissive, give it a tiny boost
-			if (col.r < 0.05 && col.g < 0.05 && col.b < 0.05) {
-				if (
-					material.emissive &&
-					material.emissive.r === 0 &&
-					material.emissive.g === 0 &&
-					material.emissive.b === 0
-				) {
-					// Don't force black objects to be bright, but don't let them be "invisible"
-					// Maybe it's a lighting issue. Let's ensure envMap is applied.
+			// If color is black or very dark, give it a subtle emissive boost so it doesn't vanish
+			if (col.r < 0.02 && col.g < 0.02 && col.b < 0.02) {
+				if (material.emissive && material.emissive.r === 0) {
+					// Sublest blueish hue for dark materials to feel high-end
+					material.emissive.setHex(0x111122);
+					material.emissiveIntensity = 0.5;
 				}
 			}
 		}
 
-		// 2. High-end Reflections (Increased as requested by 10% or more)
-		material.envMapIntensity = 10.0; // Boosted
-
-		// Only override if it feels like a 3D model that needs it
-		// If it has a metalnessMap, we should probably respect it more
-		if (!material.metalnessMap && 'metalness' in material) {
-			material.metalness = Math.max(material.metalness, 0.6);
-		}
-		if (!material.roughnessMap && 'roughness' in material) {
-			material.roughness = Math.min(material.roughness, 0.08);
-		}
+		// 2. High-end Reflections - Reduced to allow more ambient influence
+		material.envMapIntensity = 1.5;
 
 		if (envTexture) {
 			material.envMap = envTexture;
 		}
 
-		// 3. Emissive Boost (The "Glow" effect)
+		// 3. Emissive Boost (The "Glow" effect) - Slightly more balanced
 		if ('emissiveIntensity' in material) {
-			// If it has emissive color, make it shine
 			if (
 				material.emissive &&
-				(material.emissive.r > 0 || material.emissive.g > 0 || material.emissive.b > 0)
+				(material.emissive.r > 0.1 || material.emissive.g > 0.1 || material.emissive.b > 0.1)
 			) {
-				material.emissiveIntensity = 12.0; // Stronger glow
+				material.emissiveIntensity = Math.max(material.emissiveIntensity, 5.0);
 			}
 		}
 

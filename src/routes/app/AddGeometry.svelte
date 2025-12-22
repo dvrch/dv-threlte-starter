@@ -162,7 +162,27 @@
 			}
 		};
 		window.addEventListener('directSceneUpload', handleDirectDrop);
-		return () => window.removeEventListener('directSceneUpload', handleDirectDrop);
+
+		// Synchronize UI when user manipulates in scene
+		const handleManualSync = (e: any) => {
+			if (e.detail?.id === selectedGeometryId) {
+				const data = e.detail;
+				if (data.position) position = { ...data.position };
+				if (data.rotation) rotation = { ...data.rotation };
+				if (data.scale) scale = { ...data.scale };
+
+				// Optional: auto-save to DB after manual move
+				if (e.detail.save) {
+					handleSubmit();
+				}
+			}
+		};
+		window.addEventListener('manualTransformSync', handleManualSync);
+
+		return () => {
+			window.removeEventListener('directSceneUpload', handleDirectDrop);
+			window.removeEventListener('manualTransformSync', handleManualSync);
+		};
 	});
 
 	const loadGeometries = async () => {
@@ -825,22 +845,37 @@
 
 			<div class="control-item transform-controls-row">
 				<span>Manipuler (Direct)</span>
-				<div class="transform-actions">
+				<div class="transform-actions-v2">
 					<button
 						type="button"
-						class="toggle-btn"
+						class="mode-btn toggle"
 						class:active={isTransformControlsEnabled}
 						onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}
+						title="Activer Gizmo"
 					>
 						{isTransformControlsEnabled ? 'ON' : 'OFF'}
 					</button>
-					{#if isTransformControlsEnabled}
-						<select bind:value={transformMode} class="mode-select">
-							<option value="translate">Pos</option>
-							<option value="rotate">Rot</option>
-							<option value="scale">Scl</option>
-						</select>
-					{/if}
+
+					<div class="mode-selector-group" class:disabled={!isTransformControlsEnabled}>
+						<button
+							type="button"
+							class="mode-btn"
+							class:active={transformMode === 'translate'}
+							onclick={() => (transformMode = 'translate')}>Pos</button
+						>
+						<button
+							type="button"
+							class="mode-btn"
+							class:active={transformMode === 'rotate'}
+							onclick={() => (transformMode = 'rotate')}>Rot</button
+						>
+						<button
+							type="button"
+							class="mode-btn"
+							class:active={transformMode === 'scale'}
+							onclick={() => (transformMode = 'scale')}>Scl</button
+						>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -1227,20 +1262,56 @@
 		font-style: italic;
 	}
 
-	.transform-controls-row {
-		margin-top: 8px;
-	}
-
-	.transform-actions {
+	.transform-actions-v2 {
 		display: flex;
-		gap: 4px;
+		gap: 8px;
 		align-items: center;
 	}
 
-	.mode-select {
-		width: auto !important;
-		padding: 1px 4px !important;
-		font-size: 0.65rem !important;
+	.mode-selector-group {
+		display: flex;
+		background: rgba(0, 0, 0, 0.2);
+		border-radius: 4px;
+		padding: 2px;
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		transition: opacity 0.2s;
+	}
+
+	.mode-selector-group.disabled {
+		opacity: 0.3;
+		pointer-events: none;
+	}
+
+	.mode-btn {
+		background: transparent;
+		border: none;
+		color: #777;
+		padding: 2px 6px;
+		font-size: 0.65rem;
+		cursor: pointer;
+		border-radius: 2px;
+		transition: all 0.2s;
+	}
+
+	.mode-btn:hover {
+		color: #eee;
+	}
+
+	.mode-btn.active {
+		background: rgba(77, 182, 172, 0.2);
+		color: #4db6ac;
+	}
+
+	.mode-btn.toggle {
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		background: rgba(255, 255, 255, 0.05);
+		padding: 3px 8px;
+		border-radius: 12px;
+	}
+
+	.mode-btn.toggle.active {
+		background: rgba(77, 182, 172, 0.2);
+		border-color: #4db6ac;
 	}
 
 	.toggle-btn.active {
