@@ -10,21 +10,21 @@ const IDLE = 'idle'
 const RUN = 'run'
 const SHIELD = 'idle_shield'
 
-const YELL = './sound/attack[1-4].wav'
-const SWORD = './sound/sword[1-2].wav'
-const GRASS_R = './sound/step_grass[1-2].wav'
-const GRASS_L = './sound/step_grass[3-4].wav'
-const STONE_R = './sound/step_stone[1-2].wav'
-const STONE_L = './sound/step_stone[3-4].wav'
-const WOOD_R = './sound/step_wood1.wav'
-const WOOD_L = './sound/step_wood2.wav'
-const DIRT_R = './sound/step_dirt[1-2].wav'
-const DIRT_L = './sound/step_dirt[3-4].wav'
-const WARD = './sound/shield.wav'
+const YELL = '/fkisios/sound/attack[1-4].wav'
+const SWORD = '/fkisios/sound/sword[1-2].wav'
+const GRASS_R = '/fkisios/sound/step_grass[1-2].wav'
+const GRASS_L = '/fkisios/sound/step_grass[3-4].wav'
+const STONE_R = '/fkisios/sound/step_stone[1-2].wav'
+const STONE_L = '/fkisios/sound/step_stone[3-4].wav'
+const WOOD_R = '/fkisios/sound/step_wood1.wav'
+const WOOD_L = '/fkisios/sound/step_wood2.wav'
+const DIRT_R = '/fkisios/sound/step_dirt[1-2].wav'
+const DIRT_L = '/fkisios/sound/step_dirt[3-4].wav'
+const WARD = '/fkisios/sound/shield.wav'
 
 const GRASS = 'grass'
-const STEP_R = {grass:GRASS_R, wood:WOOD_R, dirt:DIRT_R, stone:STONE_R } 
-const STEP_L = {grass:GRASS_L, wood:WOOD_L, dirt:DIRT_L, stone:STONE_L } 
+const STEP_R = { grass: GRASS_R, wood: WOOD_R, dirt: DIRT_R, stone: STONE_R }
+const STEP_L = { grass: GRASS_L, wood: WOOD_L, dirt: DIRT_L, stone: STONE_L }
 
 export default class Player extends Object3D {
   collider = null
@@ -84,7 +84,7 @@ export default class Player extends Object3D {
   }
 
   updatePhysic() {
-    const action = this.ctrl.attack||this.ctrl.lock
+    const action = this.ctrl.attack || this.ctrl.lock
     let x = action ? 0 : this.ctrl.x * SPEED
     let z = action ? 0 : this.ctrl.z * SPEED
     let y = this.rigidBody.linvel().y
