@@ -204,8 +204,8 @@
 			rotation={[angleZ + rotationPitch, -Math.PI * 0.5, angleZ + rotationRoll]}
 		>
 			<!-- We render the whole scene to ensure all parts are visible -->
-			<!-- The scale is applied here to match the desired size -->
-			<T is={gltfResultData.scene} scale={0.01} position={[-740 * 0.01, 60 * 0.01, 0]} />
+			<!-- Using a larger scale and position reset for visibility test -->
+			<T is={gltfResultData.scene} scale={0.5} position={[0, 0, 0]} />
 
 			<!-- Energy beam -->
 			{#if mapResultData}
