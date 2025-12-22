@@ -62,9 +62,12 @@
 			<li aria-current={$page.url.pathname === base + '/planet/' ? 'page' : undefined}>
 				<a href="{base}/planet/">Planet</a>
 			</li>
-			<!-- <li aria-current={$page.url.pathname === base + '/fkisios-main/' ? 'page' : undefined}>
+			<li aria-current={$page.url.pathname === base + '/fkisios-main/' ? 'page' : undefined}>
 				<a href="{base}/fkisios-main/">GameZ</a>
-			</li> -->
+			</li>
+			<li aria-current={$page.url.pathname === base + '/fkisios-main/step_06' ? 'page' : undefined}>
+				<a href="{base}/fkisios-main/step_06">GameZ6</a>
+			</li>
 			<li aria-current={$page.url.pathname === base + '/Text/' ? 'page' : undefined}>
 				<a href="{base}/Text/">Text</a>
 			</li>
