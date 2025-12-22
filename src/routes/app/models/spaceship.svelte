@@ -15,7 +15,7 @@
 	import { T, useTask, useThrelte } from '@threlte/core';
 	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, untrack } from 'svelte';
 	import { browser } from '$app/environment';
 	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { buildSceneGraph } from '$lib/utils/cloudinaryAssets';
@@ -36,14 +36,15 @@
 	let rotationRoll = $state(0);
 	let rotationPitch = $state(0);
 
-	let keys = {
+	let keys = $state({
 		ArrowLeft: false,
 		ArrowRight: false
-	};
+	});
 
 	const raycaster = new Raycaster();
 	const pointer = new Vector2();
-	const planeMesh = new Mesh(new PlaneGeometry(500, 500));
+	// Plane moved further back and made bigger to catch all rays
+	const planeMesh = new Mesh(new PlaneGeometry(2000, 2000));
 	planeMesh.rotation.y = Math.PI * 0.5;
 
 	const handlePointerMove = (event: PointerEvent) => {
@@ -57,7 +58,7 @@
 			const intersects = raycaster.intersectObject(planeMesh);
 			if (intersects[0]) {
 				intersectionPoint.copy(intersects[0].point);
-				intersectionPoint.x = 0; // Keep it centered in the global app view
+				intersectionPoint.x = 0;
 			}
 		}
 	};
@@ -74,17 +75,17 @@
 		const activationRadius = 2.5;
 		const isActive = mouseRadius < activationRadius;
 
-		// Keyboard Override for vertical movement
+		// Keyboard Override for vertical movement: Left/Right keys as requested
 		let targetY = isActive ? intersectionPoint.y : 0;
-		if (keys.ArrowLeft) targetY -= 15;
-		if (keys.ArrowRight) targetY += 15;
+		if (keys.ArrowLeft) targetY -= 20;
+		if (keys.ArrowRight) targetY += 20;
 
 		translAccelleration += (targetY - translY) * 0.002;
 		translAccelleration *= 0.94;
 		translY += translAccelleration;
 
 		// Limit movement
-		const boxLimit = 30;
+		const boxLimit = 50;
 		if (translY > boxLimit) {
 			translY = boxLimit;
 			translAccelleration = 0;
@@ -94,13 +95,10 @@
 			translAccelleration = 0;
 		}
 
-		// Rotation logic
-		const dir = new Vector3(0, targetY, 0).sub(new Vector3(0, translY, 0)).normalize();
-		const dirCos = dir.dot(new Vector3(0, 1, 0));
-		const angle = isNaN(dirCos) ? 0 : Math.acos(dirCos) - Math.PI * 0.5;
-
-		const targetAngle = isActive || keys.ArrowLeft || keys.ArrowRight ? angle : 0;
-		angleAccelleration += (targetAngle - angleZ) * 0.01;
+		// Simplified Rotation logic for better predictability
+		const targetAngle =
+			isActive || keys.ArrowLeft || keys.ArrowRight ? (targetY - translY) * 0.05 : 0;
+		angleAccelleration += (targetAngle - angleZ) * 0.05;
 		angleAccelleration *= 0.82;
 		angleZ += angleAccelleration;
 
@@ -113,6 +111,22 @@
 
 		rotationRoll += (targetRoll - rotationRoll) * 0.04;
 		rotationPitch += (targetPitch - rotationPitch) * 0.04;
+	});
+
+	// Handle Material Reflections reactively
+	$effect(() => {
+		if (gltfResultData && scene.environment) {
+			console.log('✨ Applying environment map to spaceship materials');
+			untrack(() => {
+				gltfResultData.scene.traverse((child: any) => {
+					if (child.isMesh && child.material) {
+						child.material.envMap = scene.environment;
+						child.material.envMapIntensity = 50;
+						child.material.needsUpdate = true;
+					}
+				});
+			});
+		}
 	});
 
 	onMount(() => {
@@ -134,6 +148,7 @@
 
 	async function loadAssets() {
 		try {
+			console.log('🚀 Loading Spaceship GLB...');
 			const gltfUrl = await getWorkingAssetUrl('spaceship.glb', 'models');
 			const mapUrl = await getWorkingAssetUrl('energy-beam-opacity.png', 'textures');
 
@@ -141,6 +156,8 @@
 			loader.setDRACOLoader(createDracoLoader());
 
 			const rawGltf = await loader.loadAsync(gltfUrl);
+			console.log('✅ Spaceship GLB loaded successfully');
+
 			const { nodes, materials } = buildSceneGraph(rawGltf);
 
 			function materialFix(material: any) {
@@ -151,7 +168,7 @@
 				material.depthTest = true;
 				material.depthWrite = true;
 
-				// Premium reflections like the original route
+				// Premium reflections setup
 				material.envMapIntensity = 50;
 				if ('roughness' in material) material.roughness = 0.1;
 				if ('metalness' in material) material.metalness = 1.0;
@@ -160,24 +177,19 @@
 				material.needsUpdate = true;
 			}
 
-			Object.values(materials).forEach(materialFix);
-
-			$effect(() => {
-				if (scene.environment) {
-					Object.values(materials).forEach((mat: any) => {
-						if (mat) {
-							mat.envMap = scene.environment;
-							mat.needsUpdate = true;
-						}
-					});
+			// Apply to all materials in the scene graph
+			rawGltf.scene.traverse((child: any) => {
+				if (child.isMesh) {
+					materialFix(child.material);
 				}
 			});
 
-			gltfResultData = { nodes, materials, scene: rawGltf.scene };
+			gltfResultData = rawGltf;
+
 			const texLoader = new TextureLoader();
 			mapResultData = await texLoader.loadAsync(mapUrl);
 		} catch (e) {
-			console.error('Failed to load spaceship:', e);
+			console.error('❌ Failed to load spaceship:', e);
 		} finally {
 			isLoading = false;
 		}
@@ -186,133 +198,19 @@
 
 <T is={ref} dispose={false} {...restProps}>
 	{#if gltfResultData}
+		<!-- We wrap everything in a group to apply flight physics and center it -->
 		<T.Group
-			scale={0.01}
 			position={[0, translY, 0]}
 			rotation={[angleZ + rotationPitch, -Math.PI * 0.5, angleZ + rotationRoll]}
 		>
-			{#if gltfResultData.nodes.Cube001_spaceship_racer_0}
-				<T.Mesh
-					castShadow
-					receiveShadow
-					geometry={gltfResultData.nodes.Cube001_spaceship_racer_0.geometry}
-					material={gltfResultData.materials.spaceship_racer}
-					position={[739.26, -64.81, 64.77]}
-				/>
-			{/if}
-			{#if gltfResultData.nodes.Cylinder002_spaceship_racer_0}
-				<T.Mesh
-					castShadow
-					receiveShadow
-					geometry={gltfResultData.nodes.Cylinder002_spaceship_racer_0.geometry}
-					material={gltfResultData.materials.spaceship_racer}
-					position={[739.69, -59.39, -553.38]}
-					rotation={[Math.PI / 2, 0, 0]}
-				/>
-			{/if}
-			{#if gltfResultData.nodes.Cylinder003_spaceship_racer_0}
-				<T.Mesh
-					castShadow
-					receiveShadow
-					geometry={gltfResultData.nodes.Cylinder003_spaceship_racer_0.geometry}
-					material={gltfResultData.materials.spaceship_racer}
-					position={[742.15, -64.53, -508.88]}
-					rotation={[Math.PI / 2, 0, 0]}
-				/>
-			{/if}
-			{#if gltfResultData.nodes.Cube003_spaceship_racer_0}
-				<T.Mesh
-					castShadow
-					receiveShadow
-					geometry={gltfResultData.nodes.Cube003_spaceship_racer_0.geometry}
-					material={gltfResultData.materials.spaceship_racer}
-					position={[737.62, 46.84, -176.41]}
-				/>
-			{/if}
-			{#if gltfResultData.nodes.Cylinder004_spaceship_racer_0}
-				<T.Mesh
-					castShadow
-					receiveShadow
-					geometry={gltfResultData.nodes.Cylinder004_spaceship_racer_0.geometry}
-					material={gltfResultData.materials.spaceship_racer}
-					position={[789.52, 59.45, -224.91]}
-					rotation={[1, 0, 0]}
-				/>
-			{/if}
-			{#if gltfResultData.nodes.Cube001_RExtr001_spaceship_racer_0}
-				<T.Mesh
-					castShadow
-					receiveShadow
-					geometry={gltfResultData.nodes.Cube001_RExtr001_spaceship_racer_0.geometry}
-					material={gltfResultData.materials.spaceship_racer}
-					position={[745.54, 159.32, -5.92]}
-				/>
-			{/if}
-			{#if gltfResultData.nodes.Cube001_RPanel003_spaceship_racer_0}
-				<T.Mesh
-					castShadow
-					receiveShadow
-					geometry={gltfResultData.nodes.Cube001_RPanel003_spaceship_racer_0.geometry}
-					material={gltfResultData.materials.spaceship_racer}
-					position={[739.26, 0, 0]}
-				/>
-			{/if}
-			{#if gltfResultData.nodes.Cube001_RPanel003_RExtr_spaceship_racer_0}
-				<T.Mesh
-					castShadow
-					receiveShadow
-					geometry={gltfResultData.nodes.Cube001_RPanel003_RExtr_spaceship_racer_0.geometry}
-					material={gltfResultData.materials.spaceship_racer}
-					position={[739.26, 0, 0]}
-				/>
-			{/if}
-			{#if gltfResultData.nodes.Cube002_spaceship_racer_0}
-				<T.Mesh
-					castShadow
-					receiveShadow
-					geometry={gltfResultData.nodes.Cube002_spaceship_racer_0.geometry}
-					material={gltfResultData.materials.spaceship_racer}
-					position={[736.79, -267.14, -33.21]}
-				/>
-			{/if}
-			{#if gltfResultData.nodes.Cube001_RPanel001_spaceship_racer_0}
-				<T.Mesh
-					castShadow
-					receiveShadow
-					geometry={gltfResultData.nodes.Cube001_RPanel001_spaceship_racer_0.geometry}
-					material={gltfResultData.materials.spaceship_racer}
-					position={[739.26, 0, 0]}
-				/>
-			{/if}
-			{#if gltfResultData.nodes.Cube001_RPanel003_RExtr001_spaceship_racer_0}
-				<T.Mesh
-					castShadow
-					receiveShadow
-					geometry={gltfResultData.nodes.Cube001_RPanel003_RExtr001_spaceship_racer_0.geometry}
-					material={gltfResultData.materials.spaceship_racer}
-					position={[739.26, 0, 0]}
-				/>
-			{/if}
-			{#if gltfResultData.nodes.Cube005_cockpit_0}
-				<T.Mesh
-					geometry={gltfResultData.nodes.Cube005_cockpit_0.geometry}
-					material={gltfResultData.materials.cockpit}
-					position={[739.45, 110.44, 307.18]}
-					rotation={[0.09, 0, 0]}
-				/>
-			{/if}
-			{#if gltfResultData.nodes.Sphere_cockpit_0}
-				<T.Mesh
-					geometry={gltfResultData.nodes.Sphere_cockpit_0.geometry}
-					material={gltfResultData.materials.cockpit}
-					position={[739.37, 145.69, 315.6]}
-					rotation={[0.17, 0, 0]}
-				/>
-			{/if}
+			<!-- We render the whole scene to ensure all parts are visible -->
+			<!-- The scale is applied here to match the desired size -->
+			<T is={gltfResultData.scene} scale={0.01} position={[-740 * 0.01, 60 * 0.01, 0]} />
 
+			<!-- Energy beam -->
 			{#if mapResultData}
-				<T.Mesh position={[740, -60, -1350]} rotation.x={Math.PI * 0.5}>
-					<T.CylinderGeometry args={[70, 25, 1600, 15]} />
+				<T.Mesh position={[0, 0, -13.5]} rotation.x={Math.PI * 0.5}>
+					<T.CylinderGeometry args={[0.7, 0.25, 16, 15]} />
 					<T.MeshBasicMaterial
 						color="#ff6605"
 						alphaMap={mapResultData}
@@ -327,6 +225,4 @@
 	{:else if isLoading}
 		<slot name="fallback" />
 	{/if}
-
-	<slot {ref} />
 </T>
