@@ -93,13 +93,12 @@
 		angleZ += angleAccelleration;
 
 		// Pitch effect: Airplane style (Nose UP when ascending)
-		// We use translAccelleration. Positive acceleration (upward) -> positive pitch (nose up)
-		// Reduced intensity as requested
-		const kineticPitch = translAccelleration * 10;
+		// Reduced intensity for both kinetic and mouse pitch
+		const kineticPitch = translAccelleration * 3.5;
 
 		// Additional magnificent rotations (roll/tilt based on pointer lateral movement)
 		const targetRoll = isActive ? -pointer.x * 0.6 : 0;
-		const targetPitch = (isActive ? pointer.y * 0.25 : 0) + kineticPitch;
+		const targetPitch = (isActive ? pointer.y * 0.12 : 0) + kineticPitch;
 
 		// Interpolate for smoothness
 		rotationRoll += (targetRoll - rotationRoll) * 0.04;
@@ -131,17 +130,21 @@
 			const { nodes, materials } = buildSceneGraph(rawGltf);
 			const processed = { ...rawGltf, nodes, materials };
 
-			// Apply alpha fix
-			function alphaFix(material: any) {
+			// Apply alpha fix and reflection settings
+			function materialFix(material: any) {
 				if (!material) return;
 				material.transparent = true;
 				material.alphaToCoverage = true;
 				material.depthFunc = LessEqualDepth;
 				material.depthTest = true;
 				material.depthWrite = true;
+
+				// Enable very strong reflections from Environment
+				material.envMapIntensity = 60;
+				if (material.normalScale) material.normalScale.set(0.3, 0.3);
 			}
-			if (materials.spaceship_racer) alphaFix(materials.spaceship_racer);
-			if (materials.cockpit) alphaFix(materials.cockpit);
+
+			Object.values(materials).forEach(materialFix);
 
 			gltfResultData = processed;
 
