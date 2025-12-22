@@ -28,7 +28,7 @@
         <!-- 3D Canvas -->
         <div class="canvas-container">
             <Canvas renderMode="always">
-                <T.Color attach="background" args={['#1E1E1E']} />
+                <T.Color attach="background" args={['#000000']} />
                 <T.PerspectiveCamera makeDefault position={[-15, 15, 15]} fov={50}>
                     <OrbitControls enableDamping enableZoom={true} />
                 </T.PerspectiveCamera>

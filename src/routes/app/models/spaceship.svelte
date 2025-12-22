@@ -10,7 +10,8 @@
 		Vector3,
 		Raycaster,
 		Mesh,
-		PlaneGeometry
+		PlaneGeometry,
+		PMREMGenerator
 	} from 'three';
 	import { T, useTask, useThrelte } from '@threlte/core';
 	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -21,7 +22,7 @@
 	import { buildSceneGraph } from '$lib/utils/cloudinaryAssets';
 
 	let { ref = $bindable(new Group()), geometry, ...restProps } = $props();
-	const { camera, scene } = useThrelte();
+	const { camera, scene, renderer } = useThrelte();
 
 	let gltfResultData = $state<any>(null);
 	let mapResultData = $state<any>(null);
@@ -43,9 +44,12 @@
 
 	const raycaster = new Raycaster();
 	const pointer = new Vector2();
-	// Plane moved further back and made bigger to catch all rays
 	const planeMesh = new Mesh(new PlaneGeometry(2000, 2000));
 	planeMesh.rotation.y = Math.PI * 0.5;
+
+	// Dynamic Env Map (Capturing stars & scene glow)
+	let pmrem = new PMREMGenerator(renderer);
+	let dynamicEnvMap: any = null;
 
 	const handlePointerMove = (event: PointerEvent) => {
 		if (!browser) return;
@@ -75,7 +79,6 @@
 		const activationRadius = 2.5;
 		const isActive = mouseRadius < activationRadius;
 
-		// Keyboard Override for vertical movement: Left/Right keys as requested
 		let targetY = isActive ? intersectionPoint.y : 0;
 		if (keys.ArrowLeft) targetY -= 20;
 		if (keys.ArrowRight) targetY += 20;
@@ -84,7 +87,6 @@
 		translAccelleration *= 0.94;
 		translY += translAccelleration;
 
-		// Limit movement
 		const boxLimit = 50;
 		if (translY > boxLimit) {
 			translY = boxLimit;
@@ -95,14 +97,12 @@
 			translAccelleration = 0;
 		}
 
-		// Simplified Rotation logic for better predictability
 		const targetAngle =
 			isActive || keys.ArrowLeft || keys.ArrowRight ? (targetY - translY) * 0.05 : 0;
 		angleAccelleration += (targetAngle - angleZ) * 0.05;
 		angleAccelleration *= 0.82;
 		angleZ += angleAccelleration;
 
-		// Airplane kinetics
 		const kineticPitch = translAccelleration * 3.5;
 		const kineticRoll = translAccelleration * 5.0;
 
@@ -113,19 +113,55 @@
 		rotationPitch += (targetPitch - rotationPitch) * 0.04;
 	});
 
-	// Handle Material Reflections reactively
+	// Robust material update function
+	function materialFix(material: any, envTexture: any = null) {
+		if (!material) return;
+		material.transparent = true;
+		material.alphaToCoverage = true;
+		material.depthFunc = LessEqualDepth;
+		material.depthTest = true;
+		material.depthWrite = true;
+
+		// Extreme reflections logic from /Spaceship
+		material.envMapIntensity = 100; // Max intensity
+		if ('roughness' in material) material.roughness = 0.02; // Super shiny
+		if ('metalness' in material) material.metalness = 1.0;
+		if (material.normalScale) material.normalScale.set(0.1, 0.1); // Smoother
+
+		if (envTexture) {
+			material.envMap = envTexture;
+		} else if (scene.environment) {
+			material.envMap = scene.environment;
+		}
+
+		// Emissive boost
+		if ('emissive' in material && material.emissive) {
+			material.emissiveIntensity = 15; // Make the lights shine!
+		}
+
+		material.needsUpdate = true;
+	}
+
+	function updateAllMaterials(envTexture: any = null) {
+		if (!gltfResultData) return;
+		gltfResultData.scene.traverse((child: any) => {
+			if (child.isMesh && child.material) {
+				materialFix(child.material, envTexture);
+			}
+		});
+	}
+
+	// Dynamic Env Map capturing stars
+	const captureEnvMap = () => {
+		if (!renderer || !scene) return;
+		if (dynamicEnvMap) dynamicEnvMap.dispose();
+		dynamicEnvMap = pmrem.fromScene(scene, 0, 0.1, 1000);
+		updateAllMaterials(dynamicEnvMap.texture);
+	};
+
 	$effect(() => {
-		if (gltfResultData && scene.environment) {
-			console.log('✨ Applying environment map to spaceship materials');
-			untrack(() => {
-				gltfResultData.scene.traverse((child: any) => {
-					if (child.isMesh && child.material) {
-						child.material.envMap = scene.environment;
-						child.material.envMapIntensity = 50;
-						child.material.needsUpdate = true;
-					}
-				});
-			});
+		if (gltfResultData) {
+			updateAllMaterials();
 		}
 	});
 
@@ -135,6 +171,10 @@
 			window.addEventListener('keydown', handleKeyDown);
 			window.addEventListener('keyup', handleKeyUp);
 			loadAssets();
+
+			// Periodic env map capture to catch stars
+			const interval = setInterval(captureEnvMap, 3000);
+			return () => clearInterval(interval);
 		}
 	});
 
@@ -143,12 +183,13 @@
 			window.removeEventListener('pointermove', handlePointerMove);
 			window.removeEventListener('keydown', handleKeyDown);
 			window.removeEventListener('keyup', handleKeyUp);
+			if (dynamicEnvMap) dynamicEnvMap.dispose();
+			pmrem.dispose();
 		}
 	});
 
 	async function loadAssets() {
 		try {
-			console.log('🚀 Loading Spaceship GLB...');
 			const gltfUrl = await getWorkingAssetUrl('spaceship.glb', 'models');
 			const mapUrl = await getWorkingAssetUrl('energy-beam-opacity.png', 'textures');
 
@@ -156,35 +197,10 @@
 			loader.setDRACOLoader(createDracoLoader());
 
 			const rawGltf = await loader.loadAsync(gltfUrl);
-			console.log('✅ Spaceship GLB loaded successfully');
-
-			const { nodes, materials } = buildSceneGraph(rawGltf);
-
-			function materialFix(material: any) {
-				if (!material) return;
-				material.transparent = true;
-				material.alphaToCoverage = true;
-				material.depthFunc = LessEqualDepth;
-				material.depthTest = true;
-				material.depthWrite = true;
-
-				// Premium reflections setup
-				material.envMapIntensity = 50;
-				if ('roughness' in material) material.roughness = 0.1;
-				if ('metalness' in material) material.metalness = 1.0;
-				if (material.normalScale) material.normalScale.set(0.2, 0.2);
-
-				material.needsUpdate = true;
-			}
-
-			// Apply to all materials in the scene graph
-			rawGltf.scene.traverse((child: any) => {
-				if (child.isMesh) {
-					materialFix(child.material);
-				}
-			});
-
+			buildSceneGraph(rawGltf); // ensure internal nodes/materials are ready if needed
 			gltfResultData = rawGltf;
+
+			updateAllMaterials();
 
 			const texLoader = new TextureLoader();
 			mapResultData = await texLoader.loadAsync(mapUrl);
@@ -198,16 +214,12 @@
 
 <T is={ref} dispose={false} {...restProps}>
 	{#if gltfResultData}
-		<!-- We wrap everything in a group to apply flight physics and center it -->
 		<T.Group
 			position={[0, translY, 0]}
 			rotation={[angleZ + rotationPitch, -Math.PI * 0.5, angleZ + rotationRoll]}
 		>
-			<!-- We render the whole scene to ensure all parts are visible -->
-			<!-- Using a larger scale and position reset for visibility test -->
 			<T is={gltfResultData.scene} scale={0.5} position={[0, 0, 0]} />
 
-			<!-- Energy beam -->
 			{#if mapResultData}
 				<T.Mesh position={[0, 0, -13.5]} rotation.x={Math.PI * 0.5}>
 					<T.CylinderGeometry args={[0.7, 0.25, 16, 15]} />
