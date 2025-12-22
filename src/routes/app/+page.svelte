@@ -19,6 +19,7 @@
 	import Bloom from './models/bloom.svelte';
 	import Stars from '../Spaceship/Stars.svelte';
 	import ScenePremiumEffects from './components/ScenePremiumEffects.svelte';
+	import SceneText2 from '../Text/scene.svelte';
 
 	interface GeometryItem {
 		id: string;
@@ -37,11 +38,40 @@
 	let error = $state<string | null>(null);
 	let isBloomEnabled = $state(true); // State to control Bloom effect
 
+	let isPremiumEnabled = $state(true); // Premium Effects Toggle
+
 	// Transform Controls State
 	let transformSettings = $state({
 		enabled: false,
 		selectedId: '',
-		mode: 'translate' as 'translate' | 'rotate' | 'scale'
+		modes: ['translate', 'rotate', 'scale'] as ('translate' | 'rotate' | 'scale')[]
+	});
+
+	onMount(() => {
+		fetchGeometries();
+		window.addEventListener('modelAdded', fetchGeometries);
+
+		// ... listeners ...
+
+		const handleTogglePremium = (event: Event) => {
+			const customEvent = event as CustomEvent;
+			isPremiumEnabled = customEvent.detail.enabled;
+		};
+		window.addEventListener('togglePremiumEffect', handleTogglePremium);
+
+		const handleToggleTransform = (event: Event) => {
+			const customEvent = event as CustomEvent;
+			transformSettings = {
+				enabled: customEvent.detail.enabled,
+				selectedId: customEvent.detail.id,
+				modes: customEvent.detail.modes || ['translate']
+			};
+		};
+		// ...
+		return () => {
+			// ...
+			window.removeEventListener('togglePremiumEffect', handleTogglePremium);
+		};
 	});
 
 	// Store for model refs
@@ -138,7 +168,7 @@
 			transformSettings = {
 				enabled: customEvent.detail.enabled,
 				selectedId: customEvent.detail.id,
-				mode: customEvent.detail.mode || 'translate'
+				modes: customEvent.detail.modes || ['translate']
 			};
 		};
 		window.addEventListener('toggleTransformControls', handleToggleTransform);
@@ -171,7 +201,20 @@
 	isBackground={true}
 />
 <Stars />
-<ScenePremiumEffects />
+<Stars />
+{#if isPremiumEnabled}
+	<ScenePremiumEffects />
+{/if}
+<SceneText2
+	cvLines={[
+		'# Welcome',
+		'## To the 3D Editor',
+		'Interactive Elements',
+		'- Drag & Drop GLB',
+		'- Real-time Sync',
+		'- Physics Games'
+	]}
+/>
 
 <!-- Sphère au centre -->
 <T.Mesh position={[0, 0.5, 0]}>
@@ -218,69 +261,28 @@
 				{/if}
 
 				{#if isTransformed && modelRefs[geometry.id]}
-					<!-- Show multiple gizmos if they don't overlap too much, 
-					     but standard TransformControls is one mode at a time.
-						 To satisfy the user request for 'all at once', we can render 3 instances. -->
-					<TransformControls
-						object={modelRefs[geometry.id]}
-						mode="translate"
-						onstart={() => window.dispatchEvent(new CustomEvent('lockCamera'))}
-						onend={() => {
-							window.dispatchEvent(new CustomEvent('unlockCamera'));
-							window.dispatchEvent(
-								new CustomEvent('manualTransformSync', {
-									detail: {
-										id: geometry.id,
-										position: geometry.position,
-										rotation: geometry.rotation,
-										scale: geometry.scale,
-										save: true
-									}
-								})
-							);
-						}}
-						onchange={() => syncGeometry(geometry, modelRefs[geometry.id])}
-					/>
-					<TransformControls
-						object={modelRefs[geometry.id]}
-						mode="rotate"
-						onstart={() => window.dispatchEvent(new CustomEvent('lockCamera'))}
-						onend={() => {
-							window.dispatchEvent(new CustomEvent('unlockCamera'));
-							window.dispatchEvent(
-								new CustomEvent('manualTransformSync', {
-									detail: {
-										id: geometry.id,
-										position: geometry.position,
-										rotation: geometry.rotation,
-										scale: geometry.scale,
-										save: true
-									}
-								})
-							);
-						}}
-						onchange={() => syncGeometry(geometry, modelRefs[geometry.id])}
-					/>
-					<TransformControls
-						object={modelRefs[geometry.id]}
-						mode="scale"
-						onstart={() => window.dispatchEvent(new CustomEvent('lockCamera'))}
-						onend={() => {
-							window.dispatchEvent(new CustomEvent('unlockCamera'));
-							window.dispatchEvent(
-								new CustomEvent('manualTransformSync', {
-									detail: {
-										id: geometry.id,
-										position: geometry.position,
-										rotation: geometry.rotation,
-										scale: geometry.scale,
-										save: true
-									}
-								})
-							);
-						}}
-						onchange={() => syncGeometry(geometry, modelRefs[geometry.id])}
-					/>
+					{#each transformSettings.modes as mode}
+						<TransformControls
+							object={modelRefs[geometry.id]}
+							{mode}
+							onstart={() => window.dispatchEvent(new CustomEvent('lockCamera'))}
+							onend={() => {
+								window.dispatchEvent(new CustomEvent('unlockCamera'));
+								window.dispatchEvent(
+									new CustomEvent('manualTransformSync', {
+										detail: {
+											id: geometry.id,
+											position: geometry.position,
+											rotation: geometry.rotation,
+											scale: geometry.scale,
+											save: true
+										}
+									})
+								);
+							}}
+							onchange={() => syncGeometry(geometry, modelRefs[geometry.id])}
+						/>
+					{/each}
 				{/if}
 			{:else}
 				<Dynamic3DModel {geometry} />

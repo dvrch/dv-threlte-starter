@@ -58,8 +58,9 @@
 	};
 
 	let isBloomActive = $state(true);
+	let isPremiumActive = $state(true);
 	let isTransformControlsEnabled = $state(false);
-	let transformMode = $state<'translate' | 'rotate' | 'scale'>('translate');
+	let transformModes = $state<('translate' | 'rotate' | 'scale')[]>(['translate']);
 	let searchQuery = $state('');
 
 	// Derived state for filtered geometries
@@ -81,8 +82,16 @@
 				detail: {
 					enabled: isTransformControlsEnabled,
 					id: selectedGeometryId,
-					mode: transformMode
+					modes: transformModes
 				}
+			})
+		);
+	});
+
+	$effect(() => {
+		window.dispatchEvent(
+			new CustomEvent('togglePremiumEffect', {
+				detail: { enabled: isPremiumActive }
 			})
 		);
 	});
@@ -898,23 +907,53 @@
 						<button
 							type="button"
 							class="mode-btn"
-							class:active={transformMode === 'translate'}
-							onclick={() => (transformMode = 'translate')}>Pos</button
+							class:active={transformModes.includes('translate')}
+							onclick={() => {
+								if (transformModes.includes('translate')) {
+									transformModes = transformModes.filter((m) => m !== 'translate');
+								} else {
+									transformModes = [...transformModes, 'translate'];
+								}
+							}}>Pos</button
 						>
 						<button
 							type="button"
 							class="mode-btn"
-							class:active={transformMode === 'rotate'}
-							onclick={() => (transformMode = 'rotate')}>Rot</button
+							class:active={transformModes.includes('rotate')}
+							onclick={() => {
+								if (transformModes.includes('rotate')) {
+									transformModes = transformModes.filter((m) => m !== 'rotate');
+								} else {
+									transformModes = [...transformModes, 'rotate'];
+								}
+							}}>Rot</button
 						>
 						<button
 							type="button"
 							class="mode-btn"
-							class:active={transformMode === 'scale'}
-							onclick={() => (transformMode = 'scale')}>Scl</button
+							class:active={transformModes.includes('scale')}
+							onclick={() => {
+								if (transformModes.includes('scale')) {
+									transformModes = transformModes.filter((m) => m !== 'scale');
+								} else {
+									transformModes = [...transformModes, 'scale'];
+								}
+							}}>Scl</button
 						>
 					</div>
 				</div>
+			</div>
+
+			<div class="control-item">
+				<span>Premium Effects</span>
+				<button
+					type="button"
+					class="toggle-btn"
+					class:active={isPremiumActive}
+					onclick={() => (isPremiumActive = !isPremiumActive)}
+				>
+					{isPremiumActive ? 'ON' : 'OFF'}
+				</button>
 			</div>
 		</div>
 	</form>
