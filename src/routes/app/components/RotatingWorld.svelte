@@ -2,10 +2,11 @@
 	import { T, useTask } from '@threlte/core';
 	import { browser } from '$app/environment';
 
+	let { children, isPaused = false } = $props();
 	let rotationY = $state(0);
-	const { children } = $props();
 
 	useTask((delta) => {
+		if (isPaused) return;
 		rotationY += 0.2 * delta; // Slow rotation
 	});
 </script>
