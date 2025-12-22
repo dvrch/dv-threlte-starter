@@ -171,16 +171,23 @@
 
 		// Synchronize UI when user manipulates in scene
 		const handleManualSync = (e: any) => {
-			if (e.detail?.id === selectedGeometryId) {
-				const data = e.detail;
-				if (data.position) position = { ...data.position };
-				if (data.rotation) rotation = { ...data.rotation };
-				if (data.scale) scale = { ...data.scale };
+			const data = e.detail;
+			if (!data?.id) return;
 
-				// Optional: auto-save to DB after manual move
-				if (e.detail.save) {
-					handleSubmit();
-				}
+			// If selecting a NEW object from scene, load its full details into the form
+			if (data.id !== selectedGeometryId) {
+				loadGeometryDetails(data.id);
+				return;
+			}
+
+			// Otherwise, update current form values in real-time
+			if (data.position) position = { ...data.position };
+			if (data.rotation) rotation = { ...data.rotation };
+			if (data.scale) scale = { ...data.scale };
+
+			// Optional: auto-save to DB after manual move
+			if (data.save) {
+				handleSubmit();
 			}
 		};
 		window.addEventListener('manualTransformSync', handleManualSync);
@@ -535,11 +542,12 @@
 
 		<div class="geometry-list">
 			<!-- Custom Dropdown Menu -->
-			<div class="custom-dropdown">
+			<div class="custom-dropdown" onmouseleave={() => (isDropdownOpen = false)}>
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<div
 					class="dropdown-header"
 					onclick={toggleDropdown}
+					onmouseenter={() => (isDropdownOpen = true)}
 					role="button"
 					tabindex="0"
 					aria-label="Select a geometry to edit or add a new one"

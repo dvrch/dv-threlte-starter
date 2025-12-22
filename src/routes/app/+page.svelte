@@ -6,7 +6,8 @@
 		HTML,
 		OrbitControls,
 		Environment,
-		TransformControls
+		TransformControls,
+		Outlines
 	} from '@threlte/extras';
 	import Dynamic3DModel from '$lib/components/Dynamic3DModel.svelte';
 	import { browser } from '$app/environment';
@@ -45,6 +46,30 @@
 
 	// Store for model refs
 	let modelRefs = $state<Record<string, Group>>({});
+
+	const syncGeometry = (geometry: GeometryItem, obj: Group) => {
+		if (obj && geometry) {
+			geometry.position = { x: obj.position.x, y: obj.position.y, z: obj.position.z };
+			geometry.rotation = {
+				x: obj.rotation.x * (180 / Math.PI),
+				y: obj.rotation.y * (180 / Math.PI),
+				z: obj.rotation.z * (180 / Math.PI)
+			};
+			geometry.scale = { x: obj.scale.x, y: obj.scale.y, z: obj.scale.z };
+
+			// Sync form real-time during move
+			window.dispatchEvent(
+				new CustomEvent('manualTransformSync', {
+					detail: {
+						id: geometry.id,
+						position: geometry.position,
+						rotation: geometry.rotation,
+						scale: geometry.scale
+					}
+				})
+			);
+		}
+	};
 
 	// Function to fetch geometries
 	const fetchGeometries = async () => {
@@ -188,14 +213,20 @@
 					/>
 				</Float>
 
+				{#if transformSettings.selectedId == geometry.id}
+					<Outlines color="#4db6ac" />
+				{/if}
+
 				{#if isTransformed && modelRefs[geometry.id]}
+					<!-- Show multiple gizmos if they don't overlap too much, 
+					     but standard TransformControls is one mode at a time.
+						 To satisfy the user request for 'all at once', we can render 3 instances. -->
 					<TransformControls
 						object={modelRefs[geometry.id]}
-						mode={transformSettings.mode}
+						mode="translate"
 						onstart={() => window.dispatchEvent(new CustomEvent('lockCamera'))}
 						onend={() => {
 							window.dispatchEvent(new CustomEvent('unlockCamera'));
-							// Force save to DB on end
 							window.dispatchEvent(
 								new CustomEvent('manualTransformSync', {
 									detail: {
@@ -208,30 +239,47 @@
 								})
 							);
 						}}
-						onchange={() => {
-							const obj = modelRefs[geometry.id];
-							if (obj && geometry) {
-								geometry.position = { x: obj.position.x, y: obj.position.y, z: obj.position.z };
-								geometry.rotation = {
-									x: obj.rotation.x * (180 / Math.PI),
-									y: obj.rotation.y * (180 / Math.PI),
-									z: obj.rotation.z * (180 / Math.PI)
-								};
-								geometry.scale = { x: obj.scale.x, y: obj.scale.y, z: obj.scale.z };
-
-								// Sync form real-time during move
-								window.dispatchEvent(
-									new CustomEvent('manualTransformSync', {
-										detail: {
-											id: geometry.id,
-											position: geometry.position,
-											rotation: geometry.rotation,
-											scale: geometry.scale
-										}
-									})
-								);
-							}
+						onchange={() => syncGeometry(geometry, modelRefs[geometry.id])}
+					/>
+					<TransformControls
+						object={modelRefs[geometry.id]}
+						mode="rotate"
+						onstart={() => window.dispatchEvent(new CustomEvent('lockCamera'))}
+						onend={() => {
+							window.dispatchEvent(new CustomEvent('unlockCamera'));
+							window.dispatchEvent(
+								new CustomEvent('manualTransformSync', {
+									detail: {
+										id: geometry.id,
+										position: geometry.position,
+										rotation: geometry.rotation,
+										scale: geometry.scale,
+										save: true
+									}
+								})
+							);
 						}}
+						onchange={() => syncGeometry(geometry, modelRefs[geometry.id])}
+					/>
+					<TransformControls
+						object={modelRefs[geometry.id]}
+						mode="scale"
+						onstart={() => window.dispatchEvent(new CustomEvent('lockCamera'))}
+						onend={() => {
+							window.dispatchEvent(new CustomEvent('unlockCamera'));
+							window.dispatchEvent(
+								new CustomEvent('manualTransformSync', {
+									detail: {
+										id: geometry.id,
+										position: geometry.position,
+										rotation: geometry.rotation,
+										scale: geometry.scale,
+										save: true
+									}
+								})
+							);
+						}}
+						onchange={() => syncGeometry(geometry, modelRefs[geometry.id])}
 					/>
 				{/if}
 			{:else}
