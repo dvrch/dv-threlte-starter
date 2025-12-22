@@ -61,17 +61,17 @@
 
 	useTask((delta) => {
 		const mouseRadius = pointer.length();
-		const activationRadius = 0.7; // Only react if mouse is within this radius
+		const activationRadius = 2.0; // Wider detection zone
 		const isActive = mouseRadius < activationRadius;
 
-		// Translation follow mouse (Y axis) - Even slower as requested
+		// Translation follow mouse (Y axis) - Restored some snap
 		const targetY = isActive ? intersectionPoint.y : 0;
-		translAccelleration += (targetY - translY) * 0.0007; // Extra dampened
+		translAccelleration += (targetY - translY) * 0.0015;
 		translAccelleration *= 0.94;
 		translY += translAccelleration;
 
-		// Fictive bounding box for vertical movement
-		const boxLimit = 8;
+		// Fictive bounding box for vertical movement - Much larger now
+		const boxLimit = 25;
 		if (translY > boxLimit) {
 			translY = boxLimit;
 			translAccelleration = 0;

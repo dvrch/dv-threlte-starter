@@ -6,7 +6,7 @@
 	import { browser } from '$app/environment';
 	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
 
-	let STARS_COUNT = 800;
+	let STARS_COUNT = 1200;
 	let colors = ['#fcaa67', '#C75D59', '#ffffc7', '#8CC5C6', '#A5898C'];
 
 	interface Star {
@@ -36,18 +36,18 @@
 		let pos: Vector3;
 		let len: number;
 
-		// Expanded star field
-		pos = new Vector3(r(-150, -20), r(-80, 80), r(-80, 80));
-		len = r(2, 25);
+		// Massively expanded star field tunnel
+		pos = new Vector3(r(-250, 50), r(-150, 150), r(-150, 150));
+		len = r(2, 35);
 
 		return {
 			pos,
 			len,
-			speed: r(15, 45),
-			rad: r(0.04, 0.08),
+			speed: r(20, 60),
+			rad: r(0.04, 0.1),
 			color: new Color(colors[Math.floor(Math.random() * colors.length)])
 				.convertSRGBToLinear()
-				.multiplyScalar(1.5)
+				.multiplyScalar(1.8)
 		};
 	}
 
@@ -59,7 +59,7 @@
 		for (let i = 0; i < stars.length; i++) {
 			const star = stars[i];
 			star.pos.x += star.speed * delta;
-			if (star.pos.x > 100) {
+			if (star.pos.x > 150) {
 				const newStar = createStar();
 				stars[i].pos.copy(newStar.pos);
 				stars[i].speed = newStar.speed;
