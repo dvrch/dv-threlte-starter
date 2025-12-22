@@ -82,6 +82,7 @@
     ondragover={handleGlobalDragOver}
     ondragleave={handleGlobalDragLeave}
     ondrop={handleGlobalDrop}
+    role="presentation"
 >
     {#if isDraggingGlobal}
         <div class="drop-overlay">
@@ -149,21 +150,24 @@
         align-items: flex-end;
     }
     .form-wrapper {
-        background: rgba(30, 30, 40, 0.6);
-        backdrop-filter: blur(10px);
+        background: rgba(30, 30, 40, 0.4);
+        backdrop-filter: blur(8px);
         padding: 0.5rem;
         border-radius: 8px;
-        max-width: 340px;
-        max-height: 48px;
-        overflow-y: auto;
-        overflow-x: hidden;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        width: 320px;
+        max-height: 42px; /* Ultra-compact when closed */
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        cursor: pointer;
     }
     .form-wrapper.is-open {
-        max-height: 80vh;
-        background: rgba(20, 20, 25, 0.85);
+        max-height: 85vh;
+        background: rgba(20, 20, 25, 0.95);
+        border-color: rgba(77, 182, 172, 0.3);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+        overflow-y: auto;
     }
 
     .drop-overlay {

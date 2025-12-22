@@ -23,6 +23,8 @@
 	let currentRotationSpeed = $state(0);
 	let isChaseCamActive = $state(false);
 	let mouseXPercentage = $state(0);
+	let mouseMoving = $state(false);
+	let mouseMoveTimeout: any;
 
 	// Keyboard/Touch state
 	let keys = $state({
@@ -49,6 +51,13 @@
 		if (browser) {
 			// Calculate normalized mouse X position (-1 to 1)
 			mouseXPercentage = (e.clientX / window.innerWidth) * 2 - 1;
+
+			// Track mouse activity
+			mouseMoving = true;
+			if (mouseMoveTimeout) clearTimeout(mouseMoveTimeout);
+			mouseMoveTimeout = setTimeout(() => {
+				mouseMoving = false;
+			}, 100);
 		}
 	}
 
@@ -72,8 +81,8 @@
 			currentRotationSpeed += rotSpeed * 0.25;
 		} else if (keys.ArrowRight) {
 			currentRotationSpeed -= rotSpeed * 0.25;
-		} else if (speed_current > 0.1 && Math.abs(mouseXPercentage) > 0.1) {
-			// Mouse steering ONLY when moving forward significantly
+		} else if (mouseMoving && (keys.ArrowUp || keys.ArrowDown)) {
+			// Mouse steering ONLY when moving mouse and accelerating/braking
 			currentRotationSpeed -= mouseXPercentage * rotSpeed * 0.5;
 		} else {
 			currentRotationSpeed *= turnEase;

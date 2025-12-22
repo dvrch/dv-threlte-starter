@@ -443,6 +443,10 @@
 </script>
 
 <div class="form-container">
+	<div class="form-handle">
+		<span>{isEditing ? 'ÉDITION' : 'CONFIGURATION'}</span>
+		<span class="expand-icon">«</span>
+	</div>
 	<form
 		onsubmit={(event) => {
 			event.preventDefault();
@@ -542,7 +546,12 @@
 
 		<div class="geometry-list">
 			<!-- Custom Dropdown Menu -->
-			<div class="custom-dropdown" onmouseleave={() => (isDropdownOpen = false)}>
+			<div
+				class="custom-dropdown"
+				onmouseleave={() => (isDropdownOpen = false)}
+				role="region"
+				aria-label="Sélection de géométrie"
+			>
 				<!-- svelte-ignore a11y_click_events_have_key_events -->
 				<div
 					class="dropdown-header"
@@ -550,9 +559,9 @@
 					onmouseenter={() => (isDropdownOpen = true)}
 					role="button"
 					tabindex="0"
-					aria-label="Select a geometry to edit or add a new one"
+					aria-label="Sélectionner une géométrie"
 				>
-					<span>
+					<span style="flex: 1; text-align: left;">
 						{selectedGeometryId
 							? geometries.find((g) => g.id === selectedGeometryId)?.name || 'Unknown Geometry'
 							: '-- Select Geometry --'}
@@ -924,11 +933,31 @@
 		font-size: 0.75rem;
 		width: 100%;
 		margin: 0;
-		background: rgba(255, 255, 255, 0.03);
-		padding: 8px;
+		background: transparent;
+		padding: 0;
 		border-radius: 6px;
-		border: 1px solid rgba(255, 255, 255, 0.08);
 		box-sizing: border-box;
+	}
+
+	.form-handle {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 4px 10px;
+		background: rgba(255, 255, 255, 0.05);
+		border-radius: 4px;
+		margin-bottom: 8px;
+		color: #4db6ac;
+		font-weight: 700;
+		font-size: 0.65rem;
+		letter-spacing: 1px;
+		text-transform: uppercase;
+	}
+
+	.expand-icon {
+		font-size: 1rem;
+		line-height: 1;
+		color: #999;
 	}
 
 	h3 {
