@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { useThrelte } from '@threlte/core';
-	import { PMREMGenerator, LessEqualDepth, Color } from 'three';
+	import { LessEqualDepth, Color } from 'three';
 	import { onMount, onDestroy } from 'svelte';
 
-	const { scene, renderer } = useThrelte();
+	import Bloom from '../models/bloom.svelte';
 
-	let pmrem = new PMREMGenerator(renderer);
-	let dynamicEnvMap: any = null;
+	const { scene, renderer } = useThrelte();
 
 	function applyPremiumToMaterial(material: any, envTexture: any, object: any) {
 		if (!material) return;
@@ -60,11 +59,9 @@
 
 	function refreshSceneMaterials() {
 		if (!scene) return;
-
-		const texture = dynamicEnvMap ? dynamicEnvMap.texture : scene.environment || null;
-
 		scene.traverse((child: any) => {
 			if (child.isMesh && child.material) {
+				const texture = scene.environment; // Use global environment
 				if (Array.isArray(child.material)) {
 					child.material.forEach((m: any) => applyPremiumToMaterial(m, texture, child));
 				} else {
@@ -74,27 +71,18 @@
 		});
 	}
 
-	const captureEnvironment = () => {
-		if (!renderer || !scene) return;
-
-		if (dynamicEnvMap) dynamicEnvMap.dispose();
-		// Capture scene to allow reflections of stars and light
-		dynamicEnvMap = pmrem.fromScene(scene, 0, 0.1, 1000);
-
-		refreshSceneMaterials();
-	};
-
 	onMount(() => {
-		const timeout = setTimeout(captureEnvironment, 1000);
-		const interval = setInterval(captureEnvironment, 5000);
+		// Just run once after a delay to ensure assets are loaded
+		const timeout = setTimeout(refreshSceneMaterials, 1000);
+		// Listen for modelAdded to refresh
+		const handleModelAdded = () => setTimeout(refreshSceneMaterials, 500);
+		window.addEventListener('modelAdded', handleModelAdded);
+
 		return () => {
 			clearTimeout(timeout);
-			clearInterval(interval);
+			window.removeEventListener('modelAdded', handleModelAdded);
 		};
 	});
-
-	onDestroy(() => {
-		if (dynamicEnvMap) dynamicEnvMap.dispose();
-		pmrem.dispose();
-	});
 </script>
+
+<Bloom />
