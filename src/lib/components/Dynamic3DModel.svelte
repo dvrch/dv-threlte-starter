@@ -39,7 +39,7 @@
 		}
 
 		// Priority 2: Detection for Nissan Game
-		if (type === 'nissangame' || name.includes('nissangame')) {
+		if (type === 'nissangame' || type === 'nissan' || name.includes('nissangame')) {
 			return componentMap['nissangame'];
 		}
 

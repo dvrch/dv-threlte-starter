@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
-	import { Float, Grid, HTML, OrbitControls } from '@threlte/extras';
+	import { Float, Grid, HTML, OrbitControls, Environment } from '@threlte/extras';
 	import Dynamic3DModel from '$lib/components/Dynamic3DModel.svelte';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
@@ -8,6 +8,7 @@
 
 	import { addToast } from '$lib/stores/toasts';
 	import Bloom from './models/bloom.svelte';
+	import Stars from '../Spaceship/Stars.svelte';
 
 	interface GeometryItem {
 		id: string;
@@ -97,8 +98,15 @@
 	{/if}
 </HTML>
 
-<T.AmbientLight intensity={0.5} />
-<T.DirectionalLight position={[10, 10, 10]} intensity={1} castShadow />
+<T.AmbientLight intensity={0.2} />
+<T.DirectionalLight position={[10, 10, 10]} intensity={2} castShadow />
+<T.DirectionalLight position={[-10, 5, -10]} intensity={1} color="#4287f5" />
+
+<Environment
+	url="https://res.cloudinary.com/drcok7moc/raw/upload/v1766438096/sky_2_nhyq8b.hdr"
+	isBackground={false}
+/>
+<Stars />
 
 <!-- Sphère au centre -->
 <T.Mesh position={[0, 0.5, 0]}>

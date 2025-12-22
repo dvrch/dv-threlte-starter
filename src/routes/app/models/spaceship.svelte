@@ -34,6 +34,8 @@
 	let translAccelleration = $state(0);
 	let angleZ = $state(0);
 	let angleAccelleration = $state(0);
+	let rotationRoll = $state(0);
+	let rotationPitch = $state(0);
 
 	const raycaster = new Raycaster();
 	const pointer = new Vector2();
@@ -64,13 +66,22 @@
 		translAccelleration *= 0.95;
 		translY += translAccelleration;
 
-		// Rotation follow (Z axis bank)
+		// Rotation follow (Z axis bank / angleZ)
 		const dir = intersectionPoint.clone().sub(new Vector3(0, translY, 0)).normalize();
 		const dirCos = dir.dot(new Vector3(0, 1, 0));
 		const angle = Math.acos(dirCos) - Math.PI * 0.5;
 		angleAccelleration += (angle - angleZ) * 0.01;
 		angleAccelleration *= 0.85;
 		angleZ += angleAccelleration;
+
+		// Additional magnificent rotations (roll/tilt based on pointer lateral movement)
+		// We use pointer.x for roll and pointer.y for additional pitch
+		const targetRoll = -pointer.x * 0.8;
+		const targetPitch = pointer.y * 0.4;
+
+		// Interpolate for smoothness
+		rotationRoll += (targetRoll - rotationRoll) * 0.05;
+		rotationPitch += (targetPitch - rotationPitch) * 0.05;
 	});
 
 	onMount(() => {
@@ -123,14 +134,14 @@
 </script>
 
 <T is={ref} dispose={false} {...restProps}>
-	<T.Group rotation={[0, Math.PI, 0]}>
-		<Stars />
-	</T.Group>
-
 	{#if gltfResultData}
 		<!-- We apply the physics-based position and rotation (angleZ) -->
 		<!-- This matches the logic from src/routes/Spaceship/Scene.svelte -->
-		<T.Group scale={0.001} position={[0, translY, 0]} rotation={[angleZ, -Math.PI * 0.5, angleZ]}>
+		<T.Group
+			scale={0.001}
+			position={[0, translY, 0]}
+			rotation={[angleZ + rotationPitch, -Math.PI * 0.5, angleZ + rotationRoll]}
+		>
 			{#if gltfResultData.nodes.Cube001_spaceship_racer_0}
 				<T.Mesh
 					castShadow
