@@ -1508,21 +1508,6 @@
 		color: #4caf50;
 		border-color: #4caf50;
 	}
-	.upload-label-zone {
-		flex: 1;
-		font-size: 0.7rem;
-		color: #888;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-	.filename-small {
-		color: #80cbc4;
-		font-weight: 500;
-	}
-	.drop-hint {
-		font-style: italic;
-	}
 
 	.transform-actions-v2 {
 		display: flex;

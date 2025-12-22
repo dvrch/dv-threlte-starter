@@ -8,7 +8,7 @@
 	import { browser } from '$app/environment';
 	import { buildSceneGraph } from '$lib/utils/cloudinaryAssets';
 
-	let { ref = $bindable(new Group()), ...rest } = $props();
+	let { ref = $bindable(new Group()), children, ...rest } = $props();
 
 	let gltfData = $state<any>(null);
 
@@ -39,5 +39,5 @@
 		</T.Group>
 	{/if}
 
-	<slot {ref} />
+	{@render children?.({ ref })}
 </T>
