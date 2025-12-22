@@ -33,6 +33,8 @@
 		if (!cam || !scene) return;
 		composer.removeAllPasses();
 		composer.addPass(new RenderPass(scene, cam));
+
+		// Pass 1: Bloom + Vignette + SMAA (non-convolution effects)
 		composer.addPass(
 			new EffectPass(
 				cam,
@@ -45,11 +47,6 @@
 					mipmapBlur,
 					kernelSize: KernelSize.MEDIUM
 				}),
-				new ChromaticAberrationEffect({
-					offset: new THREE.Vector2(0.001, 0.001),
-					radialModulation: false,
-					modulationOffset: 0
-				}),
 				new VignetteEffect({
 					eskil: false,
 					offset: 0.35,
@@ -57,6 +54,18 @@
 				}),
 				new SMAAEffect({
 					preset: SMAAPreset.HIGH
+				})
+			)
+		);
+
+		// Pass 2: ChromaticAberration (convolution effect - must be separate)
+		composer.addPass(
+			new EffectPass(
+				cam,
+				new ChromaticAberrationEffect({
+					offset: new THREE.Vector2(0.001, 0.001),
+					radialModulation: false,
+					modulationOffset: 0
 				})
 			)
 		);
