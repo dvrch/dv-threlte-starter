@@ -115,7 +115,8 @@
 					'vague',
 					'nissangame',
 					'bibigame',
-					'textmd'
+					'textmd',
+					'text_scene' // Add text_scene here
 				];
 				types = [...new Set([...baseTypes, ...fetchedTypes])];
 			}
@@ -131,7 +132,8 @@
 				'vague',
 				'nissangame',
 				'bibigame',
-				'textmd'
+				'textmd',
+				'text_scene' // Add text_scene here
 			];
 			addToast('Failed to load types from server. Using defaults.', 'warning');
 		}
@@ -274,6 +276,8 @@
 				// Backend doesn't accept 'textmd', send 'text' instead
 				// Frontend will detect it's textmd by the name
 				formData.append('type', 'text');
+			} else if (type === 'text_scene') {
+				formData.append('type', 'text_scene');
 			} else {
 				formData.append('type', type);
 			}
