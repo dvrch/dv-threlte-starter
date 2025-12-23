@@ -1,57 +1,40 @@
 <script lang="ts">
-	import { useThrelte } from '@threlte/core';
-	import { LessEqualDepth, Color } from 'three';
+	import { useThrelte, useTask } from '@threlte/core';
+	import { PMREMGenerator, LessEqualDepth } from 'three';
 	import { onMount, onDestroy } from 'svelte';
-
 	import Bloom from '../models/bloom.svelte';
 
 	const { scene, renderer } = useThrelte();
 
-	function applyPremiumToMaterial(material: any, envTexture: any, object: any) {
+	let pmrem = new PMREMGenerator(renderer);
+	let dynamicEnvMap: any = null;
+
+	function applyPremiumToMaterial(material: any, envTexture: any) {
 		if (!material) return;
 
-		const name = (object.name || '').toLowerCase();
-		// skip environment and helpers/gizmos
-		if (
-			name.includes('star') ||
-			name.includes('sky') ||
-			name.includes('galaxy') ||
-			name.includes('grid') ||
-			name.includes('gizmo') ||
-			name.includes('transform') ||
-			name.includes('helper') ||
-			name.includes('bone')
-		)
-			return;
+		// Ensure standard material properties for reflections
+		// material.transparent = true; // Caused sorting issues with some opaque objects
+		// material.alphaToCoverage = true;
+		material.depthFunc = LessEqualDepth;
+		material.depthTest = true;
+		material.depthWrite = true;
 
-		// 1. Better visibility for dark objects
-		if (material.color) {
-			const col = material.color;
-			// If color is black or very dark, give it a subtle emissive boost so it doesn't vanish
-			if (col.r < 0.02 && col.g < 0.02 && col.b < 0.02) {
-				if (material.emissive && material.emissive.r === 0) {
-					// Sublest blueish hue for dark materials to feel high-end
-					material.emissive.setHex(0x111122);
-					material.emissiveIntensity = 0.5;
-				}
-			}
-		}
-
-		// 2. High-end Reflections - Boosted for premium feel
-		material.envMapIntensity = 3.0;
+		// Premium settings
+		material.envMapIntensity = 10;
+		// Force super reflective chrome look
+		if ('roughness' in material) material.roughness = 0.05;
+		if ('metalness' in material) material.metalness = 1.0;
 
 		if (envTexture) {
 			material.envMap = envTexture;
+		} else if (scene.environment) {
+			material.envMap = scene.environment;
 		}
 
-		// 3. Emissive Boost (The "Glow" effect) - Stronger
+		// Glow boost for emissive materials
 		if ('emissiveIntensity' in material) {
-			if (
-				material.emissive &&
-				(material.emissive.r > 0.1 || material.emissive.g > 0.1 || material.emissive.b > 0.1)
-			) {
-				material.emissiveIntensity = Math.max(material.emissiveIntensity, 10.0);
-			}
+			// Keeping it high as per "augmenté" request, overriding the snippet's 2
+			material.emissiveIntensity = 5;
 		}
 
 		material.needsUpdate = true;
@@ -59,32 +42,51 @@
 
 	function refreshSceneMaterials() {
 		if (!scene) return;
+
+		const texture = dynamicEnvMap ? dynamicEnvMap.texture : scene.environment;
+
 		scene.traverse((child: any) => {
+			// Skip UI/Helpers to avoid weird artifacts
+			if (
+				child.name.includes('gizmo') ||
+				child.name.includes('helper') ||
+				child.name.includes('grid')
+			)
+				return;
+
 			if (child.isMesh && child.material) {
-				const texture = scene.environment; // Use global environment
 				if (Array.isArray(child.material)) {
-					child.material.forEach((m: any) => applyPremiumToMaterial(m, texture, child));
+					child.material.forEach((m: any) => applyPremiumToMaterial(m, texture));
 				} else {
-					applyPremiumToMaterial(child.material, texture, child);
+					applyPremiumToMaterial(child.material, texture);
 				}
 			}
 		});
 	}
 
-	onMount(() => {
-		// Just run once after a delay to ensure assets are loaded
-		const timeout = setTimeout(refreshSceneMaterials, 1000);
-		// Listen for modelAdded (new item) AND modelVisualLoaded (visual ready) to refresh
-		const handleModelRefresh = () => setTimeout(refreshSceneMaterials, 500);
+	const captureEnvironment = () => {
+		if (!renderer || !scene) return;
 
-		window.addEventListener('modelAdded', handleModelRefresh);
-		window.addEventListener('modelVisualLoaded', handleModelRefresh);
+		if (dynamicEnvMap) dynamicEnvMap.dispose();
+		dynamicEnvMap = pmrem.fromScene(scene, 0, 0.1, 1000);
+
+		refreshSceneMaterials();
+	};
+
+	onMount(() => {
+		// Capture immediately then periodically
+		const timeout = setTimeout(captureEnvironment, 500);
+		const interval = setInterval(captureEnvironment, 2000);
 
 		return () => {
 			clearTimeout(timeout);
-			window.removeEventListener('modelAdded', handleModelRefresh);
-			window.removeEventListener('modelVisualLoaded', handleModelRefresh);
+			clearInterval(interval);
 		};
+	});
+
+	onDestroy(() => {
+		if (dynamicEnvMap) dynamicEnvMap.dispose();
+		pmrem.dispose();
 	});
 </script>
 
