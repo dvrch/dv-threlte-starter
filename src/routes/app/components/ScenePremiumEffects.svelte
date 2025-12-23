@@ -1,53 +1,68 @@
 <script lang="ts">
-	import { useThrelte, useTask } from '@threlte/core';
-	import { PMREMGenerator, LessEqualDepth } from 'three';
+	import { useThrelte } from '@threlte/core';
+	import { PMREMGenerator, LessEqualDepth, Color } from 'three';
 	import { onMount, onDestroy } from 'svelte';
-	import Bloom from '../models/bloom.svelte';
 
 	const { scene, renderer } = useThrelte();
 
 	let pmrem = new PMREMGenerator(renderer);
 	let dynamicEnvMap: any = null;
 
-	function applyPremiumToMaterial(material: any, envTexture: any) {
+	function applyPremiumToMaterial(material: any, envTexture: any, object: any) {
 		if (!material) return;
 
-		// Ensure standard material properties for reflections
-		material.depthFunc = LessEqualDepth;
-		material.depthTest = true;
-		material.depthWrite = true;
+		const name = (object.name || '').toLowerCase();
+		// skip environment and helpers/gizmos
+		if (
+			name.includes('star') ||
+			name.includes('sky') ||
+			name.includes('galaxy') ||
+			name.includes('grid') ||
+			name.includes('gizmo') ||
+			name.includes('transform') ||
+			name.includes('helper') ||
+			name.includes('bone')
+		)
+			return;
 
-		// Premium settings
-		// DOUBLED INTENSITY: Very strong reflections
-		material.envMapIntensity = 5.0;
-
-		// Intelligent Polish: Make things shiny but NOT pure black mirrors
-		if ('roughness' in material) {
-			// almost perfect mirror (0.02)
-			material.roughness = Math.min(material.roughness || 0.5, 0.02);
+		// 1. Better visibility for dark objects
+		if (material.color) {
+			const col = material.color;
+			// If color is black or very dark, give it a subtle emissive boost so it doesn't vanish
+			if (col.r < 0.02 && col.g < 0.02 && col.b < 0.02) {
+				if (material.emissive && material.emissive.r === 0) {
+					// Sublest blueish hue for dark materials to feel high-end
+					material.emissive.setHex(0x111122);
+					material.emissiveIntensity = 0.5;
+				}
+			}
 		}
-		if ('metalness' in material) {
-			// Very metallic (0.85) for crisp reflections
-			material.metalness = Math.max(material.metalness || 0, 0.85);
-		}
-		if ('clearcoat' in material) material.clearcoat = 1.0; // Extra polish layer
-		if ('clearcoatRoughness' in material) material.clearcoatRoughness = 0.0;
 
-		// "CLAIRE MULTICOLOR" -> Iridescence (Rainbow/Soap-bubble effect)
-		// This adds the requested multicolor sheen
+		// 2. High-end Reflections - Strong intensity
+		material.envMapIntensity = 3.0;
+
+		// 3. Iridescence (The "Colored/Multicolor" look users liked)
+		// This adds the rainbow sheen oil-slick effect
 		if ('iridescence' in material) material.iridescence = 1.0;
-		if ('iridescenceIOR' in material) material.iridescenceIOR = 1.5;
-		if ('iridescenceThicknessRange' in material) material.iridescenceThicknessRange = [100, 800];
+		if ('iridescenceIOR' in material) material.iridescenceIOR = 1.3;
+		if ('iridescenceThicknessRange' in material) material.iridescenceThicknessRange = [100, 400];
+
+		// 4. Glassy/Metallic polish
+		if ('roughness' in material) material.roughness = Math.min(material.roughness || 0.5, 0.05);
+		if ('metalness' in material) material.metalness = Math.max(material.metalness || 0, 0.8);
 
 		if (envTexture) {
 			material.envMap = envTexture;
-		} else if (scene.environment) {
-			material.envMap = scene.environment;
 		}
 
-		// Glow boost for emissive materials
+		// 5. Emissive Boost
 		if ('emissiveIntensity' in material) {
-			material.emissiveIntensity = 4;
+			if (
+				material.emissive &&
+				(material.emissive.r > 0.1 || material.emissive.g > 0.1 || material.emissive.b > 0.1)
+			) {
+				material.emissiveIntensity = Math.max(material.emissiveIntensity, 5.0);
+			}
 		}
 
 		material.needsUpdate = true;
@@ -56,61 +71,39 @@
 	function refreshSceneMaterials() {
 		if (!scene) return;
 
-		const texture = dynamicEnvMap ? dynamicEnvMap.texture : scene.environment;
+		// Use the global HDR environment instead of dynamic capture (which causes black screens)
+		const texture = scene.environment || null;
 
 		scene.traverse((child: any) => {
-			// Skip UI/Helpers to avoid weird artifacts
-			if (
-				child.name.includes('gizmo') ||
-				child.name.includes('helper') ||
-				child.name.includes('grid')
-			)
-				return;
-
 			if (child.isMesh && child.material) {
 				if (Array.isArray(child.material)) {
-					child.material.forEach((m: any) => applyPremiumToMaterial(m, texture));
+					child.material.forEach((m: any) => applyPremiumToMaterial(m, texture, child));
 				} else {
-					applyPremiumToMaterial(child.material, texture);
+					applyPremiumToMaterial(child.material, texture, child);
 				}
 			}
 		});
 	}
 
-	const captureEnvironment = () => {
+	// Replaced "captureEnvironment" with a safe refresh
+	// We no longer use pmrem.fromScene as it causes the "everything black" loop
+	const safeRefresh = () => {
 		if (!renderer || !scene) return;
-
-		if (dynamicEnvMap) dynamicEnvMap.dispose();
-		dynamicEnvMap = pmrem.fromScene(scene, 0, 0.1, 1000);
-
 		refreshSceneMaterials();
 	};
 
 	onMount(() => {
-		// Rely on the scene's global environment (HDR) instead of dynamic capture
-		// to avoid "black hole" feedback loops and performance costs.
-		// We still apply premium material settings (roughness, metalness) periodically/on-change.
-
-		// Initial application
-		setTimeout(refreshSceneMaterials, 500);
-
-		// Refresh when new models are added
-		const handleRefresh = () => setTimeout(refreshSceneMaterials, 100);
-		window.addEventListener('modelAdded', handleRefresh);
-		window.addEventListener('modelVisualLoaded', handleRefresh);
-
-		// Periodic refresh just in case materials change
-		const interval = setInterval(refreshSceneMaterials, 2000);
+		// Apply immediately and then periodically to catch new objects
+		const timeout = setTimeout(safeRefresh, 500);
+		const interval = setInterval(safeRefresh, 2000); // reduced frequency
 
 		return () => {
+			clearTimeout(timeout);
 			clearInterval(interval);
-			window.removeEventListener('modelAdded', handleRefresh);
-			window.removeEventListener('modelVisualLoaded', handleRefresh);
 		};
 	});
 
 	onDestroy(() => {
-		if (dynamicEnvMap) dynamicEnvMap.dispose();
-		pmrem.dispose();
+		// Cleanup if needed
 	});
 </script>
