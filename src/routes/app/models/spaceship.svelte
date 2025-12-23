@@ -19,7 +19,7 @@
 	import { createDracoLoader } from '$lib/utils/draco-loader';
 	import { buildSceneGraph } from '$lib/utils/cloudinaryAssets';
 
-	let { ref = $bindable(new Group()), geometry, ...restProps } = $props();
+	let { ref = $bindable(new Group()), geometry, fallback, ...restProps } = $props();
 	const { camera } = useThrelte();
 
 	let gltfResultData = $state<any>(null);
@@ -169,6 +169,6 @@
 			{/if}
 		</T.Group>
 	{:else if isLoading}
-		<slot name="fallback" />
+		{@render fallback?.()}
 	{/if}
 </T>
