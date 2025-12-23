@@ -53,7 +53,12 @@
 			return componentMap['nissangame'];
 		}
 
-		// Priority 3: Standard type mapping
+		// Priority 3: Detection for textmd (stored as 'text' in backend)
+		if (name.toLowerCase().includes('textmd') || name.toLowerCase().includes('cv')) {
+			return componentMap['textmd'];
+		}
+
+		// Priority 4: Standard type mapping
 		return componentMap[type] ?? null;
 	});
 

@@ -111,12 +111,10 @@
 					'sphere',
 					'torus',
 					'icosahedron',
-					'text',
 					'spaceship',
 					'vague',
 					'nissangame',
 					'bibigame',
-					'text_scene',
 					'textmd'
 				];
 				types = [...new Set([...baseTypes, ...fetchedTypes])];
@@ -129,12 +127,10 @@
 				'sphere',
 				'torus',
 				'icosahedron',
-				'text',
 				'spaceship',
 				'vague',
 				'nissangame',
 				'bibigame',
-				'text_scene',
 				'textmd'
 			];
 			addToast('Failed to load types from server. Using defaults.', 'warning');
@@ -274,6 +270,10 @@
 			} else if (type === 'spaceship') {
 				formData.append('type', 'gltf_model');
 				formData.append('model_url', 'spaceship.glb'); // Backend helper or full URL
+			} else if (type === 'textmd') {
+				// Backend doesn't accept 'textmd', send 'text' instead
+				// Frontend will detect it's textmd by the name
+				formData.append('type', 'text');
 			} else {
 				formData.append('type', type);
 			}
