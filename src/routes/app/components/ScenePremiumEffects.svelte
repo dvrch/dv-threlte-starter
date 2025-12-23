@@ -13,7 +13,7 @@
 		// Use scene.environment (HDR preset) - stable and never black
 		if (envTexture) {
 			material.envMap = envTexture;
-			(material.envMapIntensity = 1), 0;
+			material.envMapIntensity = 3.0;
 		}
 
 		if (!material.metalnessMap && 'metalness' in material) {
@@ -42,9 +42,12 @@
 	function refreshSceneMaterials() {
 		if (!scene) return;
 
-		// CRITICAL: Use ONLY scene.environment (never pmrem.fromScene)
-		// This prevents conflicts with Bloom's EffectComposer
-		const texture = scene.environment || null;
+		const texture = scene.environment;
+
+		// If texture is null, it means HDR hasn't loaded yet.
+		// We shouldn't apply "null" as it removes reflections.
+		// Just wait for the next check.
+		if (!texture) return;
 
 		scene.traverse((child: any) => {
 			if (child.isMesh && child.material) {
@@ -55,15 +58,25 @@
 	}
 
 	onMount(() => {
-		// Apply once immediately
-		setTimeout(refreshSceneMaterials, 500);
+		// Try immediately
+		refreshSceneMaterials();
 
-		// Refresh when new models are added
+		// Retry loop: crucial because HDR loads asynchronously from the web
+		const interval = setInterval(() => {
+			if (scene.environment) {
+				refreshSceneMaterials();
+				// CRITICAL: Stop checking once found to save performance
+				clearInterval(interval);
+			}
+		}, 1000);
+
+		// Also refresh when new models are added
 		const handleRefresh = () => setTimeout(refreshSceneMaterials, 100);
 		window.addEventListener('modelAdded', handleRefresh);
 		window.addEventListener('modelVisualLoaded', handleRefresh);
 
 		return () => {
+			clearInterval(interval);
 			window.removeEventListener('modelAdded', handleRefresh);
 			window.removeEventListener('modelVisualLoaded', handleRefresh);
 		};
