@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { T, useLoader } from '@threlte/core';
 	import { TextureLoader, DoubleSide } from 'three';
+	import * as THREE from 'three';
 	import GltfModel from '$lib/components/GltfModel.svelte';
 	import { browser } from '$app/environment';
 	import { Text3DGeometry } from '@threlte/extras';
@@ -138,56 +139,51 @@
 				<T.MeshStandardMaterial color={geometry.color} />
 			</T.Mesh>
 		{:else if (geometry.type === 'image_plane' || (geometry.model_url && /\.(jpg|jpeg|png)$/i.test(geometry.model_url))) && geometry.model_url}
-			{#await useLoader(TextureLoader, geometry.model_url)}
-				<!-- Loading texture -->
-				<T.Mesh>
-					<T.PlaneGeometry args={[3, 3]} />
+			{@const texturePromise = useLoader(TextureLoader, geometry.model_url)}
+			<T.Mesh>
+				<!-- Use BufferGeometry with explicit UVs to prevent shader errors -->
+				<T
+					is={(() => {
+						const geom = new THREE.PlaneGeometry(3, 3, 1, 1);
+						// Ensure UVs are present
+						if (!geom.attributes.uv) {
+							const uvs = new Float32Array([
+								0,
+								1, // top left
+								1,
+								1, // top right
+								0,
+								0, // bottom left
+								1,
+								0 // bottom right
+							]);
+							geom.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+						}
+						return geom;
+					})()}
+				/>
+
+				{#await texturePromise}
+					<!-- Loading state -->
 					<T.MeshBasicMaterial color="#333333" />
-				</T.Mesh>
-			{:then texture}
-				{#if texture}
-					<T.Mesh>
-						<!-- Use BufferGeometry with explicit UVs to prevent shader errors -->
-						<T
-							is={(() => {
-								const geometry = new THREE.PlaneGeometry(3, 3, 1, 1);
-								// Ensure UVs are present
-								if (!geometry.attributes.uv) {
-									const uvs = new Float32Array([
-										0,
-										1, // top left
-										1,
-										1, // top right
-										0,
-										0, // bottom left
-										1,
-										0 // bottom right
-									]);
-									geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-								}
-								return geometry;
-							})()}
-						/>
+				{:then texture}
+					{#if texture}
+						<!-- Success: show texture -->
 						<T.MeshBasicMaterial
 							map={texture}
 							side={DoubleSide}
 							transparent={false}
 							toneMapped={false}
 						/>
-					</T.Mesh>
-				{:else}
-					<T.Mesh>
-						<T.PlaneGeometry args={[3, 3]} />
+					{:else}
+						<!-- Texture is null -->
 						<T.MeshBasicMaterial color="#ff0000" />
-					</T.Mesh>
-				{/if}
-			{:catch error}
-				<!-- Error loading texture -->
-				<T.Mesh>
-					<T.PlaneGeometry args={[3, 3]} />
+					{/if}
+				{:catch error}
+					<!-- Error loading texture -->
 					<T.MeshBasicMaterial color="#ff0000" />
-				</T.Mesh>
-			{/await}
+				{/await}
+			</T.Mesh>
 		{:else if geometry.model_url && geometry.model_url.trim() !== ''}
 			<!-- 2. Render a generic GLTF model if model_url is present and valid -->
 			<GltfModel url={geometry.model_url} />
