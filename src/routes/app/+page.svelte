@@ -195,6 +195,7 @@
 <T.AmbientLight intensity={isPremiumEnabled ? 1.0 : 1.5} />
 <T.DirectionalLight position={[10, 10, 10]} intensity={5} castShadow />
 <T.DirectionalLight position={[-10, 5, -10]} intensity={3} color="#4287f5" />
+<T.HemisphereLight intensity={1.0} groundColor="#444444" skyColor="#ffffff" />
 
 <Environment
 	url="https://res.cloudinary.com/drcok7moc/raw/upload/v1766438096/sky_2_nhyq8b.hdr"

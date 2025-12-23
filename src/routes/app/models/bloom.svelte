@@ -42,7 +42,7 @@
 			kernelSize: KernelSize.MEDIUM
 		});
 
-		const otherEffects = [
+		const styleEffects = [
 			new ChromaticAberrationEffect({
 				offset: new THREE.Vector2(0.001, 0.001),
 				radialModulation: false,
@@ -52,19 +52,22 @@
 				eskil: false,
 				offset: 0.35,
 				darkness: 0.5
-			}),
-			new SMAAEffect({
-				preset: SMAAPreset.HIGH
 			})
 		];
 
+		const smaaEffect = new SMAAEffect({
+			preset: SMAAPreset.HIGH
+		});
+
 		// Split passes to verify if merging is the issue
 		const bloomPass = new EffectPass(cam, bloom);
-		const stylePass = new EffectPass(cam, ...otherEffects);
+		const stylePass = new EffectPass(cam, ...styleEffects);
+		const smaaPass = new EffectPass(cam, smaaEffect);
 
 		composer.addPass(new RenderPass(scene, cam));
 		composer.addPass(bloomPass);
 		composer.addPass(stylePass);
+		composer.addPass(smaaPass);
 	}
 
 	// Dynamic resizing

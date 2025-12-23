@@ -8,7 +8,8 @@
 		Vector3,
 		Raycaster,
 		Mesh,
-		PlaneGeometry
+		PlaneGeometry,
+		OneFactor
 	} from 'three';
 	import { T, useTask, useThrelte } from '@threlte/core';
 	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
