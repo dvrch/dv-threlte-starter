@@ -2,18 +2,21 @@
 	import { useThrelte } from '@threlte/core';
 	import { Environment } from '@threlte/extras';
 	import { onMount, onDestroy } from 'svelte';
-	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 	const { scene } = useThrelte();
 
-	// Use Cloudinary URL for HDR
-	const hdrUrl = getCloudinaryAssetUrl('compos-hdr/hdrpersOutput.hdr', 'dv-threlte/models');
+	// Use direct Cloudinary URL for HDR (uploaded via script)
+	const hdrUrl =
+		'https://res.cloudinary.com/drcok7moc/raw/upload/v1766522623/dv-threlte/models/compos-hdr/hdrpersOutput.hdr';
 
 	function applyPremiumToMaterial(material: any, envTexture: any, object: any) {
 		if (!material) return;
 
 		const name = (object.name || '').toLowerCase();
 		if (name.includes('star') || name.includes('sky') || name.includes('grid')) return;
+
+		// Skip MeshBasicMaterial (used for images/planes) - they don't need env maps
+		if (material.isMeshBasicMaterial) return;
 
 		// Use scene.environment (HDR preset) - stable and never black
 		if (envTexture) {
