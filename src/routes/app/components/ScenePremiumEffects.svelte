@@ -50,6 +50,11 @@
 			material.roughness = Math.min(material.roughness, 0.08);
 		}
 
+		// Iridescence (multicolor rainbow sheen)
+		if ('iridescence' in material) material.iridescence = 1.0;
+		if ('iridescenceIOR' in material) material.iridescenceIOR = 1.3;
+		if ('iridescenceThicknessRange' in material) material.iridescenceThicknessRange = [100, 400];
+
 		if (envTexture) {
 			material.envMap = envTexture;
 		}
@@ -84,23 +89,53 @@
 		});
 	}
 
-	onMount(() => {
-		// Apply immediately and periodically to catch new models
-		setTimeout(refreshSceneMaterials, 500);
-		const interval = setInterval(refreshSceneMaterials, 2000);
+	let hasCapture = false; // Prevent multiple captures
 
+	const captureEnvironment = () => {
+		if (!renderer || !scene || hasCapture) return;
+
+		// Safety: Only capture if scene has lights (not black)
+		const hasLights = scene.children.some(
+			(child: any) => child.isLight || child.isDirectionalLight || child.isAmbientLight
+		);
+
+		if (!hasLights) {
+			console.warn('⚠️ Scene not ready for capture (no lights detected)');
+			return;
+		}
+
+		try {
+			if (dynamicEnvMap) dynamicEnvMap.dispose();
+			// Capture scene to allow reflections of stars and light
+			dynamicEnvMap = pmrem.fromScene(scene, 0, 0.1, 1000);
+			hasCapture = true; // Mark as captured
+			console.log('✅ Environment captured successfully');
+			refreshSceneMaterials();
+		} catch (e) {
+			console.error('❌ Environment capture failed:', e);
+			// Fallback to scene.environment
+			refreshSceneMaterials();
+		}
+	};
+
+	onMount(() => {
+		// Wait 2 seconds for scene to be fully lit before capturing
+		const timeout = setTimeout(captureEnvironment, 2000);
+
+		// Refresh materials when new models are added
 		const handleRefresh = () => setTimeout(refreshSceneMaterials, 100);
 		window.addEventListener('modelAdded', handleRefresh);
 		window.addEventListener('modelVisualLoaded', handleRefresh);
 
 		return () => {
-			clearInterval(interval);
+			clearTimeout(timeout);
 			window.removeEventListener('modelAdded', handleRefresh);
 			window.removeEventListener('modelVisualLoaded', handleRefresh);
 		};
 	});
 
 	onDestroy(() => {
-		// Cleanup (pmrem no longer used)
+		if (dynamicEnvMap) dynamicEnvMap.dispose();
+		pmrem.dispose();
 	});
 </script>
