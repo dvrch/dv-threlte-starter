@@ -138,23 +138,56 @@
 				<T.MeshStandardMaterial color={geometry.color} />
 			</T.Mesh>
 		{:else if (geometry.type === 'image_plane' || (geometry.model_url && /\.(jpg|jpeg|png)$/i.test(geometry.model_url))) && geometry.model_url}
-			<T.Mesh>
-				<T.PlaneGeometry args={[3, 3, 1, 1]} />
-				<!-- Default size, scale controls it -->
-				{#await useLoader(TextureLoader, geometry.model_url)}
-					<!-- Loading texture -->
+			{#await useLoader(TextureLoader, geometry.model_url)}
+				<!-- Loading texture -->
+				<T.Mesh>
+					<T.PlaneGeometry args={[3, 3]} />
 					<T.MeshBasicMaterial color="#333333" />
-				{:then texture}
-					{#if texture}
-						<T.MeshBasicMaterial map={texture} side={DoubleSide} transparent={false} />
-					{:else}
+				</T.Mesh>
+			{:then texture}
+				{#if texture}
+					<T.Mesh>
+						<!-- Use BufferGeometry with explicit UVs to prevent shader errors -->
+						<T
+							is={(() => {
+								const geometry = new THREE.PlaneGeometry(3, 3, 1, 1);
+								// Ensure UVs are present
+								if (!geometry.attributes.uv) {
+									const uvs = new Float32Array([
+										0,
+										1, // top left
+										1,
+										1, // top right
+										0,
+										0, // bottom left
+										1,
+										0 // bottom right
+									]);
+									geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+								}
+								return geometry;
+							})()}
+						/>
+						<T.MeshBasicMaterial
+							map={texture}
+							side={DoubleSide}
+							transparent={false}
+							toneMapped={false}
+						/>
+					</T.Mesh>
+				{:else}
+					<T.Mesh>
+						<T.PlaneGeometry args={[3, 3]} />
 						<T.MeshBasicMaterial color="#ff0000" />
-					{/if}
-				{:catch error}
-					<!-- Error loading texture -->
+					</T.Mesh>
+				{/if}
+			{:catch error}
+				<!-- Error loading texture -->
+				<T.Mesh>
+					<T.PlaneGeometry args={[3, 3]} />
 					<T.MeshBasicMaterial color="#ff0000" />
-				{/await}
-			</T.Mesh>
+				</T.Mesh>
+			{/await}
 		{:else if geometry.model_url && geometry.model_url.trim() !== ''}
 			<!-- 2. Render a generic GLTF model if model_url is present and valid -->
 			<GltfModel url={geometry.model_url} />
