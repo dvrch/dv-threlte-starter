@@ -32,34 +32,39 @@
 	function setupEffectComposer(cam: THREE.Camera) {
 		if (!cam || !scene) return;
 		composer.removeAllPasses();
+		const bloom = new BloomEffect({
+			intensity,
+			luminanceThreshold,
+			height,
+			width,
+			luminanceSmoothing,
+			mipmapBlur,
+			kernelSize: KernelSize.MEDIUM
+		});
+
+		const otherEffects = [
+			new ChromaticAberrationEffect({
+				offset: new THREE.Vector2(0.001, 0.001),
+				radialModulation: false,
+				modulationOffset: 0
+			}),
+			new VignetteEffect({
+				eskil: false,
+				offset: 0.35,
+				darkness: 0.5
+			}),
+			new SMAAEffect({
+				preset: SMAAPreset.HIGH
+			})
+		];
+
+		// Split passes to verify if merging is the issue
+		const bloomPass = new EffectPass(cam, bloom);
+		const stylePass = new EffectPass(cam, ...otherEffects);
+
 		composer.addPass(new RenderPass(scene, cam));
-		composer.addPass(
-			new EffectPass(
-				cam,
-				new BloomEffect({
-					intensity,
-					luminanceThreshold,
-					height,
-					width,
-					luminanceSmoothing,
-					mipmapBlur,
-					kernelSize: KernelSize.MEDIUM
-				}),
-				new ChromaticAberrationEffect({
-					offset: new THREE.Vector2(0.001, 0.001),
-					radialModulation: false,
-					modulationOffset: 0
-				}),
-				new VignetteEffect({
-					eskil: false,
-					offset: 0.35,
-					darkness: 0.5
-				}),
-				new SMAAEffect({
-					preset: SMAAPreset.HIGH
-				})
-			)
-		);
+		composer.addPass(bloomPass);
+		composer.addPass(stylePass);
 	}
 
 	// Dynamic resizing
