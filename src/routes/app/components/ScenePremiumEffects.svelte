@@ -38,7 +38,7 @@
 		}
 
 		// 2. High-end Reflections - Boosted for premium feel
-		material.envMapIntensity = 2.0;
+		material.envMapIntensity = 3.0;
 
 		if (envTexture) {
 			material.envMap = envTexture;
@@ -50,7 +50,7 @@
 				material.emissive &&
 				(material.emissive.r > 0.1 || material.emissive.g > 0.1 || material.emissive.b > 0.1)
 			) {
-				material.emissiveIntensity = Math.max(material.emissiveIntensity, 6.0);
+				material.emissiveIntensity = Math.max(material.emissiveIntensity, 10.0);
 			}
 		}
 

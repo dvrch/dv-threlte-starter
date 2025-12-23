@@ -15,8 +15,8 @@
 	import { onMount } from 'svelte';
 
 	let {
-		intensity = 1.0, // Slightly more pronounced bloom
-		luminanceThreshold = 0.2, // More sensitive to light
+		intensity = 3.0, // Significantly stronger bloom
+		luminanceThreshold = 0.1, // Very sensitive to light, making more things glow
 		height = 1024,
 		width = 1024,
 		luminanceSmoothing = 0.1,
