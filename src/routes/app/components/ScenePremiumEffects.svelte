@@ -20,10 +20,14 @@
 		material.depthWrite = true;
 
 		// Premium settings
-		material.envMapIntensity = 10;
+		// We need really strong reflections to compete with the 1.0 Ambient Light
+		material.envMapIntensity = 15.0;
+
 		// Force super reflective chrome look
 		if ('roughness' in material) material.roughness = 0.05;
 		if ('metalness' in material) material.metalness = 1.0;
+		if ('clearcoat' in material) material.clearcoat = 1.0; // Extra polish layer
+		if ('clearcoatRoughness' in material) material.clearcoatRoughness = 0.0;
 
 		if (envTexture) {
 			material.envMap = envTexture;
