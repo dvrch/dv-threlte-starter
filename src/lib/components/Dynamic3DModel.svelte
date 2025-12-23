@@ -144,50 +144,20 @@
 				<T.MeshStandardMaterial color={geometry.color} />
 			</T.Mesh>
 		{:else if (geometry.type === 'image_plane' || (geometry.model_url && /\.(jpg|jpeg|png)$/i.test(geometry.model_url))) && geometry.model_url}
-			{@const texturePromise = useLoader(TextureLoader, geometry.model_url)}
+			{@const textureStore = useLoader(TextureLoader, geometry.model_url)}
 			<T.Mesh>
-				<!-- Use BufferGeometry with explicit UVs to prevent shader errors -->
-				<T
-					is={(() => {
-						const geom = new THREE.PlaneGeometry(3, 3, 1, 1);
-						// Ensure UVs are present
-						if (!geom.attributes.uv) {
-							const uvs = new Float32Array([
-								0,
-								1, // top left
-								1,
-								1, // top right
-								0,
-								0, // bottom left
-								1,
-								0 // bottom right
-							]);
-							geom.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-						}
-						return geom;
-					})()}
-				/>
-
-				{#await texturePromise}
-					<!-- Loading state -->
+				<T.PlaneGeometry args={[3, 3]} />
+				{#if $textureStore}
+					<T.MeshBasicMaterial
+						map={$textureStore}
+						side={DoubleSide}
+						transparent={true}
+						toneMapped={false}
+					/>
+				{:else}
+					<!-- Fallback while texture is loading or if it fails -->
 					<T.MeshBasicMaterial color="#333333" />
-				{:then texture}
-					{#if texture}
-						<!-- Success: show texture -->
-						<T.MeshBasicMaterial
-							map={texture}
-							side={DoubleSide}
-							transparent={false}
-							toneMapped={false}
-						/>
-					{:else}
-						<!-- Texture is null -->
-						<T.MeshBasicMaterial color="#ff0000" />
-					{/if}
-				{:catch error}
-					<!-- Error loading texture -->
-					<T.MeshBasicMaterial color="#ff0000" />
-				{/await}
+				{/if}
 			</T.Mesh>
 		{:else if geometry.model_url && geometry.model_url.trim() !== ''}
 			<!-- 2. Render a generic GLTF model if model_url is present and valid -->

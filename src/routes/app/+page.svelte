@@ -198,6 +198,7 @@
 <T.HemisphereLight intensity={1.0} groundColor="#444444" skyColor="#ffffff" />
 
 <Stars />
+<SceneText2 />
 {#if isPremiumEnabled}
 	<ScenePremiumEffects />
 {/if}
