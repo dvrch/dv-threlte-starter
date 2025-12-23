@@ -20,12 +20,19 @@
 		material.depthWrite = true;
 
 		// Premium settings
-		// We need really strong reflections to compete with the 1.0 Ambient Light
-		material.envMapIntensity = 15.0;
+		// Balanced intensity for daylight visibility + strong reflections
+		material.envMapIntensity = 3.0;
 
-		// Force super reflective chrome look
-		if ('roughness' in material) material.roughness = 0.05;
-		if ('metalness' in material) material.metalness = 1.0;
+		// Intelligent Polish: Make things shiny but NOT pure black mirrors
+		if ('roughness' in material) {
+			// Make it glossy (0.1) but respect if it was super smooth already
+			material.roughness = Math.min(material.roughness || 0.5, 0.1);
+		}
+		if ('metalness' in material) {
+			// Add metallic tint (0.6) but don't force 1.0 (which kills diffuse light)
+			// If it was already metallic, keep it.
+			material.metalness = Math.max(material.metalness || 0, 0.6);
+		}
 		if ('clearcoat' in material) material.clearcoat = 1.0; // Extra polish layer
 		if ('clearcoatRoughness' in material) material.clearcoatRoughness = 0.0;
 
@@ -79,12 +86,19 @@
 
 	onMount(() => {
 		// Capture immediately then periodically
+		// Capture immediately then periodically
 		const timeout = setTimeout(captureEnvironment, 500);
 		const interval = setInterval(captureEnvironment, 2000);
+
+		const handleRefresh = () => setTimeout(captureEnvironment, 100);
+		window.addEventListener('modelAdded', handleRefresh);
+		window.addEventListener('modelVisualLoaded', handleRefresh);
 
 		return () => {
 			clearTimeout(timeout);
 			clearInterval(interval);
+			window.removeEventListener('modelAdded', handleRefresh);
+			window.removeEventListener('modelVisualLoaded', handleRefresh);
 		};
 	});
 
