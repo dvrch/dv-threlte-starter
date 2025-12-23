@@ -28,7 +28,8 @@
 		nissangame: () => import('../../routes/app/nissangame.svelte'),
 		bibigame: () => import('../../routes/app/bibigame.svelte'),
 		spaceship: () => import('../../routes/app/models/spaceship.svelte'),
-		text_scene: () => import('../../routes/Text/scene.svelte')
+		text_scene: () => import('../../routes/Text/scene.svelte'),
+		textmd: () => import('$lib/components/TextMd.svelte')
 	};
 
 	const DynamicComponentLoader = $derived(() => {
@@ -138,10 +139,20 @@
 			</T.Mesh>
 		{:else if (geometry.type === 'image_plane' || (geometry.model_url && /\.(jpg|jpeg|png)$/i.test(geometry.model_url))) && geometry.model_url}
 			<T.Mesh>
-				<T.PlaneGeometry args={[3, 3]} />
+				<T.PlaneGeometry args={[3, 3, 1, 1]} />
 				<!-- Default size, scale controls it -->
-				{#await useLoader(TextureLoader, geometry.model_url) then texture}
-					<T.MeshBasicMaterial map={texture as any} side={DoubleSide} transparent />
+				{#await useLoader(TextureLoader, geometry.model_url)}
+					<!-- Loading texture -->
+					<T.MeshBasicMaterial color="#333333" />
+				{:then texture}
+					{#if texture}
+						<T.MeshBasicMaterial map={texture} side={DoubleSide} transparent={false} />
+					{:else}
+						<T.MeshBasicMaterial color="#ff0000" />
+					{/if}
+				{:catch error}
+					<!-- Error loading texture -->
+					<T.MeshBasicMaterial color="#ff0000" />
 				{/await}
 			</T.Mesh>
 		{:else if geometry.model_url && geometry.model_url.trim() !== ''}

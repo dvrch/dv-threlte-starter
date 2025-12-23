@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { T } from '@threlte/core';
+	import { T, useTask } from '@threlte/core';
 	import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 	import { createDracoLoader } from '$lib/utils/draco-loader';
-	import { Group } from 'three';
+	import { Group, AnimationMixer } from 'three';
 	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
@@ -11,6 +11,7 @@
 	let { ref = $bindable(new Group()), children, ...rest } = $props();
 
 	let gltfData = $state<any>(null);
+	let mixer = $state<AnimationMixer | null>(null);
 
 	onMount(async () => {
 		if (browser) {
@@ -24,10 +25,28 @@
 				console.log('✅ Bibi Game GLB loaded:', rawGltf);
 				buildSceneGraph(rawGltf);
 				gltfData = rawGltf;
+
+				// Setup animations
+				if (rawGltf.animations && rawGltf.animations.length > 0) {
+					mixer = new AnimationMixer(rawGltf.scene);
+					rawGltf.animations.forEach((clip: any) => {
+						const action = mixer!.clipAction(clip);
+						action.play();
+					});
+					console.log(`🎬 Playing ${rawGltf.animations.length} Bibi animations`);
+				}
+
 				window.dispatchEvent(new Event('modelVisualLoaded'));
 			} catch (e) {
 				console.error('Failed to load Bibi model:', e);
 			}
+		}
+	});
+
+	// Update animation mixer
+	useTask((delta) => {
+		if (mixer) {
+			mixer.update(delta);
 		}
 	});
 </script>

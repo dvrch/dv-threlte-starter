@@ -2,12 +2,15 @@
 	import { useThrelte } from '@threlte/core';
 	import { Environment } from '@threlte/extras';
 	import { onMount, onDestroy } from 'svelte';
+	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 	const { scene } = useThrelte();
 
-	// Use direct Cloudinary URL for HDR (uploaded via script)
-	const hdrUrl =
-		'https://res.cloudinary.com/drcok7moc/raw/upload/v1766522623/dv-threlte/models/compos-hdr/hdrpersOutput.hdr';
+	// Use Cloudinary URL for HDR
+	const hdrUrl = getCloudinaryAssetUrl(
+		'compos-hdr/hdrpersOutput.hdr',
+		'dv-threlte/models/compos-hdr'
+	);
 
 	function applyPremiumToMaterial(material: any, envTexture: any, object: any) {
 		if (!material) return;

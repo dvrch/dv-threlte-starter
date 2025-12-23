@@ -116,7 +116,8 @@
 					'vague',
 					'nissangame',
 					'bibigame',
-					'text_scene'
+					'text_scene',
+					'textmd'
 				];
 				types = [...new Set([...baseTypes, ...fetchedTypes])];
 			}
@@ -133,7 +134,8 @@
 				'vague',
 				'nissangame',
 				'bibigame',
-				'text_scene'
+				'text_scene',
+				'textmd'
 			];
 			addToast('Failed to load types from server. Using defaults.', 'warning');
 		}
