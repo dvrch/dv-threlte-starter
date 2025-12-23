@@ -13,28 +13,31 @@
 		if (!material) return;
 
 		// Ensure standard material properties for reflections
-		// material.transparent = true; // Caused sorting issues with some opaque objects
-		// material.alphaToCoverage = true;
 		material.depthFunc = LessEqualDepth;
 		material.depthTest = true;
 		material.depthWrite = true;
 
 		// Premium settings
-		// Balanced intensity for daylight visibility + strong reflections
-		material.envMapIntensity = 3.0;
+		// DOUBLED INTENSITY: Very strong reflections
+		material.envMapIntensity = 5.0;
 
 		// Intelligent Polish: Make things shiny but NOT pure black mirrors
 		if ('roughness' in material) {
-			// Make it glossy (0.1) but respect if it was super smooth already
-			material.roughness = Math.min(material.roughness || 0.5, 0.1);
+			// almost perfect mirror (0.02)
+			material.roughness = Math.min(material.roughness || 0.5, 0.02);
 		}
 		if ('metalness' in material) {
-			// Add metallic tint (0.6) but don't force 1.0 (which kills diffuse light)
-			// If it was already metallic, keep it.
-			material.metalness = Math.max(material.metalness || 0, 0.6);
+			// Very metallic (0.85) for crisp reflections
+			material.metalness = Math.max(material.metalness || 0, 0.85);
 		}
 		if ('clearcoat' in material) material.clearcoat = 1.0; // Extra polish layer
 		if ('clearcoatRoughness' in material) material.clearcoatRoughness = 0.0;
+
+		// "CLAIRE MULTICOLOR" -> Iridescence (Rainbow/Soap-bubble effect)
+		// This adds the requested multicolor sheen
+		if ('iridescence' in material) material.iridescence = 1.0;
+		if ('iridescenceIOR' in material) material.iridescenceIOR = 1.5;
+		if ('iridescenceThicknessRange' in material) material.iridescenceThicknessRange = [100, 800];
 
 		if (envTexture) {
 			material.envMap = envTexture;
@@ -44,8 +47,7 @@
 
 		// Glow boost for emissive materials
 		if ('emissiveIntensity' in material) {
-			// Keeping it high as per "augmenté" request, overriding the snippet's 2
-			material.emissiveIntensity = 5;
+			material.emissiveIntensity = 4;
 		}
 
 		material.needsUpdate = true;

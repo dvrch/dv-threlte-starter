@@ -15,8 +15,8 @@
 	import { onMount } from 'svelte';
 
 	let {
-		intensity = 3.0, // Significantly stronger bloom
-		luminanceThreshold = 0.1, // Very sensitive to light, making more things glow
+		intensity = 1.5, // Balanced for realism (Image 2 style)
+		luminanceThreshold = 0.85, // Only bloom very bright lights/reflections, not white surfaces
 		height = 1024,
 		width = 1024,
 		luminanceSmoothing = 0.1,
