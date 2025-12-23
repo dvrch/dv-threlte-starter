@@ -84,27 +84,23 @@
 		});
 	}
 
-	const captureEnvironment = () => {
-		if (!renderer || !scene) return;
-
-		if (dynamicEnvMap) dynamicEnvMap.dispose();
-		// Capture scene to allow reflections of stars and light
-		dynamicEnvMap = pmrem.fromScene(scene, 0, 0.1, 1000);
-
-		refreshSceneMaterials();
-	};
-
 	onMount(() => {
-		const timeout = setTimeout(captureEnvironment, 1000);
-		const interval = setInterval(captureEnvironment, 5000);
+		// Apply immediately and periodically to catch new models
+		setTimeout(refreshSceneMaterials, 500);
+		const interval = setInterval(refreshSceneMaterials, 2000);
+
+		const handleRefresh = () => setTimeout(refreshSceneMaterials, 100);
+		window.addEventListener('modelAdded', handleRefresh);
+		window.addEventListener('modelVisualLoaded', handleRefresh);
+
 		return () => {
-			clearTimeout(timeout);
 			clearInterval(interval);
+			window.removeEventListener('modelAdded', handleRefresh);
+			window.removeEventListener('modelVisualLoaded', handleRefresh);
 		};
 	});
 
 	onDestroy(() => {
-		if (dynamicEnvMap) dynamicEnvMap.dispose();
-		pmrem.dispose();
+		// Cleanup (pmrem no longer used)
 	});
 </script>
