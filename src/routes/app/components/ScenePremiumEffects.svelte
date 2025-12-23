@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { useThrelte } from '@threlte/core';
+	import { Environment } from '@threlte/extras';
 	import { onMount, onDestroy } from 'svelte';
 
 	const { scene } = useThrelte();
@@ -86,3 +87,5 @@
 		// No cleanup needed
 	});
 </script>
+
+<Environment url="/models/compos-hdr/hdrpersOutput.hdr" isBackground={false} />

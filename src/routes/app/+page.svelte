@@ -197,7 +197,6 @@
 <T.DirectionalLight position={[-10, 5, -10]} intensity={3} color="#4287f5" />
 <T.HemisphereLight intensity={1.0} groundColor="#444444" skyColor="#ffffff" />
 
-<Environment url="/models/compos-hdr/hdrpersOutput.hdr" isBackground={true} />
 <Stars />
 {#if isPremiumEnabled}
 	<ScenePremiumEffects />
