@@ -261,7 +261,8 @@
 				formData.append('model_file', file);
 				const ext = file.name.split('.').pop()?.toLowerCase();
 				if (['jpg', 'jpeg', 'png'].includes(ext || '')) {
-					formData.append('type', 'image_plane');
+					// Backend might not accept 'image_plane', send 'gltf_model' but extension will identify it
+					formData.append('type', 'gltf_model');
 				} else {
 					formData.append('type', 'gltf_model');
 				}

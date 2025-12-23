@@ -136,7 +136,7 @@
 				/>
 				<T.MeshStandardMaterial color={geometry.color} />
 			</T.Mesh>
-		{:else if geometry.type === 'image_plane' && geometry.model_url}
+		{:else if (geometry.type === 'image_plane' || (geometry.model_url && /\.(jpg|jpeg|png)$/i.test(geometry.model_url))) && geometry.model_url}
 			<T.Mesh>
 				<T.PlaneGeometry args={[3, 3]} />
 				<!-- Default size, scale controls it -->
