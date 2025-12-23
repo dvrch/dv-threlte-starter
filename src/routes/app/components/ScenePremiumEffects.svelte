@@ -85,17 +85,22 @@
 	};
 
 	onMount(() => {
-		// Capture immediately then periodically
-		// Capture immediately then periodically
-		const timeout = setTimeout(captureEnvironment, 500);
-		const interval = setInterval(captureEnvironment, 2000);
+		// Rely on the scene's global environment (HDR) instead of dynamic capture
+		// to avoid "black hole" feedback loops and performance costs.
+		// We still apply premium material settings (roughness, metalness) periodically/on-change.
 
-		const handleRefresh = () => setTimeout(captureEnvironment, 100);
+		// Initial application
+		setTimeout(refreshSceneMaterials, 500);
+
+		// Refresh when new models are added
+		const handleRefresh = () => setTimeout(refreshSceneMaterials, 100);
 		window.addEventListener('modelAdded', handleRefresh);
 		window.addEventListener('modelVisualLoaded', handleRefresh);
 
+		// Periodic refresh just in case materials change
+		const interval = setInterval(refreshSceneMaterials, 2000);
+
 		return () => {
-			clearTimeout(timeout);
 			clearInterval(interval);
 			window.removeEventListener('modelAdded', handleRefresh);
 			window.removeEventListener('modelVisualLoaded', handleRefresh);
@@ -107,5 +112,3 @@
 		pmrem.dispose();
 	});
 </script>
-
-<Bloom />
