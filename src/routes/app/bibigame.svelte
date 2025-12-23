@@ -234,68 +234,36 @@
 
 	.dashboard {
 		align-self: flex-start;
-		background: rgba(0, 0, 0, 0.2);
-		backdrop-filter: blur(5px);
+		background: rgba(0, 0, 0, 0.1); /* More transparent background */
+		backdrop-filter: blur(4px); /* Slightly less blur */
 		padding: 10px 15px;
 		border-radius: 12px;
-		border: 1px solid rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.05); /* More transparent border */
 		color: white;
 		font-family: 'Orbitron', sans-serif;
 		transform: scale(0.8);
 		transform-origin: top left;
 		transition: all 0.3s ease;
-		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-	}
-
-	.speed-gauge {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		margin-bottom: 5px;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Softer shadow */
 	}
 
 	.speed-gauge .value {
 		font-size: 2.2rem;
 		font-weight: bold;
 		color: #ff6e40;
-		text-shadow: 0 0 15px rgba(255, 110, 64, 0.6);
-	}
-
-	.speed-gauge .unit {
-		font-size: 0.8rem;
-		opacity: 0.8;
-		letter-spacing: 2px;
-	}
-
-	.cam-toggle {
-		background: rgba(255, 255, 255, 0.1);
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		color: white;
-		padding: 6px 12px;
-		border-radius: 6px;
-		font-size: 0.7rem;
-		cursor: pointer;
-		pointer-events: auto;
-		transition: all 0.2s;
-		width: 100%;
-	}
-
-	.cam-toggle.active {
-		background: #ff6e40;
-		border-color: #ff6e40;
-		box-shadow: 0 0 10px rgba(255, 110, 64, 0.5);
+		text-shadow: 0 0 10px rgba(255, 110, 64, 0.4); /* Softer text shadow */
 	}
 
 	.dpad {
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
-		background: rgba(0, 0, 0, 0.3);
-		backdrop-filter: blur(8px);
+		background: rgba(0, 0, 0, 0.2); /* More transparent background */
+		backdrop-filter: blur(6px); /* Slightly less blur */
 		padding: 12px;
 		border-radius: 20px;
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+		border: 1px solid rgba(255, 255, 255, 0.05); /* More transparent border */
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); /* Softer shadow */
 	}
 
 	.row {
@@ -309,23 +277,23 @@
 		height: 65px;
 		border: none;
 		border-radius: 18px;
-		background: rgba(255, 255, 255, 0.1);
-		color: white;
+		background: rgba(255, 255, 255, 0.05); /* More transparent background */
+		color: rgba(255, 255, 255, 0.6); /* More transparent text color */
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		cursor: pointer;
 		transition: all 0.2s;
 		font-size: 26px;
-		border: 1px solid rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.02); /* More transparent border */
 	}
 
 	.control-btn:active,
 	.control-btn.active {
-		background: rgba(255, 110, 64, 0.4);
-		box-shadow: 0 0 20px rgba(255, 110, 64, 0.3);
+		background: rgba(255, 110, 64, 0.2); /* Softer active background */
+		box-shadow: 0 0 15px rgba(255, 110, 64, 0.2); /* Softer active shadow */
 		transform: scale(0.95);
-		border-color: rgba(255, 110, 64, 0.5);
+		border-color: rgba(255, 110, 64, 0.3); /* Softer active border */
 	}
 
 	@media (max-width: 768px) {
