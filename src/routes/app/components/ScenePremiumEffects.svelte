@@ -2,8 +2,12 @@
 	import { useThrelte } from '@threlte/core';
 	import { Environment } from '@threlte/extras';
 	import { onMount, onDestroy } from 'svelte';
+	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 	const { scene } = useThrelte();
+
+	// Use Cloudinary URL for HDR
+	const hdrUrl = getCloudinaryAssetUrl('compos-hdr/hdrpersOutput.hdr', 'dv-threlte/models');
 
 	function applyPremiumToMaterial(material: any, envTexture: any, object: any) {
 		if (!material) return;
@@ -14,7 +18,7 @@
 		// Use scene.environment (HDR preset) - stable and never black
 		if (envTexture) {
 			material.envMap = envTexture;
-			material.envMapIntensity = 3.0;
+			material.envMapIntensity = 10.0;
 		}
 
 		if (!material.metalnessMap && 'metalness' in material) {
@@ -88,4 +92,4 @@
 	});
 </script>
 
-<Environment url="/models/compos-hdr/hdrpersOutput.hdr" isBackground={false} />
+<Environment url={hdrUrl} isBackground={false} />

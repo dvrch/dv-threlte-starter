@@ -260,13 +260,15 @@
 			if (file) {
 				formData.append('model_file', file);
 				const ext = file.name.split('.').pop()?.toLowerCase();
-				if (['jpg', 'jpeg', 'png'].includes(ext || '')) {
-					// Backend might not accept 'image_plane', send 'gltf_model' but extension will identify it
-					formData.append('type', 'gltf_model');
-				} else {
-					formData.append('type', 'gltf_model');
+
+				// Always use 'gltf_model' type for file uploads
+				formData.append('type', 'gltf_model');
+
+				// Only send model_type for actual 3D models (backend only accepts 'gltf' or 'glb')
+				// Images will be detected by extension in Dynamic3DModel
+				if (['glb', 'gltf'].includes(ext || '')) {
+					formData.append('model_type', ext);
 				}
-				if (ext) formData.append('model_type', ext);
 			} else if (type === 'spaceship') {
 				formData.append('type', 'gltf_model');
 				formData.append('model_url', 'spaceship.glb'); // Backend helper or full URL

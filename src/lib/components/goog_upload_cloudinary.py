@@ -60,7 +60,8 @@ def main():
         'static/models/spaceship.glb',
         'static/models/nissan.glb',
         'static/models/bibi3.glb',
-        '/static/public/nissan2.glb'
+        '/static/public/nissan2.glb',
+        'static/models/compos-hdr/hdrpersOutput.hdr'  # HDR environment for Premium effects
     ]
     
     for file_path in files_to_upload:
