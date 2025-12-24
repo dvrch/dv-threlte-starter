@@ -3,7 +3,7 @@
     import AddGeometry from './AddGeometry.svelte';
     import { page } from '$app/stores';
     import { onMount } from 'svelte';
-    import { Canvas } from '@threlte/core';
+    import { Canvas, useThrelte } from '@threlte/core';
     import { T } from '@threlte/core';
     import { Grid, OrbitControls, ContactShadows } from '@threlte/extras';
     import RotatingWorld from './components/RotatingWorld.svelte';

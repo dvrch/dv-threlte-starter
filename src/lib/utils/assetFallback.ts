@@ -66,12 +66,10 @@ export async function getWorkingAssetUrl(
     }
 
     // 2. CLOUDINARY (The new main storage)
-    const foldersToTry = [
-        'dv-threlte/public',
-        type === 'models' ? 'dv-threlte/models' : 'dv-threlte/textures',
-        'dv-threlte'
-    ];
-
+    	const foldersToTry =
+    		type === 'models'
+    			? ['dv-threlte/models', 'dv-threlte/public', 'dv-threlte']
+    			: ['dv-threlte/public', 'dv-threlte/textures', 'dv-threlte'];
     for (const candidate of namesToTry) {
         for (const folder of foldersToTry) {
             const cloudinaryUrl = getCloudinaryAssetUrl(candidate, folder);

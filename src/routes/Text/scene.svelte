@@ -21,11 +21,13 @@
 	});
 
 	// Pre-calculate some randomness for each line to keep it stable but organic
-	const variations = cvLines.map((_, i) => ({
-		xOffset: (Math.random() - 0.5) * 4,
-		zOffset: (Math.random() - 0.5) * 3,
-		rotation: (Math.random() - 0.5) * 0.3
-	}));
+	const variations = $derived(
+		cvLines.map(() => ({
+			xOffset: (Math.random() - 0.5) * 4,
+			zOffset: (Math.random() - 0.5) * 3,
+			rotation: (Math.random() - 0.5) * 0.3
+		}))
+	);
 
 	// Function to determine color/size based on line content
 	function getLineStyle(line: string) {
