@@ -268,6 +268,10 @@
 				// Images will be detected by extension in Dynamic3DModel
 				if (['glb', 'gltf'].includes(ext || '')) {
 					formData.append('model_type', ext);
+				} else if (['jpg', 'jpeg', 'png'].includes(ext || '')) {
+					// For images, we also pass the extension as model_type
+					// so the backend can handle them correctly.
+					formData.append('model_type', ext);
 				}
 			} else if (type === 'spaceship') {
 				formData.append('type', 'gltf_model');

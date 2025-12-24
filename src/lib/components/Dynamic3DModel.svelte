@@ -99,6 +99,16 @@
 		geometry?.scale?.y ?? 1,
 		geometry?.scale?.z ?? 1
 	]);
+
+	const imageUrl = $derived(
+		(geometry.type === 'image_plane' ||
+			(geometry.model_url && /\.(jpg|jpeg|png)$/i.test(geometry.model_url))) &&
+			geometry.model_url
+			? geometry.model_url
+			: null
+	);
+
+	const textureStore = useLoader(TextureLoader, () => imageUrl);
 </script>
 
 {#if browser && geometry}
@@ -143,8 +153,7 @@
 				/>
 				<T.MeshStandardMaterial color={geometry.color} />
 			</T.Mesh>
-		{:else if (geometry.type === 'image_plane' || (geometry.model_url && /\.(jpg|jpeg|png)$/i.test(geometry.model_url))) && geometry.model_url}
-			{@const textureStore = useLoader(TextureLoader, geometry.model_url)}
+		{:else if imageUrl}
 			<T.Mesh>
 				<T.PlaneGeometry args={[3, 3]} />
 				{#if $textureStore}
