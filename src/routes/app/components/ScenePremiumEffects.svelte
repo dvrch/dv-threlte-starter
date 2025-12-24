@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { useThrelte } from '@threlte/core';
-	import { Environment } from '@threlte/extras';
+	import { useThrelte, useLoader } from '@threlte/core';
+	import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
 	import { onMount, onDestroy } from 'svelte';
 	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
@@ -11,6 +11,13 @@
 		'compos-hdr/hdrpersOutput.hdr',
 		'dv-threlte/models/compos-hdr'
 	);
+
+	const hdrTexture = useLoader(HDRLoader, () => hdrUrl);
+	$effect(() => {
+		if ($hdrTexture) {
+			scene.environment = $hdrTexture;
+		}
+	});
 
 	function applyPremiumToMaterial(material: any, envTexture: any, object: any) {
 		if (!material) return;
@@ -101,4 +108,4 @@
 	});
 </script>
 
-<Environment url={hdrUrl} isBackground={false} />
+
