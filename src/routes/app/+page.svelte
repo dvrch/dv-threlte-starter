@@ -219,8 +219,7 @@ Bloom
 				transformSettings.enabled && transformSettings.selectedId == geometry.id}
 
 			{#if typeof window !== 'undefined'}
-				<Float floatIntensity={isTransformed ? 0 : 1} floatingRange={[0, 1]}>
-					<Dynamic3DModel
+				<Dynamic3DModel
 						{geometry}
 						bind:ref={modelRefs[geometry.id]}
 						onPointerDown={() => {
@@ -240,7 +239,6 @@ Bloom
 							}
 						}}
 					/>
-				</Float>
 
 				{#if transformSettings.selectedId == geometry.id}
 					<Outlines color="#4db6ac" />
