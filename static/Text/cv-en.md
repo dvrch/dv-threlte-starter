@@ -1,3 +1,3 @@
-# Hello !
-## Victorien vous remercie
-### et vous souhaite le meilleur cette fin d'année et la nouuelle
+# Welcome
+## This is a dummy file
+- Created to prevent 404 errors.

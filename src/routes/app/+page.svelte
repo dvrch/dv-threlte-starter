@@ -198,7 +198,7 @@
 <T.HemisphereLight intensity={1.0} groundColor="#444444" skyColor="#ffffff" />
 
 <Stars />
-{#if isPremiumEnabled}
+{#if !loading && isPremiumEnabled}
 	<ScenePremiumEffects />
 {/if}
 
@@ -208,7 +208,7 @@
 	<T.MeshStandardMaterial color="red" emissive="red" emissiveIntensity={2} />
 </T.Mesh>
 
-{#if isBloomEnabled}
+{#if !loading && isBloomEnabled}
 	<Bloom />
 {/if}
 

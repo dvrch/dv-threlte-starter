@@ -56,3 +56,4 @@ file-list.json
 limitation adapt.ini
 src/routes/app/yoteprjoj/*
 vercel-blob-backup/*
+conductor/

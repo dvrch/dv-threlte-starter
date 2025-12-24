@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { useThrelte } from '@threlte/core';
-	import { Environment } from '@threlte/extras';
+	import { useThrelte, useLoader } from '@threlte/core';
+	import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
 	import { onMount, onDestroy } from 'svelte';
 	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
@@ -11,6 +11,13 @@
 		'compos-hdr/hdrpersOutput.hdr',
 		'dv-threlte/models/compos-hdr'
 	);
+
+	const hdrTexture = useLoader(HDRLoader, () => hdrUrl);
+	$effect(() => {
+		if ($hdrTexture) {
+			scene.environment = $hdrTexture;
+		}
+	});
 
 	function applyPremiumToMaterial(material: any, envTexture: any, object: any) {
 		if (!material) return;
@@ -24,14 +31,17 @@
 		// Use scene.environment (HDR preset) - stable and never black
 		if (envTexture) {
 			material.envMap = envTexture;
-			material.envMapIntensity = 5.0;
+			material.envMapIntensity = 0.8; // Reduced intensity
 		}
 
 		if (!material.metalnessMap && 'metalness' in material) {
-			material.metalness = Math.max(material.metalness || 0, 0.6);
+			// Only make materials more metallic if they are not completely non-metallic
+			if (material.metalness > 0.1) {
+				material.metalness = Math.max(material.metalness, 0.5);
+			}
 		}
 		if (!material.roughnessMap && 'roughness' in material) {
-			material.roughness = Math.min(material.roughness || 0.5, 0.08);
+			material.roughness = Math.min(material.roughness || 0.5, 0.15); // Made it less mirror-like
 		}
 
 		if ('iridescence' in material) material.iridescence = 1.0;
@@ -43,7 +53,7 @@
 				material.emissive &&
 				(material.emissive.r > 0 || material.emissive.g > 0 || material.emissive.b > 0)
 			) {
-				material.emissiveIntensity = 12.0;
+				material.emissiveIntensity = 0.8; // Reduced intensity
 			}
 		}
 
@@ -98,4 +108,4 @@
 	});
 </script>
 
-<Environment url={hdrUrl} isBackground={false} />
+
