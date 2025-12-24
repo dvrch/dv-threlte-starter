@@ -24,7 +24,7 @@
 		// Use scene.environment (HDR preset) - stable and never black
 		if (envTexture) {
 			material.envMap = envTexture;
-			material.envMapIntensity = 5.0;
+			material.envMapIntensity = 1.0;
 		}
 
 		if (!material.metalnessMap && 'metalness' in material) {
@@ -43,7 +43,7 @@
 				material.emissive &&
 				(material.emissive.r > 0 || material.emissive.g > 0 || material.emissive.b > 0)
 			) {
-				material.emissiveIntensity = 12.0;
+				material.emissiveIntensity = 1.0;
 			}
 		}
 

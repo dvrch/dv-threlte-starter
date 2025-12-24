@@ -3,11 +3,11 @@
     import AddGeometry from './AddGeometry.svelte';
     import { page } from '$app/stores';
     import { onMount } from 'svelte';
-    import { Canvas, useThrelte } from '@threlte/core';
+    import { Canvas } from '@threlte/core';
     import { T } from '@threlte/core';
-    import { Grid, OrbitControls, ContactShadows } from '@threlte/extras';
+    import { Grid, ContactShadows } from '@threlte/extras';
     import RotatingWorld from './components/RotatingWorld.svelte';
-    import Bloom from './models/bloom.svelte';
+    import SceneCamera from './components/SceneCamera.svelte';
 
     // UI state
     let isFormHovered = $state(false);
@@ -97,17 +97,13 @@
         <div class="canvas-container">
             <Canvas renderMode="always">
                 <T.Color attach="background" args={['#12121e']} />
-                <T.PerspectiveCamera makeDefault position={[-15, 15, 15]} fov={50}>
-                    <OrbitControls 
-                        enabled={!isCameraLocked}
-                        enableDamping 
-                        enableZoom={true}
-                        onstart={startInteraction}
-                        onend={stopInteraction}
-                        autoRotate={!isInteracting && !isCameraLocked}
-                        autoRotateSpeed={0.5}
-                    />
-                </T.PerspectiveCamera>
+                
+                <SceneCamera
+                    {isCameraLocked}
+                    {startInteraction}
+                    {stopInteraction}
+                    {isInteracting}
+                />
 
                 <T.DirectionalLight intensity={0.8} position={[5, 10, 0]} />
                 <T.AmbientLight intensity={0.2} />
@@ -203,6 +199,9 @@
             right: auto;
             transform: translateX(-50%);
             top: 0.5rem;
+        }
+        .form-wrapper.is-open {
+            max-height: 75vh;
         }
     }
 </style>

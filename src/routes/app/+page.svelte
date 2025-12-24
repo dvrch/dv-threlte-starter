@@ -192,18 +192,18 @@
 	{/if}
 </HTML>
 
-<T.AmbientLight intensity={isPremiumEnabled ? 1.0 : 1.5} />
+<T.AmbientLight intensity={isPremiumEnabled ? 1.0 : 0.5} />
 <T.DirectionalLight position={[10, 10, 10]} intensity={5} castShadow />
 <T.DirectionalLight position={[-10, 5, -10]} intensity={3} color="#4287f5" />
 <T.HemisphereLight intensity={1.0} groundColor="#444444" skyColor="#ffffff" />
-
+Bloom
 <Stars />
 {#if isPremiumEnabled}
 	<ScenePremiumEffects />
 {/if}
 
 <!-- Sphère au centre -->
-<T.Mesh position={[0, 0.5, 0]}>
+<T.Mesh position={[2, 0.5, -4]}>
 	<T.SphereGeometry args={[0.5, 32, 32]} />
 	<T.MeshStandardMaterial color="red" emissive="red" emissiveIntensity={2} />
 </T.Mesh>
