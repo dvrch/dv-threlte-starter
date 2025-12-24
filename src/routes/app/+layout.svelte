@@ -5,9 +5,10 @@
     import { onMount } from 'svelte';
     import { Canvas } from '@threlte/core';
     import { T } from '@threlte/core';
-    import { Grid, ContactShadows } from '@threlte/extras';
+    import { Grid, OrbitControls, ContactShadows } from '@threlte/extras';
     import RotatingWorld from './components/RotatingWorld.svelte';
-    import SceneCamera from './components/SceneCamera.svelte';
+    import Bloom from './models/bloom.svelte';
+    import CameraUpdater from './components/CameraUpdater.svelte';
 
     // UI state
     let isFormHovered = $state(false);
@@ -96,14 +97,19 @@
     <main class:full-screen={$page.url.pathname.startsWith('/app') || $page.url.pathname.startsWith('/vague')}>
         <div class="canvas-container">
             <Canvas renderMode="always">
+                <CameraUpdater />
                 <T.Color attach="background" args={['#12121e']} />
-                
-                <SceneCamera
-                    {isCameraLocked}
-                    {startInteraction}
-                    {stopInteraction}
-                    {isInteracting}
-                />
+                <T.PerspectiveCamera makeDefault position={[-15, 15, 15]} fov={50}>
+                    <OrbitControls 
+                        enabled={!isCameraLocked}
+                        enableDamping 
+                        enableZoom={true}
+                        onstart={startInteraction}
+                        onend={stopInteraction}
+                        autoRotate={!isInteracting && !isCameraLocked}
+                        autoRotateSpeed={0.5}
+                    />
+                </T.PerspectiveCamera>
 
                 <T.DirectionalLight intensity={0.8} position={[5, 10, 0]} />
                 <T.AmbientLight intensity={0.2} />
