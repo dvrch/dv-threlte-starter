@@ -3,6 +3,7 @@
 	import { Environment } from '@threlte/extras';
 	import { onMount, onDestroy } from 'svelte';
 	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
+	import { untrack } from 'svelte';
 
 	const { scene } = useThrelte();
 
@@ -13,12 +14,10 @@
 	);
 
 	// Re-adopting the working commit 96ec289 logic 🎯
-	// We let <Environment> handle the loading and attachment to scene.environment
-
 	$effect(() => {
 		if (scene.environment) {
 			// Immediate refresh when texture arrives in scene
-			refreshSceneMaterials();
+			untrack(() => refreshSceneMaterials());
 		}
 	});
 
@@ -30,6 +29,9 @@
 
 		// Skip MeshBasicMaterial (used for images/planes) - they don't need env maps
 		if (material.isMeshBasicMaterial) return;
+
+		// Avoid redundant updates to prevent loops or performance issues
+		if (material.envMap === envTexture && material.envMapIntensity === 5.0) return;
 
 		if (envTexture) {
 			material.envMap = envTexture;
@@ -60,14 +62,9 @@
 	}
 
 	function refreshSceneMaterials() {
-		if (!scene) return;
+		if (!scene || !scene.environment) return;
 
 		const texture = scene.environment;
-
-		// If texture is null, it means HDR hasn't loaded yet.
-		// We shouldn't apply "null" as it removes reflections.
-		// Just wait for the next check.
-		if (!texture) return;
 
 		scene.traverse((child: any) => {
 			if (child.isMesh && child.material) {
@@ -85,11 +82,13 @@
 		const interval = setInterval(() => {
 			if (scene.environment) {
 				refreshSceneMaterials();
+				// CRITICAL: Stop checking once found to save performance and prevent potential loops
+				clearInterval(interval);
 			}
-		}, 500); // Faster check initially
+		}, 1000);
 
 		// Also refresh when new models are added
-		const handleRefresh = () => setTimeout(refreshSceneMaterials, 100);
+		const handleRefresh = () => setTimeout(() => untrack(refreshSceneMaterials), 100);
 		window.addEventListener('modelAdded', handleRefresh);
 		window.addEventListener('modelVisualLoaded', handleRefresh);
 

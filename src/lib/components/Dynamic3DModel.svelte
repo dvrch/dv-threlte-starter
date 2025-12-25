@@ -164,10 +164,12 @@
 				{#if textureStore && $textureStore}
 					<T.MeshBasicMaterial
 						map={$textureStore as any}
+						color="white"
 						side={THREE.DoubleSide}
 						transparent={true}
 						toneMapped={false}
 						depthWrite={true}
+						depthTest={true}
 					/>
 				{:else}
 					<!-- Fallback while texture is loading or if it fails -->
