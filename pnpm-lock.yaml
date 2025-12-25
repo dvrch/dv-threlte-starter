@@ -21,8 +21,8 @@ importers:
         specifier: ^8.3.0
         version: 8.3.0(svelte@5.43.14)(three@0.180.0)
       '@threlte/extras':
-        specifier: ^9.7.0
-        version: 9.7.0(@types/three@0.146.0)(svelte@5.43.14)(three@0.180.0)
+        specifier: ^9.7.1
+        version: 9.7.1(@types/three@0.146.0)(svelte@5.43.14)(three@0.180.0)
       '@types/marked':
         specifier: ^5.0.2
         version: 5.0.2
@@ -819,8 +819,8 @@ packages:
       svelte: '>=5'
       three: '>=0.160'
 
-  '@threlte/extras@9.7.0':
-    resolution: {integrity: sha512-aAuroZR4sqTbSWJ6XtRiNG7ksOv0W9dCFC4TA0hvNwJ+5IRjqXgBg2Mr3pSxrINonAT3psUsYwLvuq0QgoehWA==}
+  '@threlte/extras@9.7.1':
+    resolution: {integrity: sha512-SGm59HDCdHxADFHuweHfFDknwubkCPodyK0pbfsVtOWWOX26gE2xfK7aKolh6YFDiPAjWjGxN0jIgkNbbr1ohg==}
     peerDependencies:
       svelte: '>=5'
       three: '>=0.160'
@@ -1043,8 +1043,9 @@ packages:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
     engines: {node: '>=6'}
 
-  camera-controls@2.10.1:
-    resolution: {integrity: sha512-KnaKdcvkBJ1Irbrzl8XD6WtZltkRjp869Jx8c0ujs9K+9WD+1D7ryBsCiVqJYUqt6i/HR5FxT7RLASieUD+Q5w==}
+  camera-controls@3.1.2:
+    resolution: {integrity: sha512-xkxfpG2ECZ6Ww5/9+kf4mfg1VEYAoe9aDSY+IwF0UEs7qEzwy0aVRfs2grImIECs/PoBtWFrh7RXsQkwG922JA==}
+    engines: {node: '>=22.0.0', npm: '>=10.5.1'}
     peerDependencies:
       three: '>=0.126.1'
 
@@ -2913,10 +2914,10 @@ snapshots:
       svelte: 5.43.14
       three: 0.180.0
 
-  '@threlte/extras@9.7.0(@types/three@0.146.0)(svelte@5.43.14)(three@0.180.0)':
+  '@threlte/extras@9.7.1(@types/three@0.146.0)(svelte@5.43.14)(three@0.180.0)':
     dependencies:
       '@threejs-kit/instanced-sprite-mesh': 2.5.1(@types/three@0.146.0)(three@0.180.0)
-      camera-controls: 2.10.1(three@0.180.0)
+      camera-controls: 3.1.2(three@0.180.0)
       svelte: 5.43.14
       three: 0.180.0
       three-mesh-bvh: 0.9.2(three@0.180.0)
@@ -3133,7 +3134,7 @@ snapshots:
 
   callsites@3.1.0: {}
 
-  camera-controls@2.10.1(three@0.180.0):
+  camera-controls@3.1.2(three@0.180.0):
     dependencies:
       three: 0.180.0
 

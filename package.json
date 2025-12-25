@@ -38,7 +38,7 @@
 		"@gltf-transform/extensions": "^4.2.1",
 		"@gltf-transform/functions": "^4.2.1",
 		"@threlte/core": "^8.3.0",
-		"@threlte/extras": "^9.7.0",
+		"@threlte/extras": "^9.7.1",
 		"@types/marked": "^5.0.2",
 		"@vercel/blob": "^2.0.0",
 		"dotenv": "^17.2.3",

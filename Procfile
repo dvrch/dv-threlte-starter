@@ -1,1 +1,1 @@
-web: python backend/manage.py migrate && gunicorn backend.wsgi
+web: python backend/manage.py migrate && python backend/manage.py clean_bad_urls && gunicorn backend.wsgi

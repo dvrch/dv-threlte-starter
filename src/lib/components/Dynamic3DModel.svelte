@@ -100,13 +100,17 @@
 		geometry?.scale?.z ?? 1
 	]);
 
-	const imageUrl = $derived(
-		(geometry.type === 'image_plane' ||
-			(geometry.model_url && /\.(jpg|jpeg|png)$/i.test(geometry.model_url))) &&
-			geometry.model_url
-			? geometry.model_url
-			: null
-	);
+	const imageUrl = $derived(() => {
+		const url = geometry.model_url;
+		if (typeof url !== 'string' || url.trim() === '') {
+			return null; // Not a valid string URL
+		}
+
+		const isImage =
+			geometry.type === 'image_plane' || /\.(jpg|jpeg|png)$/i.test(url);
+
+		return isImage ? url : null;
+	});
 
 	const textureStore = useLoader(TextureLoader, () => imageUrl);
 </script>
