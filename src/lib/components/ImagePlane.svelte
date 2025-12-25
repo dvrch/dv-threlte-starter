@@ -5,7 +5,8 @@
 	import * as THREE from 'three';
 	import { getCloudinaryAssetUrl, buildSceneGraph } from '$lib/utils/cloudinaryAssets';
 	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
-	import { onMount, browser } from 'svelte';
+	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 
 	interface Props {
 		geometry: {

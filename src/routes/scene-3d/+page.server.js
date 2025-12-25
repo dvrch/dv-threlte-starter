@@ -1,9 +1,9 @@
 // src/routes/scene-3d/+page.server.js
 
-import * as publicEnv from '$env/static/public';
+import { env } from '$env/dynamic/public';
 
 export async function load({ fetch }) {
-  const PUBLIC_API_URL = publicEnv.PUBLIC_API_URL || '';
+  const PUBLIC_API_URL = env.PUBLIC_API_URL || '';
 
   if (!PUBLIC_API_URL) {
     console.warn('PUBLIC_API_URL not configured, returning empty geometries list in scene-3d');

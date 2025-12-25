@@ -1,10 +1,10 @@
 // src/routes/app/+page.server.js
 
-import * as publicEnv from '$env/static/public';
+import { env } from '$env/dynamic/public';
 
 export async function load({ fetch }) {
-  const PUBLIC_STATIC_URL = publicEnv.PUBLIC_STATIC_URL || '';
-  const PUBLIC_API_URL = publicEnv.PUBLIC_API_URL || '';
+  const PUBLIC_STATIC_URL = env.PUBLIC_STATIC_URL || '';
+  const PUBLIC_API_URL = env.PUBLIC_API_URL || '';
 
   console.log('DEBUG: PUBLIC_API_URL in +page.server.js:', PUBLIC_API_URL);
 
@@ -18,7 +18,7 @@ export async function load({ fetch }) {
         error: null
       };
     }
-    
+
     const response = await fetch(`${PUBLIC_API_URL}/api/geometries/`);
 
     if (!response.ok) {
@@ -30,7 +30,7 @@ export async function load({ fetch }) {
     // La pagination de DRF renvoie un objet avec `results`
     // On filtre pour ne garder que les géométries valides
     const validDynamicTypes = ['sphere', 'vague', 'tissus', 'desk', 'nissan', 'bibi', 'garden', 'nissangame', 'bibigame'];
-    
+
     let geometries = (data.results || []).filter(geom => {
       if (geom.model_type === 'from_file') {
         // Si c'est un composant dynamique, son type doit être dans la liste blanche

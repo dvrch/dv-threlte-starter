@@ -1,9 +1,9 @@
 // src/routes/vague/+page.server.js
 
-import * as publicEnv from '$env/static/public';
+import { env } from '$env/dynamic/public';
 
 export async function load({ fetch }) {
-	const PUBLIC_API_URL = publicEnv.PUBLIC_API_URL || '';
+	const PUBLIC_API_URL = env.PUBLIC_API_URL || '';
 
 	try {
 		// Si pas d'API_URL configurée, retourner un objet vide
