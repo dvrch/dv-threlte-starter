@@ -8,24 +8,27 @@
     import { Grid, OrbitControls, ContactShadows } from '@threlte/extras';
     import RotatingWorld from './components/RotatingWorld.svelte';
     import Bloom from './models/bloom.svelte';
+    import { writable } from 'svelte/store'; // Import writable
 
     // UI state
     let isFormHovered = $state(false);
-    let isInteracting = $state(false);
     let isDraggingGlobal = $state(false);
+
+    let isInteracting = writable(false); // Change to store
+    let isCameraLocked = writable(false); // Change to store
 
     // Auto-rotation handling
     let interactionTimeout: any;
 
     const startInteraction = () => {
-        isInteracting = true;
+        isInteracting.set(true); // Interact with store
         if (interactionTimeout) clearTimeout(interactionTimeout);
     };
 
     const stopInteraction = () => {
         // Delay resuming rotation for better feel
         interactionTimeout = setTimeout(() => {
-            isInteracting = false;
+            isInteracting.set(false); // Interact with store
         }, 3000);
     };
 
@@ -44,10 +47,6 @@
     };
 
     const handleGlobalDrop = (e: DragEvent) => {
-        if (!$page.url.pathname.startsWith('/app')) return;
-        e.preventDefault();
-        isDraggingGlobal = false;
-        
         if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
             const file = e.dataTransfer.files[0];
             const ext = file.name.split('.').pop()?.toLowerCase();
@@ -57,15 +56,13 @@
         }
     };
 
-    let isCameraLocked = $state(false);
-
     onMount(() => {
         if (typeof document !== 'undefined') {
             document.body.style.overflow = '';
         }
         
-        const handleLock = () => (isCameraLocked = true);
-        const handleUnlock = () => (isCameraLocked = false);
+        const handleLock = () => isCameraLocked.set(true); // Interact with store
+        const handleUnlock = () => isCameraLocked.set(false); // Interact with store
         window.addEventListener('lockCamera', handleLock);
         window.addEventListener('unlockCamera', handleUnlock);
 
@@ -99,12 +96,12 @@
                 <T.Color attach="background" args={['#12121e']} />
                 <T.PerspectiveCamera makeDefault position={[-15, 15, 15]} fov={50}>
                     <OrbitControls 
-                        enabled={!isCameraLocked}
+                        enabled={!$isCameraLocked}
                         enableDamping 
                         enableZoom={true}
                         onstart={startInteraction}
                         onend={stopInteraction}
-                        autoRotate={!isInteracting && !isCameraLocked}
+                        autoRotate={!$isInteracting && !$isCameraLocked}
                         autoRotateSpeed={0.5}
                     />
                 </T.PerspectiveCamera>
