@@ -102,7 +102,7 @@
 
 	const imageUrl = $derived(
 		(geometry.type === 'image_plane' ||
-			(geometry.model_url && /\.(jpg|jpeg|png)$/i.test(geometry.model_url))) &&
+			(geometry.model_url && /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(geometry.model_url))) &&
 			geometry.model_url
 			? geometry.model_url
 			: null
@@ -110,6 +110,10 @@
 
 	const loader = useLoader(TextureLoader);
 	const textureStore = $derived(imageUrl ? loader.load(imageUrl) : null);
+
+	$effect(() => {
+		if (imageUrl) console.log('🖼️ Image Plane loading:', imageUrl);
+	});
 </script>
 
 {#if browser && geometry}
@@ -159,14 +163,14 @@
 				<T.PlaneGeometry args={[3, 3]} />
 				{#if textureStore && $textureStore}
 					<T.MeshBasicMaterial
-						map={$textureStore}
+						map={$textureStore as any}
 						side={DoubleSide}
 						transparent={true}
 						toneMapped={false}
 					/>
 				{:else}
 					<!-- Fallback while texture is loading or if it fails -->
-					<T.MeshBasicMaterial color="#333333" />
+					<T.MeshBasicMaterial color="#333333" side={DoubleSide} />
 				{/if}
 			</T.Mesh>
 		{:else if geometry.model_url && geometry.model_url.trim() !== ''}
