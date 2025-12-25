@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { T, useLoader } from '@threlte/core';
-	import { TextureLoader, DoubleSide } from 'three';
+	import { useGltf } from '@threlte/extras';
+	import { TextureLoader, MeshStandardMaterial, DoubleSide, sRGBEncoding } from 'three';
 	import * as THREE from 'three';
-	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
+	import { getCloudinaryAssetUrl, buildSceneGraph } from '$lib/utils/cloudinaryAssets';
+	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
 
 	interface Props {
 		geometry: {
@@ -14,59 +16,53 @@
 
 	let { geometry }: Props = $props();
 
+	// 🎨 Use Cloudinary URL for the uploaded image
 	const imageUrl = $derived(() => {
 		const rawUrl = geometry?.model_url;
 		if (!rawUrl) return null;
-		return getCloudinaryAssetUrl(rawUrl);
+		return getCloudinaryAssetUrl(rawUrl, 'dv-threlte/models');
 	});
 
 	const loader = useLoader(TextureLoader);
 	const textureStore = $derived(imageUrl() ? loader.load(imageUrl()!) : null);
 
-	let aspect = $state(1);
+	// 🧵 Load the exact same cloth_sim.glb as in the tissus-simulat component
+	// This provides the draped/folded geometry the user wants
+	const glbUrlPromise = getWorkingAssetUrl('cloth_sim.glb', 'models');
+	const gltf = useGltf(glbUrlPromise);
 
+	// 🛠️ Apply the uploaded texture to the cloth model
 	$effect(() => {
-		if (textureStore && $textureStore) {
+		if ($gltf && $textureStore) {
 			const tex = $textureStore as THREE.Texture;
 
-			const checkImage = () => {
-				if (tex.image && tex.image.width > 0) {
-					aspect = tex.image.width / tex.image.height;
-					console.log(`✅ [ImagePlane] Aspect Ready: ${aspect} for ${geometry.name}`);
+			// In Threlte/Three, we want to ensure materials are updated when the texture arrives
+			$gltf.scene.traverse((child) => {
+				if ((child as any).isMesh) {
+					const mesh = child as THREE.Mesh;
+					mesh.material = new MeshStandardMaterial({
+						map: tex,
+						transparent: true,
+						side: DoubleSide,
+						roughness: 0.5,
+						metalness: 0.1
+					});
 				}
-			};
+			});
 
-			checkImage();
-
-			if (!tex.image || tex.image.width === 0) {
-				tex.addEventListener('update', checkImage);
-				if (tex.source && tex.source.data instanceof HTMLImageElement) {
-					tex.source.data.onload = checkImage;
-				}
-			}
-
-			return () => {
-				tex.removeEventListener('update', checkImage);
-			};
+			// Security/Fix for Cloudinary assets
+			buildSceneGraph($gltf);
 		}
 	});
 </script>
 
-<!-- PlaneGeometry faces +Z by default. We scale by aspect ratio. -->
-<T.Mesh name="ImagePlaneMesh" scale={[aspect, 1, 1]} position={[0, 0, 0.02]} frustumCulled={false}>
-	<T.PlaneGeometry args={[5, 5]} />
-	{#if textureStore && $textureStore}
-		<T.MeshBasicMaterial
-			map={$textureStore as any}
-			color="white"
-			side={DoubleSide}
-			transparent={true}
-			toneMapped={false}
-			depthWrite={true}
-			opacity={1}
-		/>
-	{:else}
-		<!-- Fallback loader / placeholder -->
-		<T.MeshBasicMaterial color="#333333" side={DoubleSide} opacity={0.5} transparent={true} />
-	{/if}
-</T.Mesh>
+<!-- The model handles its own internal geometry. We just render it. -->
+{#if $gltf}
+	<T is={$gltf.scene} />
+{:else}
+	<!-- Minimal placeholder while loading -->
+	<T.Mesh position={[0, 0, 0.02]}>
+		<T.PlaneGeometry args={[1, 1]} />
+		<T.MeshBasicMaterial color="#333333" transparent opacity={0.5} />
+	</T.Mesh>
+{/if}
