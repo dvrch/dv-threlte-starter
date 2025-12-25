@@ -156,9 +156,9 @@
 		{:else if imageUrl}
 			<T.Mesh>
 				<T.PlaneGeometry args={[3, 3]} />
-				{#if $textureStore}
+				{#if textureStore.current}
 					<T.MeshBasicMaterial
-						map={$textureStore}
+						map={textureStore.current}
 						side={DoubleSide}
 						transparent={true}
 						toneMapped={false}
