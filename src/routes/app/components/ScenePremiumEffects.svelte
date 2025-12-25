@@ -2,15 +2,8 @@
 	import { useThrelte } from '@threlte/core';
 	import { Environment } from '@threlte/extras';
 	import { onMount, onDestroy } from 'svelte';
-	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 	const { scene } = useThrelte();
-
-	// Use Cloudinary URL for HDR
-	const hdrUrl = getCloudinaryAssetUrl(
-		'compos-hdr/hdrpersOutput.hdr',
-		'dv-threlte/models/compos-hdr'
-	);
 
 	function applyPremiumToMaterial(material: any, envTexture: any, object: any) {
 		if (!material) return;
@@ -98,4 +91,8 @@
 	});
 </script>
 
-<Environment url={hdrUrl} isBackground={false} />
+<!-- Use the 'files' prop for local static assets, which is more robust -->
+<Environment
+	files="/assets/public/venice_sunset_1k.hdr"
+	isBackground={false}
+/>
