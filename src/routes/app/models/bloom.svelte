@@ -26,8 +26,8 @@
 	const { scene, renderer, camera, autoRender, renderStage, size } = useThrelte();
 	const composer = new EffectComposer(renderer);
 
-	// Threlte 8 + Svelte 5 handling: camera can be a store or a direct ref.
-	const currentCamera = $derived((camera as any)?.current || camera);
+	// Improved camera tracking
+	const currentCamera = $derived(camera.current);
 
 	function setupEffectComposer(cam: THREE.Camera) {
 		if (!cam || !scene) return;
@@ -99,18 +99,9 @@
 		};
 	});
 
-	// Workaround for initialization glitches: brief delay before rendering
-	let ready = $state(false);
-	onMount(() => {
-		const timer = setTimeout(() => {
-			ready = true;
-		}, 100);
-		return () => clearTimeout(timer);
-	});
-
 	useTask(
 		(delta) => {
-			if (!ready || !composer || !currentCamera || composer.passes.length < 2) return;
+			if (!composer || !currentCamera || composer.passes.length < 2) return;
 			composer.render(delta);
 		},
 		{ stage: renderStage }

@@ -13,9 +13,12 @@
 	);
 
 	const hdrTexture = useLoader(HDRLoader, () => hdrUrl);
+
 	$effect(() => {
 		if ($hdrTexture) {
 			scene.environment = $hdrTexture;
+			// Immediate refresh when texture arrives
+			refreshSceneMaterials();
 		}
 	});
 
@@ -91,10 +94,8 @@
 		const interval = setInterval(() => {
 			if (scene.environment) {
 				refreshSceneMaterials();
-				// CRITICAL: Stop checking once found to save performance
-				clearInterval(interval);
 			}
-		}, 1000);
+		}, 500); // Faster check initially
 
 		// Also refresh when new models are added
 		const handleRefresh = () => setTimeout(refreshSceneMaterials, 100);
