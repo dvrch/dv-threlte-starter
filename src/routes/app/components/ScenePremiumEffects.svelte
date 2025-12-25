@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { useThrelte, useLoader } from '@threlte/core';
-	import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+	import { useThrelte } from '@threlte/core';
+	import { Environment } from '@threlte/extras';
 	import { onMount, onDestroy } from 'svelte';
 	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
@@ -12,12 +12,12 @@
 		'dv-threlte/models/compos-hdr'
 	);
 
-	const hdrTexture = useLoader(RGBELoader, () => hdrUrl);
+	// Re-adopting the working commit 96ec289 logic 🎯
+	// We let <Environment> handle the loading and attachment to scene.environment
 
 	$effect(() => {
-		if (hdrTexture.current) {
-			scene.environment = hdrTexture.current;
-			// Immediate refresh when texture arrives
+		if (scene.environment) {
+			// Immediate refresh when texture arrives in scene
 			refreshSceneMaterials();
 		}
 	});
@@ -31,20 +31,16 @@
 		// Skip MeshBasicMaterial (used for images/planes) - they don't need env maps
 		if (material.isMeshBasicMaterial) return;
 
-		// Use scene.environment (HDR preset) - stable and never black
 		if (envTexture) {
 			material.envMap = envTexture;
-			material.envMapIntensity = 0.8; // Reduced intensity
+			material.envMapIntensity = 5.0; // High intensity from commit 96ec289
 		}
 
 		if (!material.metalnessMap && 'metalness' in material) {
-			// Only make materials more metallic if they are not completely non-metallic
-			if (material.metalness > 0.1) {
-				material.metalness = Math.max(material.metalness, 0.5);
-			}
+			material.metalness = Math.max(material.metalness || 0, 0.6);
 		}
 		if (!material.roughnessMap && 'roughness' in material) {
-			material.roughness = Math.min(material.roughness || 0.5, 0.15); // Made it less mirror-like
+			material.roughness = Math.min(material.roughness || 0.5, 0.08);
 		}
 
 		if ('iridescence' in material) material.iridescence = 1.0;
@@ -56,16 +52,11 @@
 				material.emissive &&
 				(material.emissive.r > 0 || material.emissive.g > 0 || material.emissive.b > 0)
 			) {
-				material.emissiveIntensity = 0.8; // Reduced intensity
+				material.emissiveIntensity = 12.0; // High intensity from commit 96ec289
 			}
 		}
 
-		// Force material recompilation/update by toggling a property
-		// This simulates the user's observed "on-off-on" cycle
-		material.needsUpdate = false; // Temporarily set to false
-		setTimeout(() => {
-			material.needsUpdate = true; // Then set to true after a tiny delay
-		}, 10); // Small delay to ensure Three.js registers the "change"
+		material.needsUpdate = true;
 	}
 
 	function refreshSceneMaterials() {
@@ -113,3 +104,5 @@
 		// No cleanup needed
 	});
 </script>
+
+<Environment url={hdrUrl} isBackground={false} />

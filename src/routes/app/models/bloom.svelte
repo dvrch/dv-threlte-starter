@@ -26,8 +26,8 @@
 	const { scene, renderer, camera, autoRender, renderStage, size } = useThrelte();
 	const composer = new EffectComposer(renderer);
 
-	// Improved camera tracking
-	const currentCamera = $derived(camera.current);
+	// Restore compatibility camera tracking
+	const currentCamera = $derived((camera as any)?.current || camera);
 
 	function setupEffectComposer(cam: THREE.Camera) {
 		if (!cam || !scene) return;
@@ -99,9 +99,18 @@
 		};
 	});
 
+	// Workaround for initialization glitches: brief delay before rendering
+	let ready = $state(false);
+	onMount(() => {
+		const timer = setTimeout(() => {
+			ready = true;
+		}, 100);
+		return () => clearTimeout(timer);
+	});
+
 	useTask(
 		(delta) => {
-			if (!composer || !currentCamera || composer.passes.length < 2) return;
+			if (!ready || !composer || !currentCamera || composer.passes.length < 2) return;
 			composer.render(delta);
 		},
 		{ stage: renderStage }

@@ -108,7 +108,8 @@
 			: null
 	);
 
-	const textureStore = useLoader(TextureLoader, () => imageUrl);
+	const loader = useLoader(TextureLoader);
+	const textureStore = $derived(imageUrl ? loader.load(imageUrl) : null);
 </script>
 
 {#if browser && geometry}
@@ -156,9 +157,9 @@
 		{:else if imageUrl}
 			<T.Mesh>
 				<T.PlaneGeometry args={[3, 3]} />
-				{#if textureStore.current}
+				{#if textureStore && $textureStore}
 					<T.MeshBasicMaterial
-						map={textureStore.current}
+						map={$textureStore}
 						side={DoubleSide}
 						transparent={true}
 						toneMapped={false}
