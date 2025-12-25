@@ -8,10 +8,7 @@
 	const { scene } = useThrelte();
 
 	// Use Cloudinary URL for HDR
-	const hdrUrl = getCloudinaryAssetUrl(
-		'compos-hdr/hdrpersOutput.hdr',
-		'dv-threlte/models/compos-hdr'
-	);
+	const hdrUrl = getCloudinaryAssetUrl('hdrpersOutput.hdr', 'dv-threlte/models/compos-hdr');
 
 	// Re-adopting the working commit 96ec289 logic 🎯
 	$effect(() => {
