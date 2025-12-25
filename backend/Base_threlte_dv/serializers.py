@@ -30,14 +30,23 @@ class GeometrySerializer(serializers.ModelSerializer):
         ]
 
     def to_internal_value(self, data):
-        # Multipart form data sends everything as strings. 
-        # We must parse JSON fields and booleans manually if they are strings.
-        ret = data.copy()
+        # Multipart form data (QueryDict) sends everything as strings.
+        # We must convert to a mutable dict and parse JSON fields.
+        if hasattr(data, "dict"):
+            ret = data.dict()
+        else:
+            ret = data.copy()
+
         for field in ["position", "rotation", "scale"]:
             if field in ret and isinstance(ret[field], str):
                 try:
-                    ret[field] = json.loads(ret[field])
-                except (json.JSONDecodeError, TypeError):
+                    # Clean the string in case of extra quotes or escaping
+                    val = ret[field].strip()
+                    if val:
+                        ret[field] = json.loads(val)
+                except (json.JSONDecodeError, TypeError) as e:
+                    logger.warning(f"Failed to parse JSON for field {field}: {val}. Error: {e}")
+                    # Let it pass, the serializer will catch the validation error if invalid
                     pass
         
         # Handle stringified booleans from FormData

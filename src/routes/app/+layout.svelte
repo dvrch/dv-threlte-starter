@@ -41,16 +41,17 @@
 
     const handleGlobalDragLeave = (e: DragEvent) => {
         // Only trigger if we actually left the window
-        if (e.relatedTarget === null) {
-            isDraggingGlobal = false;
-        }
+        isDraggingGlobal = false;
     };
 
     const handleGlobalDrop = (e: DragEvent) => {
+        e.preventDefault();
+        isDraggingGlobal = false;
+        
         if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
             const file = e.dataTransfer.files[0];
             const ext = file.name.split('.').pop()?.toLowerCase();
-            if (ext === 'glb' || ext === 'gltf' || ext === 'jpg' || ext === 'jpeg' || ext === 'png') {
+            if (ext === 'glb' || ext === 'gltf' || ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'webp') {
                 window.dispatchEvent(new CustomEvent('directSceneUpload', { detail: { file } }));
             }
         }
