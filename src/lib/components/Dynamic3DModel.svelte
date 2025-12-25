@@ -162,21 +162,16 @@
 			<T.Mesh name="ImagePlaneMesh">
 				<T.PlaneGeometry args={[3, 3]} />
 				{#if textureStore && $textureStore}
-					{@const tex = $textureStore as any}
-					<T.MeshStandardMaterial
-						map={tex}
-						emissiveMap={tex}
-						emissive="white"
-						emissiveIntensity={1}
-						side={DoubleSide}
+					<T.MeshBasicMaterial
+						map={$textureStore as any}
+						side={THREE.DoubleSide}
 						transparent={true}
-						alphaTest={0.01}
-						roughness={0.2}
-						metalness={0.1}
+						toneMapped={false}
+						depthWrite={true}
 					/>
 				{:else}
 					<!-- Fallback while texture is loading or if it fails -->
-					<T.MeshStandardMaterial color="#333333" side={DoubleSide} />
+					<T.MeshBasicMaterial color="#333333" side={THREE.DoubleSide} />
 				{/if}
 			</T.Mesh>
 		{:else if geometry.model_url && geometry.model_url.trim() !== ''}
