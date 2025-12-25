@@ -19,5 +19,7 @@ htmlcov/
 media/
 .git
 .gitignore
-# *.md (Commenté pour permettre l'import de cv-en.md)
+*.md
+!src/routes/Text/cv-en.md
+!static/Text/cv-en.md
 
