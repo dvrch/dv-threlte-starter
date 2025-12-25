@@ -1,21 +1,16 @@
 <script lang="ts">
 	import TextScene from '../../routes/Text/scene.svelte';
-	import { onMount } from 'svelte';
+	// @ts-ignore
+	import cvContent from '../../routes/Text/cv-en.md?raw';
 
 	let { cvLines = [] }: { cvLines: string[] } = $props();
-	let loadedLines = $state<string[]>([]);
 
-	onMount(async () => {
-		try {
-			// Load cv-en.md content
-			const response = await fetch('/Text/cv-en.md');
-			const text = await response.text();
-			loadedLines = text.split('\n').filter((line) => line.trim() !== '');
-		} catch (e) {
-			console.error('Failed to load cv-en.md:', e);
-			loadedLines = ['# Error loading CV'];
-		}
-	});
+	// Si cvLines n'est pas fourni par le parent, on utilise l'import direct 🎯
+	let finalLines = $derived(
+		cvLines.length > 0
+			? cvLines
+			: cvContent.split('\n').filter((line: string) => line.trim() !== '')
+	);
 </script>
 
-<TextScene cvLines={loadedLines.length > 0 ? loadedLines : cvLines} />
+<TextScene cvLines={finalLines} />
