@@ -1,12 +1,9 @@
-import fs from 'fs';
-import path from 'path';
+// @ts-ignore
+import cvContent from './cv-en.md?raw';
 
 export const load = async () => {
-    const filePath = path.resolve('src/routes/Text/cv-en.md');
-    const content = fs.readFileSync(filePath, 'utf-8');
-
-    // Simple parsing to split into lines or sections
-    const lines = content.split('\n').filter(line => line.trim() !== '');
+    // Vite raw import ensures the text is bundled, no fs needed! 📦
+    const lines = cvContent.split('\n').filter((line: string) => line.trim() !== '');
 
     return {
         cvLines: lines

@@ -20,3 +20,6 @@ media/
 .git
 .gitignore
 *.md
+!src/routes/Text/cv-en.md
+!static/Text/cv-en.md
+
