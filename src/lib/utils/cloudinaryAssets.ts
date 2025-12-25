@@ -7,15 +7,15 @@ export const CLOUDINARY_CLOUD_NAME = 'drcok7moc';
 /**
  * Generates a Cloudinary URL.
  */
-export function getCloudinaryAssetUrl(path: string, folder: string = 'dv-threlte/models'): string {
-	let filename = path;
-	if (path.includes('/')) {
-		filename = path.split('/').pop() || path;
+export function getCloudinaryAssetUrl(filename: string, folder: string = "dv-threlte/models"): string {
+	if (!filename) return "";
+	if (filename.startsWith("http")) {
+		// Clean existing URLs from version strings if present
+		return filename.replace(/\/v\d+\//, '/');
 	}
-	filename = filename.replace(/^v\d+[\/\-_]/, '');
 
 	const isImage = /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(filename);
-	const resourceType = isImage ? 'image' : 'raw';
+	const resourceType = isImage ? "image" : "raw";
 	const targetFolder = folder;
 
 	return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload/${targetFolder}/${filename}`;
