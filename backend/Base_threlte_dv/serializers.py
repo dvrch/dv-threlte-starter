@@ -31,7 +31,7 @@ class GeometrySerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, data):
         # Multipart form data sends everything as strings. 
-        # We must parse JSON fields manually if they are strings.
+        # We must parse JSON fields and booleans manually if they are strings.
         ret = data.copy()
         for field in ["position", "rotation", "scale"]:
             if field in ret and isinstance(ret[field], str):
@@ -39,6 +39,15 @@ class GeometrySerializer(serializers.ModelSerializer):
                     ret[field] = json.loads(ret[field])
                 except (json.JSONDecodeError, TypeError):
                     pass
+        
+        # Handle stringified booleans from FormData
+        if "visible" in ret and isinstance(ret["visible"], str):
+            val = ret["visible"].lower()
+            if val == "true":
+                ret["visible"] = True
+            elif val == "false":
+                ret["visible"] = False
+
         return super().to_internal_value(ret)
 
     def validate_color(self, value):

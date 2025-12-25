@@ -312,7 +312,14 @@
 
 			if (!response.ok) {
 				const errorData = await response.json().catch(() => ({ detail: 'Save failed' }));
-				throw new Error(errorData.name?.[0] || errorData.detail);
+				// Better error display: join all error messages
+				let errorMsg = errorData.detail || '';
+				if (!errorMsg) {
+					errorMsg = Object.entries(errorData)
+						.map(([key, value]) => `${key}: ${Array.isArray(value) ? value[0] : value}`)
+						.join(' | ');
+				}
+				throw new Error(errorMsg || 'Save failed');
 			}
 
 			addToast(isEditing ? 'Geometry updated!' : 'Geometry added!', 'success');
