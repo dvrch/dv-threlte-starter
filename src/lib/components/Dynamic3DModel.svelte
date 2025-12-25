@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { T, useLoader } from '@threlte/core';
-	import { TextureLoader, DoubleSide } from 'three';
+	import { TextureLoader } from 'three';
 	import * as THREE from 'three';
+	import { Group } from 'three';
 	import GltfModel from '$lib/components/GltfModel.svelte';
 	import { browser } from '$app/environment';
 	import { Text3DGeometry } from '@threlte/extras';
+	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 	// 🌐 Font pour le texte 3D
 	const font =
 		'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/fonts/helvetiker_bold.typeface.json';
-
-	import { Group } from 'three';
 
 	let {
 		geometry,
@@ -22,7 +22,7 @@
 	const componentMap: { [key: string]: () => Promise<any> } = {
 		vague: () => import('../../routes/vague/vaguend.svelte'),
 		tissus: () => import('../../routes/bibi/tissus-simulat.svelte'),
-		desk: () => import('../../routes/desksc/scene.svelte'), // Corrected case
+		desk: () => import('../../routes/desksc/scene.svelte'),
 		nissan: () => import('../../routes/app/models/Nissan.svelte'),
 		bibi: () => import('../../routes/bibi/bibanime.svelte'),
 		garden: () => import('../../routes/app/models/garden.svelte'),
@@ -34,7 +34,6 @@
 	};
 
 	const DynamicComponentLoader = $derived(() => {
-		// Priority 1: Special detection by URL or Name for Spaceship
 		const name = (geometry?.name || '').toLowerCase();
 		const url = (geometry?.model_url || '').toLowerCase();
 		const type = (geometry?.type || '').toLowerCase();
@@ -48,27 +47,23 @@
 			return componentMap['spaceship'];
 		}
 
-		// Priority 2: Detection for Nissan Game
 		if (type === 'nissangame' || type === 'nissan' || name.includes('nissangame')) {
 			return componentMap['nissangame'];
 		}
 
-		// Priority 3: Detection for textmd (stored as 'text' in backend)
 		if (name.toLowerCase().includes('textmd') || name.toLowerCase().includes('cv')) {
 			return componentMap['textmd'];
 		}
 
-		// Priority 4: Standard type mapping
 		return componentMap[type] ?? null;
 	});
 
-	let LoadedDynamicComponent: any = $state(null); // To store the dynamically loaded component
+	let LoadedDynamicComponent: any = $state(null);
 
-	// Load the component dynamically only on the client
 	$effect(() => {
 		const loader = DynamicComponentLoader();
 		if (browser && loader) {
-			LoadedDynamicComponent = null; // Reset before loading new component
+			LoadedDynamicComponent = null;
 			loader()
 				.then((module) => {
 					LoadedDynamicComponent = module.default;
@@ -100,49 +95,38 @@
 		geometry?.scale?.z ?? 1
 	]);
 
-	const imageUrl = $derived(
-		(geometry.type === 'image_plane' ||
-			(geometry.model_url && /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(geometry.model_url))) &&
-			geometry.model_url
-			? geometry.model_url
-			: null
-	);
+	const imageUrl = $derived(() => {
+		const rawUrl = geometry.model_url;
+		if (!rawUrl) return null;
+		const isImage =
+			geometry.type === 'image_plane' || /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(rawUrl);
+		if (!isImage) return null;
+		return getCloudinaryAssetUrl(rawUrl);
+	});
 
 	const loader = useLoader(TextureLoader);
-	const textureStore = $derived(imageUrl ? loader.load(imageUrl) : null);
+	const textureStore = $derived(imageUrl() ? loader.load(imageUrl()!) : null);
 
 	let aspect = $state(1);
 	$effect(() => {
 		if (textureStore && $textureStore) {
 			const tex = $textureStore as THREE.Texture;
-
 			const checkImage = () => {
 				if (tex.image && tex.image.width > 0) {
 					aspect = tex.image.width / tex.image.height;
-					console.log(`🖼️ Image Loaded: ${imageUrl}, Aspect: ${aspect}`);
 				}
 			};
-
-			// Try immediately
 			checkImage();
-
-			// Listen for load if not ready
 			if (!tex.image || tex.image.width === 0) {
 				tex.addEventListener('update', checkImage);
-				// Standard Image element check
 				if (tex.source && tex.source.data instanceof HTMLImageElement) {
 					tex.source.data.onload = checkImage;
 				}
 			}
-
 			return () => {
 				tex.removeEventListener('update', checkImage);
 			};
 		}
-	});
-
-	$effect(() => {
-		if (imageUrl) console.log('🖼️ Image Plane loading:', imageUrl);
 	});
 </script>
 
@@ -160,7 +144,6 @@
 		}}
 	>
 		{#if LoadedDynamicComponent}
-			<!-- 1. Render the dynamically loaded Svelte component when available -->
 			{@const Component = LoadedDynamicComponent}
 			{#if geometry.type === 'text_scene'}
 				<Component
@@ -188,7 +171,7 @@
 				/>
 				<T.MeshStandardMaterial color={geometry.color} />
 			</T.Mesh>
-		{:else if imageUrl}
+		{:else if imageUrl()}
 			<T.Mesh name="ImagePlaneMesh" scale={[aspect, 1, 1]}>
 				<T.PlaneGeometry args={[5, 5]} />
 				{#if textureStore && $textureStore}
@@ -202,15 +185,12 @@
 						alphaTest={0.01}
 					/>
 				{:else}
-					<!-- Fallback while texture is loading or if it fails -->
 					<T.MeshBasicMaterial color="#333333" side={THREE.DoubleSide} />
 				{/if}
 			</T.Mesh>
 		{:else if geometry.model_url && geometry.model_url.trim() !== ''}
-			<!-- 2. Render a generic GLTF model if model_url is present and valid -->
 			<GltfModel url={geometry.model_url} />
 		{:else if geometry.type === 'box'}
-			<!-- 3. Render primitive shapes -->
 			<T.Mesh>
 				<T.BoxGeometry />
 				<T.MeshStandardMaterial color={geometry.color} />
@@ -231,7 +211,6 @@
 				<T.MeshStandardMaterial color={geometry.color} />
 			</T.Mesh>
 		{:else}
-			<!-- Fallback for completely unhandled types -->
 			<T.Mesh>
 				<T.BoxGeometry />
 				<T.MeshStandardMaterial color="purple" />
