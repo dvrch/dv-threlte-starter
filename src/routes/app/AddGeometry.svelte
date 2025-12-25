@@ -790,6 +790,28 @@
 							<input type="text" bind:value={name} placeholder="Name" required />
 						{/if}
 						<input type="color" bind:value={color} class="color-input" />
+						<button
+							type="button"
+							class="tiny-image-btn"
+							onclick={() => document.getElementById('direct-image-upload')?.click()}
+							title="Upload Image"
+						>
+							🖼️
+						</button>
+						<input
+							id="direct-image-upload"
+							type="file"
+							accept="image/*"
+							class="hidden"
+							style="display: none;"
+							onchange={(e: any) => {
+								const target = e.target as HTMLInputElement;
+								const file = target.files?.[0];
+								if (file) {
+									window.dispatchEvent(new CustomEvent('directSceneUpload', { detail: { file } }));
+								}
+							}}
+						/>
 					</div>
 				{:else}
 					<input type="text" bind:value={name} placeholder="Name" required />
@@ -944,29 +966,7 @@
 						{/if}
 					</div>
 				</div>
-
-				<div class="submit-actions">
-					<button
-						type="button"
-						class="image-upload-btn"
-						onclick={() => document.getElementById('direct-image-upload')?.click()}
-					>
-						🖼️ Image
-					</button>
-					<input
-						id="direct-image-upload"
-						type="file"
-						accept="image/*"
-						class="hidden"
-						style="display: none;"
-						onchange={(e: any) => {
-							const target = e.target as HTMLInputElement;
-							const file = target.files?.[0];
-							if (file) {
-								window.dispatchEvent(new CustomEvent('directSceneUpload', { detail: { file } }));
-							}
-						}}
-					/>
+				<div class="submit-actions-bottom">
 					<button
 						type="submit"
 						class={isEditing ? 'update-button' : 'add-button'}
@@ -974,10 +974,10 @@
 					>
 						{isLoading ? 'Saving...' : isEditing ? 'Update' : 'Add'}
 					</button>
+					{#if isEditing}
+						<button type="button" onclick={resetForm} class="cancel-button"> Cancel </button>
+					{/if}
 				</div>
-				{#if isEditing}
-					<button type="button" onclick={resetForm} class="cancel-button">Cancel</button>
-				{/if}
 			</div>
 
 			<!-- Scene Controls -->
@@ -1425,40 +1425,50 @@
 		color: #bbb;
 	}
 
-	.submit-actions {
+	.submit-actions-bottom {
 		display: flex;
 		gap: 8px;
 		width: 100%;
+		margin-top: 10px;
 	}
 
-	.image-upload-btn {
+	.tiny-image-btn {
 		flex: 0 0 auto;
+		width: 30px;
+		padding: 4px;
 		background: rgba(255, 255, 255, 0.05);
 		border: 1px solid rgba(255, 255, 255, 0.2);
-		color: #eee;
-		padding: 8px 12px;
-		border-radius: 8px;
+		border-radius: 4px;
 		cursor: pointer;
-		font-size: 0.8rem;
 		transition: all 0.2s;
 	}
 
-	.image-upload-btn:hover {
+	.tiny-image-btn:hover {
 		background: rgba(255, 255, 255, 0.1);
 		border-color: #4db6ac;
+		transform: scale(1.1);
 	}
 
 	.update-button,
 	.add-button {
-		flex: 1;
-		padding: 10px;
+		flex: 2;
+		padding: 8px;
 		border: none;
-		border-radius: 8px;
+		border-radius: 6px;
 		background: #4db6ac;
 		color: white;
-		font-weight: 600;
+		font-weight: 700;
 		cursor: pointer;
 		transition: all 0.2s;
+	}
+
+	.cancel-button {
+		flex: 1;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		padding: 8px;
+		border-radius: 6px;
+		color: #999;
 	}
 
 	.toggle-btn {

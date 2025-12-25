@@ -1,12 +1,10 @@
 <script lang="ts">
-	import { T, useLoader } from '@threlte/core';
-	import { TextureLoader } from 'three';
+	import { T } from '@threlte/core';
 	import * as THREE from 'three';
 	import { Group } from 'three';
 	import GltfModel from '$lib/components/GltfModel.svelte';
 	import { browser } from '$app/environment';
 	import { Text3DGeometry } from '@threlte/extras';
-	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 	// 🌐 Font pour le texte 3D
 	const font =
@@ -43,7 +41,8 @@
 		bibigame: () => import('../../routes/app/bibigame.svelte'),
 		spaceship: () => import('../../routes/app/models/spaceship.svelte'),
 		text_scene: () => import('../../routes/Text/scene.svelte'),
-		textmd: () => import('$lib/components/TextMd.svelte')
+		textmd: () => import('$lib/components/TextMd.svelte'),
+		image_plane: () => import('$lib/components/ImagePlane.svelte')
 	};
 
 	const DynamicComponentLoader = $derived(() => {
@@ -51,6 +50,12 @@
 		const url = (geometry?.model_url || '').toLowerCase();
 		const type = (geometry?.type || '').toLowerCase();
 
+		// Priority 1: Image Plane (Direct match)
+		if (type === 'image_plane' || (url && /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(url))) {
+			return componentMap['image_plane'];
+		}
+
+		// Priority 2: Special detection by URL or Name for Spaceship
 		if (
 			type === 'spaceship' ||
 			name.includes('spaceship') ||
@@ -60,14 +65,17 @@
 			return componentMap['spaceship'];
 		}
 
+		// Priority 3: Detection for Nissan Game
 		if (type === 'nissangame' || type === 'nissan' || name.includes('nissangame')) {
 			return componentMap['nissangame'];
 		}
 
+		// Priority 4: Detection for textmd
 		if (name.toLowerCase().includes('textmd') || name.toLowerCase().includes('cv')) {
 			return componentMap['textmd'];
 		}
 
+		// Priority 5: Standard type mapping
 		return componentMap[type] ?? null;
 	});
 
@@ -107,56 +115,6 @@
 		geometry?.scale?.y ?? 1,
 		geometry?.scale?.z ?? 1
 	]);
-
-	const imageUrl = $derived(() => {
-		const rawUrl = geometry?.model_url;
-		if (!rawUrl) return null;
-
-		const isImage =
-			geometry.type === 'image_plane' || /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(rawUrl);
-
-		if (!isImage) return null;
-
-		const cleaned = getCloudinaryAssetUrl(rawUrl);
-		return cleaned;
-	});
-
-	const loader = useLoader(TextureLoader);
-	const textureStore = $derived(imageUrl() ? loader.load(imageUrl()!) : null);
-
-	let aspect = $state(1);
-	$effect(() => {
-		if (textureStore && $textureStore) {
-			const tex = $textureStore as THREE.Texture;
-
-			const checkImage = () => {
-				if (tex.image && tex.image.width > 0) {
-					aspect = tex.image.width / tex.image.height;
-					console.log(`✅ [ImagePlane] Aspect Ready: ${aspect} for ${geometry.name}`);
-				}
-			};
-
-			checkImage();
-
-			if (!tex.image || tex.image.width === 0) {
-				tex.addEventListener('update', checkImage);
-				if (tex.source && tex.source.data instanceof HTMLImageElement) {
-					tex.source.data.onload = checkImage;
-				}
-			}
-
-			return () => {
-				tex.removeEventListener('update', checkImage);
-			};
-		}
-	});
-
-	$effect(() => {
-		const url = imageUrl();
-		if (url) {
-			console.log('🖼️ [ImagePlane] Target URL:', url);
-		}
-	});
 </script>
 
 {#if browser && geometry}
@@ -200,35 +158,6 @@
 					curveSegments={12}
 				/>
 				<T.MeshStandardMaterial color={geometry.color} />
-			</T.Mesh>
-		{:else if imageUrl()}
-			<!-- Face camera logic: PlaneGeometry faces +Z. We scale by aspect ratio. -->
-			<T.Mesh
-				name="ImagePlaneMesh"
-				scale={[aspect, 1, 1]}
-				position={[0, 0, 0.02]}
-				frustumCulled={false}
-			>
-				<T.PlaneGeometry args={[5, 5]} />
-				{#if textureStore && $textureStore}
-					<T.MeshBasicMaterial
-						map={$textureStore as any}
-						color="white"
-						side={THREE.DoubleSide}
-						transparent={true}
-						toneMapped={false}
-						depthWrite={true}
-						opacity={1}
-					/>
-				{:else}
-					<!-- Fallback loader -->
-					<T.MeshBasicMaterial
-						color="#333333"
-						side={THREE.DoubleSide}
-						opacity={0.5}
-						transparent={true}
-					/>
-				{/if}
 			</T.Mesh>
 		{:else if geometry.model_url && geometry.model_url.trim() !== ''}
 			<GltfModel url={geometry.model_url} />
