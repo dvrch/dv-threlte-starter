@@ -165,7 +165,7 @@
 					<T.MeshBasicMaterial color="#333333" />
 				{/if}
 			</T.Mesh>
-		{:else if geometry.model_url && geometry.model_url.trim() !== ''}
+		{:else if geometry.type === 'gltf_model' && geometry.model_url && geometry.model_url.trim() !== ''}
 			<!-- 2. Render a generic GLTF model if model_url is present and valid -->
 			<GltfModel url={geometry.model_url} />
 		{:else if geometry.type === 'box'}

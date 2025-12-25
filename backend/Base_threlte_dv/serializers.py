@@ -44,18 +44,20 @@ class GeometrySerializer(serializers.ModelSerializer):
             validated_data["color"] = color_picker
 
         if model_file:
-            # If a file is uploaded, this geometry is defined by that file.
-            # Override the type and model_type to ensure consistency.
-            validated_data["type"] = "gltf_model"
-            validated_data["model_type"] = "glb"
-
+            file_name = model_file.name.lower()
+            if file_name.endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
+                validated_data['type'] = 'image_plane'
+                validated_data['model_type'] = file_name.split('.')[-1]
+            elif file_name.endswith(('.glb', '.gltf')):
+                validated_data['type'] = 'gltf_model'
+                validated_data['model_type'] = 'glb' if file_name.endswith('.glb') else 'gltf'
+            
             upload_result = cloudinary.uploader.upload(
                 model_file,
                 resource_type="raw",
                 folder="dv-threlte/models",
-                # We can use the original filename for the public_id to keep it readable
                 use_filename=True,
-                unique_filename=False,  # If a file with the same name exists, it will be overwritten.
+                unique_filename=False,
                 overwrite=True,
             )
             validated_data["model_url"] = upload_result["secure_url"]
@@ -128,12 +130,21 @@ class GeometrySerializer(serializers.ModelSerializer):
                 except Exception as e:
                     print(f"❌ Error deleting old Cloudinary asset: {str(e)}")
 
+            # Determine file type from extension and update instance
+            file_name = model_file.name.lower()
+            if file_name.endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
+                instance.type = 'image_plane'
+                instance.model_type = file_name.split('.')[-1]
+            elif file_name.endswith(('.glb', '.gltf')):
+                instance.type = 'gltf_model'
+                instance.model_type = 'glb' if file_name.endswith('.glb') else 'gltf'
+
             upload_result = cloudinary.uploader.upload(
                 model_file,
                 resource_type="raw",
                 folder="dv-threlte/models",
-                use_filename=True,  # Disable versioning
-                unique_filename=False,  # Allow overwrite
+                use_filename=True,
+                unique_filename=False,
             )
             # Update the instance's model_url with the new URL
             instance.model_url = upload_result["secure_url"]
