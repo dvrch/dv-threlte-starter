@@ -64,6 +64,38 @@ class GeometrySerializer(serializers.ModelSerializer):
         geometry_instance = Geometry.objects.create(**validated_data)
         return geometry_instance
 
+    def to_representation(self, instance):
+        """
+        Modify the serialized output.
+        """
+        from django.conf import settings
+        import os
+
+        # Get the default representation
+        ret = super().to_representation(instance)
+
+        # If the type is 'text_scene', inject the content of cv-en.md
+        if instance.type == 'text_scene':
+            try:
+                # Construct the full path to the file
+                # Assuming the 'static' folder is at the project root
+                file_path = os.path.join(settings.BASE_DIR, 'static', 'Text', 'cv-en.md')
+                
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                # Split into lines, just like the original /routes/Text/+page.server.ts does
+                lines = content.split('\n')
+                ret['cvLines'] = lines
+
+            except FileNotFoundError:
+                # If the file is not found, provide a fallback
+                ret['cvLines'] = ['# File not found', 'Please check static/Text/cv-en.md']
+            except Exception as e:
+                ret['cvLines'] = [f'# Error reading file: {str(e)}']
+
+        return ret
+
     def update(self, instance, validated_data):
         model_file = validated_data.pop("model_file", None)
         color_picker = validated_data.pop("color_picker", None)

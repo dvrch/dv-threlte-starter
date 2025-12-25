@@ -129,14 +129,7 @@
 			{@const Component = LoadedDynamicComponent}
 			{#if geometry.type === 'text_scene'}
 				<Component
-					cvLines={[
-						'# Welcome',
-						'## To the 3D Editor',
-						'Interactive Elements',
-						'- Drag & Drop GLB',
-						'- Real-time Sync',
-						'- Physics Games'
-					]}
+					cvLines={geometry.cvLines || ['# Loading content...']}
 					{geometry}
 				/>
 			{:else}
