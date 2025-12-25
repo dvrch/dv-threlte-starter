@@ -1,2 +1,1 @@
-# Force Railway redeploy
-# This file change will trigger a new deployment on Railway
+Forcing redeploy to apply migration 0012: jeu 25 déc 2025 18:13:04 CET
