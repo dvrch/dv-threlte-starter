@@ -193,9 +193,24 @@
 			}
 
 			// Otherwise, update current form values in real-time
-			if (data.position) position = { ...data.position };
-			if (data.rotation) rotation = { ...data.rotation };
-			if (data.scale) scale = { ...data.scale };
+			if (data.position)
+				position = {
+					x: formatVal(data.position.x),
+					y: formatVal(data.position.y),
+					z: formatVal(data.position.z)
+				};
+			if (data.rotation)
+				rotation = {
+					x: formatVal(data.rotation.x),
+					y: formatVal(data.rotation.y),
+					z: formatVal(data.rotation.z)
+				};
+			if (data.scale)
+				scale = {
+					x: formatVal(data.scale.x),
+					y: formatVal(data.scale.y),
+					z: formatVal(data.scale.z)
+				};
 
 			// Optional: auto-save to DB after manual move
 			if (data.save) {
@@ -861,7 +876,7 @@
 							<input
 								type="number"
 								bind:value={position.x}
-								step="0.01"
+								step="any"
 								class="mini-input"
 								placeholder="X"
 							/>
@@ -870,7 +885,7 @@
 							<input
 								type="number"
 								bind:value={rotation.x}
-								step="0.01"
+								step="any"
 								class="mini-input"
 								placeholder="X"
 							/>
@@ -879,7 +894,7 @@
 							<input
 								type="number"
 								bind:value={scale.x}
-								step="0.01"
+								step="any"
 								class="mini-input"
 								placeholder="X"
 								oninput={(e) => updateScale('x', parseFloat(e.currentTarget.value) || 1)}
@@ -893,7 +908,7 @@
 							<input
 								type="number"
 								bind:value={position.y}
-								step="0.01"
+								step="any"
 								class="mini-input"
 								placeholder="Y"
 							/>
@@ -902,7 +917,7 @@
 							<input
 								type="number"
 								bind:value={rotation.y}
-								step="0.01"
+								step="any"
 								class="mini-input"
 								placeholder="Y"
 							/>
@@ -914,7 +929,7 @@
 								<input
 									type="number"
 									bind:value={scale.y}
-									step="0.01"
+									step="any"
 									class="mini-input"
 									placeholder="Y"
 								/>
@@ -928,7 +943,7 @@
 							<input
 								type="number"
 								bind:value={position.z}
-								step="0.01"
+								step="any"
 								class="mini-input"
 								placeholder="Z"
 							/>
@@ -937,7 +952,7 @@
 							<input
 								type="number"
 								bind:value={rotation.z}
-								step="0.01"
+								step="any"
 								class="mini-input"
 								placeholder="Z"
 							/>

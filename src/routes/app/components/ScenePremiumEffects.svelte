@@ -11,13 +11,7 @@
 	const hdrUrl = getCloudinaryAssetUrl('hdrpersOutput.hdr', 'dv-threlte/models/compos-hdr');
 
 	// Re-adopting the working commit 96ec289 logic 🎯
-	$effect(() => {
-		// We only care about scene.environment changing
-		const env = scene.environment;
-		if (env) {
-			untrack(() => refreshSceneMaterials());
-		}
-	});
+	let isRefreshing = false;
 
 	function applyPremiumToMaterial(material: any, envTexture: any, object: any) {
 		if (!material) return;
@@ -64,10 +58,16 @@
 	}
 
 	function refreshSceneMaterials() {
-		// Use local non-reactive reference to avoid triggering effects
-		const s = scene;
-		if (!s || !s.environment) return;
+		if (isRefreshing) return;
+		isRefreshing = true;
 
+		const s = scene;
+		if (!s || !s.environment) {
+			isRefreshing = false;
+			return;
+		}
+
+		console.log('✨ [PremiumEffects] Refreshing materials...');
 		const texture = s.environment;
 
 		s.traverse((child: any) => {
@@ -76,33 +76,31 @@
 				materials.forEach((mat: any) => applyPremiumToMaterial(mat, texture, child));
 			}
 		});
+
+		isRefreshing = false;
 	}
 
+	$effect(() => {
+		// Only trigger when environment is ready
+		if (scene.environment) {
+			untrack(refreshSceneMaterials);
+		}
+	});
+
 	onMount(() => {
-		// Initial try
-		setTimeout(() => untrack(refreshSceneMaterials), 500);
+		// Delayed initial refresh
+		const timer = setTimeout(() => untrack(refreshSceneMaterials), 1000);
 
-		// Periodic refresh but with a longer interval and strict found-check
-		const interval = setInterval(() => {
-			if (scene.environment) {
-				untrack(refreshSceneMaterials);
-				// Stop once found or at least don't run every half second
-				// clearing here is safer
-				clearInterval(interval);
-			}
-		}, 2000);
-
-		// Also refresh when new models are added
 		const handleRefresh = (e: any) => {
-			console.log('🔄 Scene Refresh Triggered by:', e.type);
-			setTimeout(() => untrack(refreshSceneMaterials), 200);
+			// Debounce or at least delay to let the model settle
+			setTimeout(() => untrack(refreshSceneMaterials), 300);
 		};
 
 		window.addEventListener('modelAdded', handleRefresh);
 		window.addEventListener('modelVisualLoaded', handleRefresh);
 
 		return () => {
-			clearInterval(interval);
+			clearTimeout(timer);
 			window.removeEventListener('modelAdded', handleRefresh);
 			window.removeEventListener('modelVisualLoaded', handleRefresh);
 		};

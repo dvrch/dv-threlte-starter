@@ -79,13 +79,21 @@
 
 	const syncGeometry = (geometry: GeometryItem, obj: Group) => {
 		if (obj && geometry) {
-			geometry.position = { x: obj.position.x, y: obj.position.y, z: obj.position.z };
-			geometry.rotation = {
-				x: obj.rotation.x * (180 / Math.PI),
-				y: obj.rotation.y * (180 / Math.PI),
-				z: obj.rotation.z * (180 / Math.PI)
+			geometry.position = {
+				x: Number(obj.position.x.toFixed(2)),
+				y: Number(obj.position.y.toFixed(2)),
+				z: Number(obj.position.z.toFixed(2))
 			};
-			geometry.scale = { x: obj.scale.x, y: obj.scale.y, z: obj.scale.z };
+			geometry.rotation = {
+				x: Number((obj.rotation.x * (180 / Math.PI)).toFixed(2)),
+				y: Number((obj.rotation.y * (180 / Math.PI)).toFixed(2)),
+				z: Number((obj.rotation.z * (180 / Math.PI)).toFixed(2))
+			};
+			geometry.scale = {
+				x: Number(obj.scale.x.toFixed(2)),
+				y: Number(obj.scale.y.toFixed(2)),
+				z: Number(obj.scale.z.toFixed(2))
+			};
 
 			// Sync form real-time during move
 			window.dispatchEvent(

@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { T, useLoader } from '@threlte/core';
-	import { useGltf } from '@threlte/extras';
-	import { TextureLoader, MeshStandardMaterial, DoubleSide } from 'three';
+	import { T } from '@threlte/core';
+	import { useGltf, useTexture } from '@threlte/extras';
+	import { MeshStandardMaterial, DoubleSide } from 'three';
 	import * as THREE from 'three';
 	import { getCloudinaryAssetUrl, buildSceneGraph } from '$lib/utils/cloudinaryAssets';
-	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
 
 	interface Props {
 		geometry: {
@@ -16,27 +15,36 @@
 
 	let { geometry }: Props = $props();
 
-	// 🎨 Use Cloudinary URL for the uploaded image
-	const imageUrl = $derived(() => {
-		const rawUrl = geometry?.model_url;
-		if (!rawUrl) return null;
-		return getCloudinaryAssetUrl(rawUrl, 'dv-threlte/models');
-	});
+	// 🎨 Texture Loading (Reactive String -> Store)
+	// No function closure here to keep it strictly reactive in Svelte 5
+	const imageUrl = $derived(
+		geometry?.model_url ? getCloudinaryAssetUrl(geometry.model_url, 'dv-threlte/models') : ''
+	);
 
-	const loader = useLoader(TextureLoader);
-	const textureStore = $derived(imageUrl() ? loader.load(imageUrl()!) : null);
+	// useTexture returns a store (Writable) or AsyncWritable
+	const texture = useTexture(imageUrl);
 
-	// 🧵 Load the exact same cloth_sim.glb as in the tissus-simulat component
-	// This provides the draped/folded geometry the user wants
-	const glbUrlPromise = getWorkingAssetUrl('cloth_sim.glb', 'models');
-	const gltf = useGltf(glbUrlPromise);
+	// 🧵 Load cloth_sim.glb
+	// We use the absolute path in static/models/
+	const gltf = useGltf('/models/cloth_sim.glb');
 
-	// 🛠️ Apply the uploaded texture to the cloth model
+	// 🛠️ Material Sync
 	$effect(() => {
-		if ($gltf && $textureStore) {
-			const tex = $textureStore as THREE.Texture;
+		// We use untrack or guard to avoid re-triggering effects if necessary,
+		// but here we want to update materials whenever gltf or texture changes.
+		if ($gltf && $texture) {
+			const tex = $texture;
+			// sRGBEncoding is the old constant, but it's still available in some THREE namespaces
+			// or we use tex.colorSpace = THREE.SRGBColorSpace in newer THREE
+			if ('colorSpace' in tex) {
+				(tex as any).colorSpace = (THREE as any).SRGBColorSpace;
+			} else {
+				(tex as any).encoding = 3001; // sRGBEncoding value
+			}
 
-			// In Threlte/Three, we want to ensure materials are updated when the texture arrives
+			tex.flipY = false;
+			tex.needsUpdate = true;
+
 			$gltf.scene.traverse((child) => {
 				if ((child as any).isMesh) {
 					const mesh = child as THREE.Mesh;
@@ -44,25 +52,24 @@
 						map: tex,
 						transparent: true,
 						side: DoubleSide,
-						roughness: 0.5,
-						metalness: 0.1
+						roughness: 0.6,
+						metalness: 0.2
 					});
 				}
 			});
 
-			// Security/Fix for Cloudinary assets
 			buildSceneGraph($gltf);
 		}
 	});
 </script>
 
-<!-- The model handles its own internal geometry. We just render it. -->
+<!-- Render the GLTF scene once loaded -->
 {#if $gltf}
 	<T is={$gltf.scene} />
 {:else}
 	<!-- Minimal placeholder while loading -->
-	<T.Mesh position={[0, 0, 0.02]}>
-		<T.PlaneGeometry args={[1, 1]} />
-		<T.MeshBasicMaterial color="#333333" transparent opacity={0.5} />
+	<T.Mesh position={[0, 0, 0.05]}>
+		<T.BoxGeometry args={[0.5, 0.5, 0.1]} />
+		<T.MeshBasicMaterial color="#333333" wireframe opacity={0.3} transparent />
 	</T.Mesh>
 {/if}
