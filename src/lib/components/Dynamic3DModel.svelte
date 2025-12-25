@@ -111,6 +111,36 @@
 	const loader = useLoader(TextureLoader);
 	const textureStore = $derived(imageUrl ? loader.load(imageUrl) : null);
 
+	let aspect = $state(1);
+	$effect(() => {
+		if (textureStore && $textureStore) {
+			const tex = $textureStore as THREE.Texture;
+
+			const checkImage = () => {
+				if (tex.image && tex.image.width > 0) {
+					aspect = tex.image.width / tex.image.height;
+					console.log(`🖼️ Image Loaded: ${imageUrl}, Aspect: ${aspect}`);
+				}
+			};
+
+			// Try immediately
+			checkImage();
+
+			// Listen for load if not ready
+			if (!tex.image || tex.image.width === 0) {
+				tex.addEventListener('update', checkImage);
+				// Standard Image element check
+				if (tex.source && tex.source.data instanceof HTMLImageElement) {
+					tex.source.data.onload = checkImage;
+				}
+			}
+
+			return () => {
+				tex.removeEventListener('update', checkImage);
+			};
+		}
+	});
+
 	$effect(() => {
 		if (imageUrl) console.log('🖼️ Image Plane loading:', imageUrl);
 	});
@@ -159,8 +189,8 @@
 				<T.MeshStandardMaterial color={geometry.color} />
 			</T.Mesh>
 		{:else if imageUrl}
-			<T.Mesh name="ImagePlaneMesh">
-				<T.PlaneGeometry args={[3, 3]} />
+			<T.Mesh name="ImagePlaneMesh" scale={[aspect, 1, 1]}>
+				<T.PlaneGeometry args={[5, 5]} />
 				{#if textureStore && $textureStore}
 					<T.MeshBasicMaterial
 						map={$textureStore as any}
@@ -169,7 +199,7 @@
 						transparent={true}
 						toneMapped={false}
 						depthWrite={true}
-						depthTest={true}
+						alphaTest={0.01}
 					/>
 				{:else}
 					<!-- Fallback while texture is loading or if it fails -->

@@ -25,10 +25,12 @@
 		if (!material) return;
 
 		const name = (object.name || '').toLowerCase();
+
+		// Skip Background / System objects
 		if (name.includes('star') || name.includes('sky') || name.includes('grid')) return;
 
-		// Skip MeshBasicMaterial (used for images/planes) - they don't need env maps
-		if (material.isMeshBasicMaterial) return;
+		// Skip MeshBasicMaterial or specific image planes to avoid "burning" them out
+		if (material.isMeshBasicMaterial || name.includes('imageplane')) return;
 
 		// Avoid redundant updates to prevent loops or performance issues
 		if (material.envMap === envTexture && material.envMapIntensity === 5.0) return;

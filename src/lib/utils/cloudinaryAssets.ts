@@ -16,7 +16,7 @@ export function getCloudinaryAssetUrl(path: string, folder: string = 'dv-threlte
 
 	const isImage = /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(filename);
 	const resourceType = isImage ? 'image' : 'raw';
-	const targetFolder = (isImage && (folder === 'dv-threlte/models')) ? 'dv-threlte/textures' : folder;
+	const targetFolder = folder;
 
 	return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload/${targetFolder}/${filename}`;
 }
