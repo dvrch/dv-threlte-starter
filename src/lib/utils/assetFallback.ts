@@ -11,7 +11,8 @@ const ASSET_MAPPING: Record<string, string> = {
 // Fallback chain for assets that might be missing in their new versions
 const FALLBACK_CHAIN: Record<string, string[]> = {
     'nissan2.glb': ['nissan1.glb', 'nissan.glb'],
-    'garden1.glb': ['garden.glb']
+    'garden1.glb': ['garden.glb'],
+    'cloth_sim.glb': ['clothe_sim_rffdfn.glb', 'cloth_sim_rffdfn.glb']
 };
 
 /**
@@ -66,18 +67,18 @@ export async function getWorkingAssetUrl(
     }
 
     // 2. CLOUDINARY (The new main storage)
-    		const foldersToTry =
-    			type === 'models'
-    				? ['dv-threlte/models', 'dv-threlte/public', 'dv-threlte']
-    				: ['dv-threlte/textures', 'dv-threlte/public', 'dv-threlte'];    for (const candidate of namesToTry) {
-        for (const folder of foldersToTry) {
-            const cloudinaryUrl = getCloudinaryAssetUrl(candidate, folder);
-            try {
-                const response = await fetch(cloudinaryUrl, { method: 'HEAD' });
-                if (response.ok) return cloudinaryUrl;
-            } catch (e) { }
-        }
-    }
+    const foldersToTry =
+        type === 'models'
+            ? ['dv-threlte/models', 'dv-threlte/public', 'dv-threlte']
+            : ['dv-threlte/textures', 'dv-threlte/public', 'dv-threlte']; for (const candidate of namesToTry) {
+                for (const folder of foldersToTry) {
+                    const cloudinaryUrl = getCloudinaryAssetUrl(candidate, folder);
+                    try {
+                        const response = await fetch(cloudinaryUrl, { method: 'HEAD' });
+                        if (response.ok) return cloudinaryUrl;
+                    } catch (e) { }
+                }
+            }
 
     // 3. Last fallback local
     if (!prioritizeLocal) {

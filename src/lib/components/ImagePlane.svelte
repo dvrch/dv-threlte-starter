@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
 	import { useGltf, useTexture } from '@threlte/extras';
-	import { MeshStandardMaterial, DoubleSide } from 'three';
+	import { DoubleSide } from 'three';
 	import * as THREE from 'three';
 	import { getCloudinaryAssetUrl, buildSceneGraph } from '$lib/utils/cloudinaryAssets';
+	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
+	import { onMount, browser } from 'svelte';
 
 	interface Props {
 		geometry: {
@@ -15,29 +17,35 @@
 
 	let { geometry }: Props = $props();
 
+	// 🧵 Resolve cloth_sim.glb URL robustly (local or cloudinary fallback)
+	let resolvedGltfUrl = $state<string>('');
+
+	onMount(async () => {
+		if (browser) {
+			resolvedGltfUrl = await getWorkingAssetUrl('cloth_sim.glb', 'models');
+		}
+	});
+
+	// 🧵 Load cloth_sim.glb reactively
+	const gltf = $derived(resolvedGltfUrl ? useGltf(resolvedGltfUrl) : null);
+
 	// 🎨 Texture Loading (Reactive String -> Store)
-	// No function closure here to keep it strictly reactive in Svelte 5
 	const imageUrl = $derived(
 		geometry?.model_url ? getCloudinaryAssetUrl(geometry.model_url, 'dv-threlte/models') : ''
 	);
 
-	// useTexture returns a store (Writable) or AsyncWritable
 	const texture = useTexture(imageUrl);
-
-	// 🧵 Load cloth_sim.glb
-	// We use the absolute path in static/models/
-	const gltf = useGltf('/models/cloth_sim.glb');
 
 	// 🛠️ Material Sync
 	$effect(() => {
-		// We use untrack or guard to avoid re-triggering effects if necessary,
-		// but here we want to update materials whenever gltf or texture changes.
-		if ($gltf && $texture) {
+		// Wait for both gltf and texture to be ready
+		if (gltf && $gltf && $texture) {
+			const currentGltf = $gltf;
 			const tex = $texture;
-			// sRGBEncoding is the old constant, but it's still available in some THREE namespaces
-			// or we use tex.colorSpace = THREE.SRGBColorSpace in newer THREE
+
+			// Setup texture for pure colors
 			if ('colorSpace' in tex) {
-				(tex as any).colorSpace = (THREE as any).SRGBColorSpace;
+				(tex as any).colorSpace = (THREE as any).SRGBColorSpace || 'srgb';
 			} else {
 				(tex as any).encoding = 3001; // sRGBEncoding value
 			}
@@ -45,10 +53,10 @@
 			tex.flipY = false;
 			tex.needsUpdate = true;
 
-			$gltf.scene.traverse((child) => {
-				if ((child as any).isMesh) {
+			currentGltf.scene.traverse((child: any) => {
+				if (child.isMesh) {
 					const mesh = child as THREE.Mesh;
-					mesh.name = 'imageplane_mesh'; // explicit naming for skip logic
+					mesh.name = 'imageplane_mesh'; // explicit naming for skip logic in ScenePremiumEffects
 					mesh.material = new THREE.MeshBasicMaterial({
 						map: tex,
 						transparent: true,
@@ -58,13 +66,13 @@
 				}
 			});
 
-			buildSceneGraph($gltf);
+			buildSceneGraph(currentGltf);
 		}
 	});
 </script>
 
 <!-- Render the GLTF scene once loaded -->
-{#if $gltf}
+{#if gltf && $gltf}
 	<T is={$gltf.scene} />
 {:else}
 	<!-- Minimal placeholder while loading -->
