@@ -159,7 +159,7 @@
 				/>
 				<T.MeshStandardMaterial color={geometry.color} />
 			</T.Mesh>
-		{:else if geometry.model_url && geometry.model_url.trim() !== ''}
+		{:else if geometry.model_url && geometry.model_url.trim() !== '' && !/\.(jpg|jpeg|png|webp|gif|svg)$/i.test(geometry.model_url) && geometry.type !== 'image_plane'}
 			<GltfModel url={geometry.model_url} />
 		{:else if geometry.type === 'box'}
 			<T.Mesh>

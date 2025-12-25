@@ -966,18 +966,19 @@
 						{/if}
 					</div>
 				</div>
-				<div class="submit-actions-bottom">
-					<button
-						type="submit"
-						class={isEditing ? 'update-button' : 'add-button'}
-						disabled={isLoading}
-					>
-						{isLoading ? 'Saving...' : isEditing ? 'Update' : 'Add'}
-					</button>
-					{#if isEditing}
-						<button type="button" onclick={resetForm} class="cancel-button"> Cancel </button>
-					{/if}
-				</div>
+			</div>
+
+			<div class="submit-actions-bottom">
+				<button
+					type="submit"
+					class={isEditing ? 'update-button' : 'add-button'}
+					disabled={isLoading}
+				>
+					{isLoading ? 'Saving...' : isEditing ? 'Update' : 'Add'}
+				</button>
+				{#if isEditing}
+					<button type="button" onclick={resetForm} class="cancel-button"> Cancel </button>
+				{/if}
 			</div>
 
 			<!-- Scene Controls -->

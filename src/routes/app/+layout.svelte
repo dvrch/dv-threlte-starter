@@ -112,7 +112,9 @@
                 <T.HemisphereLight intensity={0.5} groundColor="#333333" skyColor="#ffffff" />
                 
                 <RotatingWorld isPaused={isInteracting}>
-                    <Grid position={[0, -0.001, 0]} cellColor="#ffffff" sectionColor="#ffffff" sectionThickness={0} fadeDistance={25} cellSize={2} />
+                    {#if typeof window !== 'undefined'}
+                        <Grid position={[0, -0.001, 0]} cellColor="#ffffff" sectionColor="#ffffff" sectionThickness={0} fadeDistance={25} cellSize={2} />
+                    {/if}
                     <ContactShadows scale={10} blur={2} far={2.5} opacity={0.5} />
                     {@render children()}
                 </RotatingWorld>
