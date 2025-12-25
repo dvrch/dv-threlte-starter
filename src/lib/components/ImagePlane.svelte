@@ -48,12 +48,12 @@
 			$gltf.scene.traverse((child) => {
 				if ((child as any).isMesh) {
 					const mesh = child as THREE.Mesh;
-					mesh.material = new MeshStandardMaterial({
+					mesh.name = 'imageplane_mesh'; // explicit naming for skip logic
+					mesh.material = new THREE.MeshBasicMaterial({
 						map: tex,
 						transparent: true,
 						side: DoubleSide,
-						roughness: 0.6,
-						metalness: 0.2
+						toneMapped: false // keep colors absolute and unaffected by tone mapping
 					});
 				}
 			});

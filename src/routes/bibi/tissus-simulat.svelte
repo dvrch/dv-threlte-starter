@@ -31,7 +31,13 @@
 				if (model) {
 					model.traverse((child) => {
 						if ((child as any).isMesh) {
-							(child as THREE.Mesh).material = new MeshStandardMaterial({ map: texture });
+							(child as THREE.Mesh).name = 'imageplane_cloth';
+							(child as THREE.Mesh).material = new THREE.MeshBasicMaterial({
+								map: texture,
+								transparent: true,
+								side: THREE.DoubleSide,
+								toneMapped: false
+							});
 						}
 					});
 				}
