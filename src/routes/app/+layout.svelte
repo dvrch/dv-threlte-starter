@@ -7,6 +7,7 @@
     import { T } from '@threlte/core';
     import { Grid, OrbitControls, ContactShadows } from '@threlte/extras';
     import RotatingWorld from './components/RotatingWorld.svelte';
+    import SafeGrid from './components/SafeGrid.svelte';
     import Bloom from './models/bloom.svelte';
     import { writable } from 'svelte/store'; // Import writable
 
@@ -112,8 +113,8 @@
                 <T.HemisphereLight intensity={0.5} groundColor="#333333" skyColor="#ffffff" />
                 
                 <RotatingWorld isPaused={isInteracting}>
-                    {#if typeof window !== 'undefined'}
-                        <Grid position={[0, -0.001, 0]} cellColor="#ffffff" sectionColor="#ffffff" sectionThickness={0} fadeDistance={25} cellSize={2} />
+                    {#if $page.url.pathname.startsWith('/app') || $page.url.pathname.startsWith('/vague')}
+                        <SafeGrid position={[0, -0.001, 0]} cellColor="#ffffff" sectionColor="#ffffff" sectionThickness={0} fadeDistance={25} cellSize={2} />
                     {/if}
                     <ContactShadows scale={10} blur={2} far={2.5} opacity={0.5} />
                     {@render children()}

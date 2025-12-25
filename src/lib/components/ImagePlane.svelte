@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { T, useLoader } from '@threlte/core';
 	import { useGltf } from '@threlte/extras';
-	import { TextureLoader, MeshStandardMaterial, DoubleSide, sRGBEncoding } from 'three';
+	import { TextureLoader, MeshStandardMaterial, DoubleSide } from 'three';
 	import * as THREE from 'three';
 	import { getCloudinaryAssetUrl, buildSceneGraph } from '$lib/utils/cloudinaryAssets';
 	import { getWorkingAssetUrl } from '$lib/utils/assetFallback';
