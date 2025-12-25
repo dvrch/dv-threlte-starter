@@ -3,12 +3,11 @@
     import AddGeometry from './AddGeometry.svelte';
     import { page } from '$app/stores';
     import { onMount } from 'svelte';
-    import { Canvas } from '@threlte/core';
+    import { Canvas, useThrelte } from '@threlte/core';
     import { T } from '@threlte/core';
     import { Grid, OrbitControls, ContactShadows } from '@threlte/extras';
     import RotatingWorld from './components/RotatingWorld.svelte';
     import Bloom from './models/bloom.svelte';
-    import CameraUpdater from './components/CameraUpdater.svelte';
 
     // UI state
     let isFormHovered = $state(false);
@@ -97,7 +96,6 @@
     <main class:full-screen={$page.url.pathname.startsWith('/app') || $page.url.pathname.startsWith('/vague')}>
         <div class="canvas-container">
             <Canvas renderMode="always">
-                <CameraUpdater />
                 <T.Color attach="background" args={['#12121e']} />
                 <T.PerspectiveCamera makeDefault position={[-15, 15, 15]} fov={50}>
                     <OrbitControls 
@@ -205,9 +203,6 @@
             right: auto;
             transform: translateX(-50%);
             top: 0.5rem;
-        }
-        .form-wrapper.is-open {
-            max-height: 75vh;
         }
     }
 </style>

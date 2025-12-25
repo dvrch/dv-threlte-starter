@@ -15,11 +15,11 @@
 	import { onMount } from 'svelte';
 
 	let {
-		intensity = 0.5, // Slightly more pronounced bloom
+		intensity = 0.7, // Slightly more pronounced bloom
 		luminanceThreshold = 0.2, // More sensitive to light
 		height = 1024,
 		width = 1024,
-		luminanceSmoothing = 1.1,
+		luminanceSmoothing = 0.1,
 		mipmapBlur = true
 	} = $props();
 
