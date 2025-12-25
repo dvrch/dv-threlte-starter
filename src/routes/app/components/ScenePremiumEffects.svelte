@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { useThrelte, useLoader } from '@threlte/core';
-	import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
+	import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 	import { onMount, onDestroy } from 'svelte';
 	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
@@ -12,11 +12,11 @@
 		'dv-threlte/models/compos-hdr'
 	);
 
-	const hdrTexture = useLoader(HDRLoader, () => hdrUrl);
+	const hdrTexture = useLoader(RGBELoader, () => hdrUrl);
 
 	$effect(() => {
-		if ($hdrTexture) {
-			scene.environment = $hdrTexture;
+		if (hdrTexture.current) {
+			scene.environment = hdrTexture.current;
 			// Immediate refresh when texture arrives
 			refreshSceneMaterials();
 		}
