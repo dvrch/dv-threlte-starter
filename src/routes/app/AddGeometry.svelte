@@ -172,8 +172,9 @@
 		// Global listener for direct scene drops
 		const handleDirectDrop = (e: any) => {
 			if (e.detail?.file) {
-				file = e.detail.file;
-				if (!isEditing) name = file.name.split('.')[0];
+				const droppedFile = e.detail.file;
+				file = droppedFile;
+				if (!isEditing && droppedFile) name = droppedFile.name.split('.')[0];
 				// Trigger immediate upload
 				setTimeout(handleSubmit, 100);
 			}
@@ -259,20 +260,12 @@
 
 			if (file) {
 				formData.append('model_file', file);
-				const ext = file.name.split('.').pop()?.toLowerCase();
+				const ext = file.name.split('.').pop()?.toLowerCase() || '';
+				const isImage = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'].includes(ext);
 
-				// Always use 'gltf_model' type for file uploads
-				formData.append('type', 'gltf_model');
-
-				// Only send model_type for actual 3D models (backend only accepts 'gltf' or 'glb')
-				// Images will be detected by extension in Dynamic3DModel
-				if (['glb', 'gltf'].includes(ext || '')) {
-					formData.append('model_type', ext);
-				} else if (['jpg', 'jpeg', 'png'].includes(ext || '')) {
-					// For images, we also pass the extension as model_type
-					// so the backend can handle them correctly.
-					formData.append('model_type', ext);
-				}
+				// Correctly set type: image_plane for images, gltf_model for models
+				formData.append('type', isImage ? 'image_plane' : 'gltf_model');
+				formData.append('model_type', ext);
 			} else if (type === 'spaceship') {
 				formData.append('type', 'gltf_model');
 				formData.append('model_url', 'spaceship.glb'); // Backend helper or full URL
@@ -952,13 +945,36 @@
 					</div>
 				</div>
 
-				<button
-					type="submit"
-					class={isEditing ? 'update-button' : 'add-button'}
-					disabled={isLoading}
-				>
-					{isLoading ? 'Saving...' : isEditing ? 'Update' : 'Add'}
-				</button>
+				<div class="submit-actions">
+					<button
+						type="button"
+						class="image-upload-btn"
+						onclick={() => document.getElementById('direct-image-upload')?.click()}
+					>
+						🖼️ Image
+					</button>
+					<input
+						id="direct-image-upload"
+						type="file"
+						accept="image/*"
+						class="hidden"
+						style="display: none;"
+						onchange={(e: any) => {
+							const target = e.target as HTMLInputElement;
+							const file = target.files?.[0];
+							if (file) {
+								window.dispatchEvent(new CustomEvent('directSceneUpload', { detail: { file } }));
+							}
+						}}
+					/>
+					<button
+						type="submit"
+						class={isEditing ? 'update-button' : 'add-button'}
+						disabled={isLoading}
+					>
+						{isLoading ? 'Saving...' : isEditing ? 'Update' : 'Add'}
+					</button>
+				</div>
 				{#if isEditing}
 					<button type="button" onclick={resetForm} class="cancel-button">Cancel</button>
 				{/if}
@@ -1407,6 +1423,42 @@
 		align-items: center;
 		font-size: 0.7rem;
 		color: #bbb;
+	}
+
+	.submit-actions {
+		display: flex;
+		gap: 8px;
+		width: 100%;
+	}
+
+	.image-upload-btn {
+		flex: 0 0 auto;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		color: #eee;
+		padding: 8px 12px;
+		border-radius: 8px;
+		cursor: pointer;
+		font-size: 0.8rem;
+		transition: all 0.2s;
+	}
+
+	.image-upload-btn:hover {
+		background: rgba(255, 255, 255, 0.1);
+		border-color: #4db6ac;
+	}
+
+	.update-button,
+	.add-button {
+		flex: 1;
+		padding: 10px;
+		border: none;
+		border-radius: 8px;
+		background: #4db6ac;
+		color: white;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.2s;
 	}
 
 	.toggle-btn {

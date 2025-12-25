@@ -12,8 +12,9 @@
 
 	// Re-adopting the working commit 96ec289 logic 🎯
 	$effect(() => {
-		if (scene.environment) {
-			// Immediate refresh when texture arrives in scene
+		// We only care about scene.environment changing
+		const env = scene.environment;
+		if (env) {
 			untrack(() => refreshSceneMaterials());
 		}
 	});
@@ -27,14 +28,16 @@
 		if (name.includes('star') || name.includes('sky') || name.includes('grid')) return;
 
 		// Skip MeshBasicMaterial or specific image planes to avoid "burning" them out
+		// Image planes must stay Basic to keep their colors pure
 		if (material.isMeshBasicMaterial || name.includes('imageplane')) return;
 
-		// Avoid redundant updates to prevent loops or performance issues
+		// IMPORTANT: Stop if already applied to prevent infinite loops
+		// We use the envMap and specific intensity as a marker
 		if (material.envMap === envTexture && material.envMapIntensity === 5.0) return;
 
 		if (envTexture) {
 			material.envMap = envTexture;
-			material.envMapIntensity = 5.0; // High intensity from commit 96ec289
+			material.envMapIntensity = 5.0;
 		}
 
 		if (!material.metalnessMap && 'metalness' in material) {
@@ -53,7 +56,7 @@
 				material.emissive &&
 				(material.emissive.r > 0 || material.emissive.g > 0 || material.emissive.b > 0)
 			) {
-				material.emissiveIntensity = 12.0; // High intensity from commit 96ec289
+				material.emissiveIntensity = 12.0;
 			}
 		}
 
@@ -61,11 +64,13 @@
 	}
 
 	function refreshSceneMaterials() {
-		if (!scene || !scene.environment) return;
+		// Use local non-reactive reference to avoid triggering effects
+		const s = scene;
+		if (!s || !s.environment) return;
 
-		const texture = scene.environment;
+		const texture = s.environment;
 
-		scene.traverse((child: any) => {
+		s.traverse((child: any) => {
 			if (child.isMesh && child.material) {
 				const materials = Array.isArray(child.material) ? child.material : [child.material];
 				materials.forEach((mat: any) => applyPremiumToMaterial(mat, texture, child));
@@ -74,20 +79,25 @@
 	}
 
 	onMount(() => {
-		// Try immediately
-		refreshSceneMaterials();
+		// Initial try
+		setTimeout(() => untrack(refreshSceneMaterials), 500);
 
-		// Retry loop: crucial because HDR loads asynchronously from the web
+		// Periodic refresh but with a longer interval and strict found-check
 		const interval = setInterval(() => {
 			if (scene.environment) {
-				refreshSceneMaterials();
-				// CRITICAL: Stop checking once found to save performance and prevent potential loops
+				untrack(refreshSceneMaterials);
+				// Stop once found or at least don't run every half second
+				// clearing here is safer
 				clearInterval(interval);
 			}
-		}, 1000);
+		}, 2000);
 
 		// Also refresh when new models are added
-		const handleRefresh = () => setTimeout(() => untrack(refreshSceneMaterials), 100);
+		const handleRefresh = (e: any) => {
+			console.log('🔄 Scene Refresh Triggered by:', e.type);
+			setTimeout(() => untrack(refreshSceneMaterials), 200);
+		};
+
 		window.addEventListener('modelAdded', handleRefresh);
 		window.addEventListener('modelVisualLoaded', handleRefresh);
 
@@ -96,10 +106,6 @@
 			window.removeEventListener('modelAdded', handleRefresh);
 			window.removeEventListener('modelVisualLoaded', handleRefresh);
 		};
-	});
-
-	onDestroy(() => {
-		// No cleanup needed
 	});
 </script>
 

@@ -12,11 +12,24 @@
 	const font =
 		'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/fonts/helvetiker_bold.typeface.json';
 
+	interface GeometryData {
+		id: number;
+		name: string;
+		type: string;
+		model_url?: string;
+		model_type?: string;
+		position: { x: number; y: number; z: number };
+		rotation: { x: number; y: number; z: number };
+		scale: { x: number; y: number; z: number };
+		color: string;
+		visible: boolean;
+	}
+
 	let {
 		geometry,
 		ref = $bindable(new Group()),
 		onPointerDown
-	}: { geometry: any; ref?: Group; onPointerDown?: () => void } = $props();
+	}: { geometry: GeometryData; ref?: Group; onPointerDown?: () => void } = $props();
 
 	// Map geometry types to their respective Svelte components using dynamic imports
 	const componentMap: { [key: string]: () => Promise<any> } = {
@@ -96,12 +109,16 @@
 	]);
 
 	const imageUrl = $derived(() => {
-		const rawUrl = geometry.model_url;
+		const rawUrl = geometry?.model_url;
 		if (!rawUrl) return null;
+
 		const isImage =
 			geometry.type === 'image_plane' || /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(rawUrl);
+
 		if (!isImage) return null;
-		return getCloudinaryAssetUrl(rawUrl);
+
+		const cleaned = getCloudinaryAssetUrl(rawUrl);
+		return cleaned;
 	});
 
 	const loader = useLoader(TextureLoader);
@@ -111,21 +128,33 @@
 	$effect(() => {
 		if (textureStore && $textureStore) {
 			const tex = $textureStore as THREE.Texture;
+
 			const checkImage = () => {
 				if (tex.image && tex.image.width > 0) {
 					aspect = tex.image.width / tex.image.height;
+					console.log(`✅ [ImagePlane] Aspect Ready: ${aspect} for ${geometry.name}`);
 				}
 			};
+
 			checkImage();
+
 			if (!tex.image || tex.image.width === 0) {
 				tex.addEventListener('update', checkImage);
 				if (tex.source && tex.source.data instanceof HTMLImageElement) {
 					tex.source.data.onload = checkImage;
 				}
 			}
+
 			return () => {
 				tex.removeEventListener('update', checkImage);
 			};
+		}
+	});
+
+	$effect(() => {
+		const url = imageUrl();
+		if (url) {
+			console.log('🖼️ [ImagePlane] Target URL:', url);
 		}
 	});
 </script>
@@ -136,6 +165,7 @@
 		position={posArray}
 		rotation={rotArray}
 		scale={scaleArray}
+		visible={geometry.visible !== false}
 		onpointerdown={(e: any) => {
 			if (onPointerDown) {
 				e.stopPropagation();
@@ -172,7 +202,13 @@
 				<T.MeshStandardMaterial color={geometry.color} />
 			</T.Mesh>
 		{:else if imageUrl()}
-			<T.Mesh name="ImagePlaneMesh" scale={[aspect, 1, 1]}>
+			<!-- Face camera logic: PlaneGeometry faces +Z. We scale by aspect ratio. -->
+			<T.Mesh
+				name="ImagePlaneMesh"
+				scale={[aspect, 1, 1]}
+				position={[0, 0, 0.02]}
+				frustumCulled={false}
+			>
 				<T.PlaneGeometry args={[5, 5]} />
 				{#if textureStore && $textureStore}
 					<T.MeshBasicMaterial
@@ -182,10 +218,16 @@
 						transparent={true}
 						toneMapped={false}
 						depthWrite={true}
-						alphaTest={0.01}
+						opacity={1}
 					/>
 				{:else}
-					<T.MeshBasicMaterial color="#333333" side={THREE.DoubleSide} />
+					<!-- Fallback loader -->
+					<T.MeshBasicMaterial
+						color="#333333"
+						side={THREE.DoubleSide}
+						opacity={0.5}
+						transparent={true}
+					/>
 				{/if}
 			</T.Mesh>
 		{:else if geometry.model_url && geometry.model_url.trim() !== ''}
