@@ -29,12 +29,19 @@ class Geometry(models.Model):
         help_text="URL du modèle 3D sur Cloudinary",
     )
 
-    # Type de fichier 3D
+    # Type de fichier 3D ou Image
     model_type = models.CharField(
         max_length=10,
-        choices=[("gltf", "glTF"), ("glb", "GLB")],
+        choices=[
+            ("gltf", "glTF"), 
+            ("glb", "GLB"),
+            ("jpg", "JPEG"),
+            ("jpeg", "JPEG"),
+            ("png", "PNG"),
+            ("webp", "WebP")
+        ],
         blank=True,
-        help_text="Format du fichier 3D",
+        help_text="Format du fichier (3D ou Image)",
     )
     position = models.JSONField(default=get_default_position)
     rotation = models.JSONField(default=get_default_rotation)

@@ -17,6 +17,8 @@ TYPE_CHOICES = [
     ('desk', 'Desk'),
     ('gltf_model', 'GLTF Model'),
     ('text', 'Text'),
+    ('text_scene', 'Text Scene'),
+    ('image_plane', 'Image Plane'),
 ]
 
 

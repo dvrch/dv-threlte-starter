@@ -1,16 +1,14 @@
-from rest_framework import serializers
-from .models import Geometry, CloudinaryAsset
-
-
+import logging
+import json
+import re
 import cloudinary.uploader
 from rest_framework import serializers
 from .models import Geometry, CloudinaryAsset
 
+logger = logging.getLogger(__name__)
 
 class GeometrySerializer(serializers.ModelSerializer):
     model_file = serializers.FileField(write_only=True, required=False, allow_null=True)
-    # model_url is now a direct field of the model, so no 'source' is needed.
-    # It will be read-only during serialization, but we'll set it manually in create/update.
     model_url = serializers.URLField(read_only=True)
     color_picker = serializers.CharField(write_only=True, required=False)
 
@@ -20,16 +18,28 @@ class GeometrySerializer(serializers.ModelSerializer):
             "id",
             "type",
             "name",
-            "model_file",  # For upload
-            "model_url",  # For download/display
+            "model_file",
+            "model_url",
             "model_type",
             "position",
             "rotation",
-            "scale",  # Added scale field
+            "scale",
             "color",
             "color_picker",
             "visible",
         ]
+
+    def to_internal_value(self, data):
+        # Multipart form data sends everything as strings. 
+        # We must parse JSON fields manually if they are strings.
+        ret = data.copy()
+        for field in ["position", "rotation", "scale"]:
+            if field in ret and isinstance(ret[field], str):
+                try:
+                    ret[field] = json.loads(ret[field])
+                except (json.JSONDecodeError, TypeError):
+                    pass
+        return super().to_internal_value(ret)
 
     def validate_color(self, value):
         if value and not value.startswith("#"):
@@ -44,14 +54,26 @@ class GeometrySerializer(serializers.ModelSerializer):
             validated_data["color"] = color_picker
 
         if model_file:
-            # If a file is uploaded, this geometry is defined by that file.
-            # Override the type and model_type to ensure consistency.
-            validated_data["type"] = "gltf_model"
-            validated_data["model_type"] = "glb"
+            # Detect extension
+            ext = model_file.name.split(".")[-1].lower()
+            
+            # If a file is uploaded, determine its type
+            if ext in ["glb", "gltf"]:
+                validated_data["type"] = "gltf_model"
+                validated_data["model_type"] = ext
+                resource_type = "raw"
+            elif ext in ["jpg", "jpeg", "png", "webp"]:
+                validated_data["type"] = "image_plane"
+                validated_data["model_type"] = ext
+                resource_type = "image"
+            else:
+                validated_data["type"] = "gltf_model"
+                validated_data["model_type"] = ext
+                resource_type = "raw"
 
             upload_result = cloudinary.uploader.upload(
                 model_file,
-                resource_type="raw",
+                resource_type=resource_type,
                 folder="dv-threlte/models",
                 # We can use the original filename for the public_id to keep it readable
                 use_filename=True,
@@ -96,9 +118,26 @@ class GeometrySerializer(serializers.ModelSerializer):
                 except Exception as e:
                     print(f"❌ Error deleting old Cloudinary asset: {str(e)}")
 
+            # Detect extension
+            ext = model_file.name.split(".")[-1].lower()
+            
+            # If a file is uploaded, determine its type
+            if ext in ["glb", "gltf"]:
+                validated_data["type"] = "gltf_model"
+                validated_data["model_type"] = ext
+                resource_type = "raw"
+            elif ext in ["jpg", "jpeg", "png", "webp"]:
+                validated_data["type"] = "image_plane"
+                validated_data["model_type"] = ext
+                resource_type = "image"
+            else:
+                validated_data["type"] = "gltf_model"
+                validated_data["model_type"] = ext
+                resource_type = "raw"
+
             upload_result = cloudinary.uploader.upload(
                 model_file,
-                resource_type="raw",
+                resource_type=resource_type,
                 folder="dv-threlte/models",
                 use_filename=True,  # Disable versioning
                 unique_filename=False,  # Allow overwrite
