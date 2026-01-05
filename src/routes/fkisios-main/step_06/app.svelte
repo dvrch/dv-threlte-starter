@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { base } from '$app/paths';
 	import { Scene } from 'three';
 	import Camera from './engine/camera';
 	import Light from './engine/light';
@@ -17,8 +18,8 @@
 	let graphic: Graphic;
 
 	onMount(async () => {
-		const assetW = await loadWorld('/fkisios/glb/world2.glb');
-		const assetP = await loadEntity('/fkisios/glb/character.glb');
+		const assetW = await loadWorld(`${base}/fkisios/glb/world2.glb`);
+		const assetP = await loadEntity(`${base}/fkisios/glb/character.glb`);
 
 		scene = new Scene();
 		camera = new Camera();
