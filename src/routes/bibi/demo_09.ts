@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
+import { getLocalAssetUrl } from '$lib/utils/assets';
 
 export async function initSn(canvas: HTMLCanvasElement) {
 
@@ -12,7 +12,7 @@ export async function initSn(canvas: HTMLCanvasElement) {
 
   let gltf;
   try {
-    gltf = await new GLTFLoader().loadAsync(getCloudinaryAssetUrl('cloth_sim_rffdfn.glb'));
+    gltf = await new GLTFLoader().loadAsync(getLocalAssetUrl('public/cloth_sim_rffdfn.glb'));
   } catch (error) {
     console.error("Erreur lors du chargement du modèle GLTF:", error);
     throw error; // Propager l'erreur
@@ -21,7 +21,7 @@ export async function initSn(canvas: HTMLCanvasElement) {
   const mesh = gltf.scene.children[0] as THREE.Mesh; // Accéder au mesh
   let texture;
   try {
-    texture = await new THREE.TextureLoader().loadAsync(getCloudinaryAssetUrl('zaki.png'));
+    texture = await new THREE.TextureLoader().loadAsync(getLocalAssetUrl('public/zaki.png'));
   } catch (error) {
     console.error("Erreur lors du chargement de la texture:", error);
     throw error; // Propager l'erreur

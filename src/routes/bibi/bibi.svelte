@@ -65,6 +65,7 @@
   import * as THREE from 'three';
   import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
   import { OrbitControls as ThreeOrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+  import { getLocalAssetUrl } from '$lib/utils/assets';
 
   let { width = 100 } = $props();
   let { height = 100 } = $props();
@@ -84,10 +85,10 @@
     const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
     camera.position.set(0, 1.5, 5.2);
 
-    let gltf = await new GLTFLoader().loadAsync('/public/cloth_sim_rffdfn.glb');
+    let gltf = await new GLTFLoader().loadAsync(getLocalAssetUrl('public/cloth_sim_rffdfn.glb'));
     const mesh = gltf.scene.children[0] as THREE.Mesh;
     
-    let texture = await new THREE.TextureLoader().loadAsync('/public/bibi.png');
+    let texture = await new THREE.TextureLoader().loadAsync(getLocalAssetUrl('public/bibi.png'));
     
     if (mesh.material) {
       mesh.material = new THREE.MeshPhongMaterial({ map: texture, shininess: 10 });

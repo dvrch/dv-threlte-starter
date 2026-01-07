@@ -3,10 +3,10 @@
 	import { useGltf } from '@threlte/extras';
 	import { onMount } from 'svelte';
 	import * as THREE from 'three';
-	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
+	import { getLocalAssetUrl } from '$lib/utils/assets';
 
 	// Charger le modèle animé
-	const gltf = useGltf(getCloudinaryAssetUrl('cloth_sim_rffdfn.glb'));
+	const gltf = useGltf(getLocalAssetUrl('public/cloth_sim_rffdfn.glb'));
 
 	// Animation mixer et scène Three.js native
 	let mixer: THREE.AnimationMixer;

@@ -1,0 +1,24 @@
+[
+  {
+    "id": "1",
+    "name": "Boîte de test",
+    "type": "box",
+    "color": "#ff0000",
+    "position": { "x": 0, "y": 0.5, "z": -2 },
+    "rotation": { "x": 0, "y": 0, "z": 0 },
+    "scale": { "x": 1, "y": 1, "z": 1 },
+    "visible": true,
+    "model_url": null
+  },
+  {
+    "id": "2",
+    "name": "Modèle du monde",
+    "type": "gltf",
+    "color": "#ffffff",
+    "position": { "x": 2, "y": 1, "z": 0 },
+    "rotation": { "x": 0, "y": 0, "z": 0 },
+    "scale": { "x": 0.5, "y": 0.5, "z": 0.5 },
+    "visible": true,
+    "model_url": "/fkisios/glb/world2.glb"
+  }
+]

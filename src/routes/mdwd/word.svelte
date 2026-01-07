@@ -1,11 +1,12 @@
 <script>
     import { onMount } from 'svelte';
     import mammoth from 'mammoth';
+    import { getLocalAssetUrl } from '$lib/utils/assets';
 
     let content = $state('');
 
     onMount(async () => {
-        const response = await fetch('/src/routes/mdwd/Montage de projet Djontso victorien 15_08_2O24.docx');
+        const response = await fetch(getLocalAssetUrl('mdwd/Montage de projet Djontso victorien 15_08_2O24.docx'));
         if (!response.ok) {
             console.error('Erreur lors du chargement du fichier:', response.statusText);
             return;

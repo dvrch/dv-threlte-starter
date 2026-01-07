@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte';
 	import { T, useTask } from '@threlte/core';
 	import { assets } from '$lib/services/assets';
-	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
+	import { getLocalAssetUrl } from '$lib/utils/assets';
 
 	import { browser } from '$app/environment';
 
@@ -16,8 +16,8 @@
 	let clock = new THREE.Clock(); // To manage animation time
 
 	// Path to your GLB model and textures
-	const glbPath = getCloudinaryAssetUrl('cloth_sim_rffdfn.glb');
-	const textures = [getCloudinaryAssetUrl('zaki.png')];
+	const glbPath = getLocalAssetUrl('public/cloth_sim_rffdfn.glb');
+	const textures = [getLocalAssetUrl('public/zaki.png')];
 	let activeTextureIndex = 0;
 
 	// Function to load a texture and update the material of the model

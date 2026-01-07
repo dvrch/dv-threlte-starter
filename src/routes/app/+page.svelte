@@ -12,7 +12,7 @@
 	import Dynamic3DModel from '$lib/components/Dynamic3DModel.svelte';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
-	import { ENDPOINTS } from '$lib/config';
+	import { base } from '$app/paths';
 	import { Group } from 'three';
 
 	import { addToast } from '$lib/stores/toasts';
@@ -112,7 +112,7 @@
 	// Function to fetch geometries
 	const fetchGeometries = async () => {
 		try {
-			const apiUrl = ENDPOINTS.GEOMETRIES;
+			const apiUrl = `${base}/data/geometries.json`;
 			console.log('Fetching geometries from:', apiUrl);
 			const response = await fetch(apiUrl);
 
@@ -126,7 +126,7 @@
 			const results = Array.isArray(data) ? data : data.results || [];
 			// Filter out geometries that expect an URL but have none
 			geometries = results.filter((g: any) => {
-				if (g.model_type === 'gltf' || g.model_type === 'glb') {
+				if (g.type === 'gltf' || g.type === 'glb') {
 					return g.model_url && g.model_url.trim() !== '';
 				}
 				return true;
@@ -191,8 +191,9 @@
 </script>
 
 <Canvas>
-	<T.PerspectiveCamera makeDefault position={[10, 10, 10]} fov={30} />
-	<OrbitControls />
+	<T.PerspectiveCamera makeDefault position={[10, 10, 10]} fov={30}>
+		<OrbitControls />
+	</T.PerspectiveCamera>
 	<Grid />
 
 	<HTML center>

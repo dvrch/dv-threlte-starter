@@ -1,11 +1,12 @@
 <script>
     import { onMount } from 'svelte';
     import { marked } from 'marked';
+    import { getLocalAssetUrl } from '$lib/utils/assets';
     
     let content = $state('');
 
     onMount(async () => {
-        const response = await fetch('/src/routes/mdwd/Montage de projet Djontso victorien 15_08_2O24.md');
+        const response = await fetch(getLocalAssetUrl('mdwd/Montage de projet Djontso victorien 15_08_2O24.md'));
         if (!response.ok) {
             console.error('Erreur lors du chargement du fichier:', response.statusText);
             return;

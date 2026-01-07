@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
 	import { useGltf } from '@threlte/extras';
-
-	import { assets } from '$lib/services/assets';
+	import { getLocalAssetUrl } from '$lib/utils/assets';
 
 	// Charger le modèle GLTF.
 	// Le hook useGltf est appelé au niveau supérieur du script.
 	// Le chemin '/models/scene.gltf' pointe vers le dossier 'static/models/scene.gltf'.
-	const gltf = useGltf(assets.getUrl('/models/scene.gltf'));
+	const gltf = useGltf(getLocalAssetUrl('models/scene.gltf'));
 </script>
 
 <!--
