@@ -149,3 +149,30 @@ export const geometryService = {
 		}
 	}
 };
+
+// 🏁 Export pour la compatibilité avec d'autres parties du code
+export const api = {
+	get: async <T>(url: string) => {
+		try {
+			const baseUrl = ENDPOINTS.GEOMETRIES.split('/api')[0];
+			const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+			const response = await fetch(fullUrl);
+			return (await response.json()) as T;
+		} catch (e) {
+			console.error('API Get failed', e);
+			return null as any;
+		}
+	},
+	delete: async (url: string) => {
+		try {
+			const baseUrl = ENDPOINTS.GEOMETRIES.split('/api')[0];
+			const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+			const response = await fetch(fullUrl, { method: 'DELETE' });
+			return await response.json();
+		} catch (e) {
+			console.error('API Delete failed', e);
+			return null;
+		}
+	}
+};
+

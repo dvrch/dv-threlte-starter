@@ -1,23 +1,14 @@
-import { api } from '../services/api';
+import { geometryService, type GeometryItem as Geometry } from '../services/api';
 
-export interface Geometry {
-    id: string;
-    position: { x: number; y: number; z: number };
-    rotation: { x: number; y: number; z: number };
-    type: string;
-    color: string;
-    name: string;
-    model_url?: string;
-    scale?: { x: number; y: number; z: number };
-}
+export type { Geometry };
 
 export const GeometriesRepository = {
     getAll: async () => {
-        return api.get<Geometry[] | { results: Geometry[] }>('api/geometries/');
+        return geometryService.getAll();
     },
 
     delete: async (id: string) => {
-        return api.delete(`api/geometries/${id}/`);
+        return geometryService.delete(id);
     },
 
     // Add create/update if needed
