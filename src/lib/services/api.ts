@@ -137,7 +137,6 @@ export const geometryService = {
 		try {
 			const response = await fetch(`${ENDPOINTS.GEOMETRIES}${id}/`, { method: 'DELETE' });
 			if (response.ok) {
-				// Remove from local cache
 				const items = (await this.getAll()).filter(i => i.id != id);
 				this.saveLocal(items);
 				return;
@@ -150,6 +149,52 @@ export const geometryService = {
 			const items = (await this.getAll()).filter(i => i.id != id);
 			this.saveLocal(items);
 		}
+	},
+
+	/** 📤 Exporte toute la scène actuelle en JSON pour sauvegarde client */
+	exportScene() {
+		if (!browser) return;
+		const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+		if (!data) return;
+
+		const blob = new Blob([data], { type: 'application/json' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `dv-scene-${new Date().toISOString().split('T')[0]}.json`;
+		a.click();
+		URL.revokeObjectURL(url);
+	},
+
+	/** 📥 Importe et fusionne une scène JSON externe dans le LocalStorage */
+	async importScene(file: File): Promise<void> {
+		if (!browser) return;
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				try {
+					const importedItems = JSON.parse(e.target?.result as string);
+					if (Array.isArray(importedItems)) {
+						const currentItems = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+
+						// Fusion intelligente par ID (l'importé écrase le local en cas de conflit)
+						const mergedMap = new Map();
+						currentItems.forEach((item: any) => mergedMap.set(item.id.toString(), item));
+						importedItems.forEach((item: any) => mergedMap.set(item.id.toString(), item));
+
+						const finalItems = Array.from(mergedMap.values());
+						this.saveLocal(finalItems);
+						resolve();
+					} else {
+						reject(new Error("Format de fichier invalide (doit être un tableau JSON)"));
+					}
+				} catch (err) {
+					reject(err);
+				}
+			};
+			reader.onerror = () => reject(new Error("Erreur de lecture du fichier"));
+			reader.readAsText(file);
+		});
 	}
 };
 

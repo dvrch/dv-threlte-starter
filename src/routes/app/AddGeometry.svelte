@@ -122,33 +122,13 @@
 			if (staticResponse.ok) {
 				const data = await staticResponse.json();
 				const fetchedTypes = (data || []).map((type: any) => type.id);
-				const baseTypes = [
-					'box',
-					'sphere',
-					'torus',
-					'icosahedron',
-					'spaceship',
-					'vague',
-					'nissangame',
-					'bibigame',
-					'textmd',
-					'text_scene'
-				];
-				types = [...new Set([...baseTypes, ...fetchedTypes])];
+
+				// On garde les types de base "système"
+				const systemTypes = ['box', 'sphere', 'torus', 'icosahedron', 'textmd', 'image_plane'];
+				types = [...new Set([...systemTypes, ...fetchedTypes])];
 			}
 		} catch (error) {
-			types = [
-				'box',
-				'sphere',
-				'torus',
-				'icosahedron',
-				'spaceship',
-				'vague',
-				'nissangame',
-				'bibigame',
-				'textmd',
-				'text_scene'
-			];
+			types = ['box', 'sphere', 'torus', 'icosahedron', 'textmd', 'image_plane'];
 		}
 	};
 	const dispatch = createEventDispatcher();
@@ -401,6 +381,27 @@
 			scale.x = val;
 			scale.y = val;
 			scale.z = val;
+		}
+	};
+
+	// 📤 Export / 📥 Import
+	const handleExport = () => {
+		geometryService.exportScene();
+		addToast('Scène exportée avec succès ! 📤', 'success');
+	};
+
+	let importFileInput = $state<HTMLInputElement>();
+	const handleImport = async (e: Event) => {
+		const target = e.target as HTMLInputElement;
+		if (target.files && target.files[0]) {
+			try {
+				await geometryService.importScene(target.files[0]);
+				await loadGeometries();
+				window.dispatchEvent(new Event('modelAdded'));
+				addToast('Scène importée et fusionnée ! 📥✨', 'success');
+			} catch (err) {
+				addToast("Erreur lors de l'import : " + (err as Error).message, 'error');
+			}
 		}
 	};
 </script>
@@ -905,16 +906,35 @@
 			</div>
 
 			<div class="submit-actions-bottom">
-				<button
-					type="submit"
-					class={isEditing ? 'update-button' : 'add-button'}
-					disabled={isLoading}
-				>
-					{isLoading ? 'Saving...' : isEditing ? 'Update' : 'Add'}
+				<button type="submit" class="submit-btn" disabled={isLoading}>
+					{isLoading ? 'Processing...' : isEditing ? 'Update Geometry' : 'Add Geometry'}
 				</button>
 				{#if isEditing}
 					<button type="button" onclick={resetForm} class="cancel-button"> Cancel </button>
 				{/if}
+			</div>
+
+			<!-- Partage / Portabilité Section -->
+			<div class="portability-section">
+				<h4>📂 Portabilité de la Scène</h4>
+				<div class="portability-grid">
+					<button type="button" class="port-btn export" onclick={handleExport}>
+						📤 Exporter (JSON)
+					</button>
+					<button type="button" class="port-btn import" onclick={() => importFileInput?.click()}>
+						📥 Importer (JSON)
+					</button>
+					<input
+						bind:this={importFileInput}
+						type="file"
+						accept=".json"
+						style="display:none"
+						onchange={handleImport}
+					/>
+				</div>
+				<p class="port-hint">
+					Sauvegardez votre monde construit sur votre PC pour le recharger plus tard ! 💾✨
+				</p>
 			</div>
 
 			<!-- Scene Controls -->
@@ -1486,6 +1506,33 @@
 		border-radius: 2px;
 		color: #999;
 		cursor: pointer;
+	}
+
+	.submit-btn {
+		width: 100%;
+		padding: 0.8rem;
+		background: #4db6ac;
+		color: black;
+		border: none;
+		border-radius: 6px;
+		font-weight: bold;
+		cursor: pointer;
+		transition: all 0.2s;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.submit-btn:hover {
+		background: #80cbc4;
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(77, 182, 172, 0.3);
+	}
+
+	.submit-btn:disabled {
+		background: #333;
+		color: #666;
+		cursor: not-allowed;
+		transform: none;
 	}
 
 	.tiny-btn:hover,

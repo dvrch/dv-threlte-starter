@@ -23,8 +23,12 @@ async function sync() {
             ];
         }
 
-        // 2. Fetch Types (Base + API)
-        const baseTypesList = ['box', 'sphere', 'torus', 'icosahedron', 'spaceship', 'vague', 'nissangame', 'bibigame', 'textmd', 'text_scene', 'image_plane'];
+        // 2. Fetch Types (Base + API) 🏗️ BASE DE DONNÉES DE TRAVAIL
+        // Ajoutez vos types personnalisés ou vos paths de modèles ici
+        const baseTypesList = [
+            'box', 'sphere', 'torus', 'icosahedron', 'textmd', 'image_plane',
+            'spaceship', 'vague', 'nissangame', 'bibigame' // Vos modèles personnalisés
+        ];
         let apiTypes = [];
         try {
             const typeResponse = await fetch(`${API_URL}/api/types/`);
