@@ -18,44 +18,41 @@ const LOCAL_STORAGE_KEY = 'dv_threlte_geometries_v1';
 
 export const geometryService = {
 	async getAll(): Promise<GeometryItem[]> {
-		// 1. Try to get from LocalStorage first if in browser (for user changes on static site)
+		let serverGeometries: GeometryItem[] = [];
+
+		// 1. Charger l'Écho Statique (DB Snapshot du build)
+		try {
+			const staticUrl = `${base}/data/geometries.json`.replace('//', '/');
+			const response = await fetch(staticUrl);
+			if (response.ok) {
+				serverGeometries = await response.json();
+				console.log(`📡 Echo DB chargé : ${serverGeometries.length} objets`);
+			}
+		} catch (e) {
+			console.warn('⚠️ Impossible de charger l\'écho DB');
+		}
+
+		// 2. Récupérer les modifs locales (LocalStorage)
 		if (browser) {
 			const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
 			if (localData) {
-				console.log('📦 Loaded from LocalStorage');
-				return JSON.parse(localData);
+				const userGeometries: GeometryItem[] = JSON.parse(localData);
+				console.log(`📦 LocalStorage chargé : ${userGeometries.length} objets`);
+
+				// Fusionner : On garde les objets du serveur, mais si l'utilisateur les a modifiés (même ID), 
+				// on prend la version utilisateur. Et on ajoute les nouveaux objets créés localement.
+				const mergedMap = new Map();
+				serverGeometries.forEach(g => mergedMap.set(g.id.toString(), g));
+				userGeometries.forEach(g => mergedMap.set(g.id.toString(), g));
+
+				return Array.from(mergedMap.values());
+			} else if (serverGeometries.length > 0) {
+				// Premier chargement : on initialise le LocalStorage avec l'écho
+				this.saveLocal(serverGeometries);
 			}
 		}
 
-		// 2. Try to get from real API
-		try {
-			const response = await fetch(ENDPOINTS.GEOMETRIES, {
-				headers: { Accept: 'application/json' }
-			});
-			if (response.ok) {
-				const data = await response.json();
-				const results = Array.isArray(data) ? data : (data.results || []);
-				if (browser && results.length > 0) this.saveLocal(results); // Cache it
-				return results;
-			}
-		} catch (e) {
-			console.warn('⚠️ API Backend unreachable, falling back to static JSON');
-		}
-
-		// 3. Fallback to static snapshot (GitHub Pages context)
-		try {
-			const staticUrl = `${base}/data/geometries.json`;
-			const response = await fetch(staticUrl);
-			if (response.ok) {
-				const data = await response.json();
-				if (browser) this.saveLocal(data);
-				return data;
-			}
-		} catch (e) {
-			console.error('❌ Static snapshot not found');
-		}
-
-		return [];
+		return serverGeometries;
 	},
 
 	saveLocal(items: GeometryItem[]) {
