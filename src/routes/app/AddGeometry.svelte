@@ -32,16 +32,7 @@
 
 	let file: File | null = $state(null); // State for the uploaded file
 
-	interface GeometryItem {
-		id: string;
-		name: string;
-		type: string;
-		color: string;
-		position: { x: number; y: number; z: number };
-		rotation: { x: number; y: number; z: number };
-		scale?: { x: number; y: number; z: number };
-		visible: boolean;
-	}
+	import { geometryService, type GeometryItem } from '$lib/services/api';
 
 	let geometries = $state<GeometryItem[]>([]);
 	let selectedGeometryId = $state('');
@@ -98,14 +89,14 @@
 
 	const loadTypes = async () => {
 		try {
+			// We still need types, we can use a small static list for GitHub Pages
 			const response = await fetch(ENDPOINTS.TYPES, {
 				headers: { Accept: 'application/json' }
 			});
 			if (!response.ok) throw new Error(`HTTP ${response.status}`);
 			const data = await response.json();
 			if (Array.isArray(data)) {
-				const fetchedTypes = data.map((type) => type.id);
-				// Ensure important types are present
+				const fetchedTypes = data.map((type: any) => type.id);
 				const baseTypes = [
 					'box',
 					'sphere',
@@ -116,13 +107,11 @@
 					'nissangame',
 					'bibigame',
 					'textmd',
-					'text_scene' // Add text_scene here
+					'text_scene'
 				];
 				types = [...new Set([...baseTypes, ...fetchedTypes])];
 			}
 		} catch (error) {
-			console.error('Error loading types:', error);
-			// Fallback types
 			types = [
 				'box',
 				'sphere',
@@ -133,30 +122,23 @@
 				'nissangame',
 				'bibigame',
 				'textmd',
-				'text_scene' // Add text_scene here
+				'text_scene'
 			];
-			addToast('Failed to load types from server. Using defaults.', 'warning');
 		}
 	};
 
 	const dispatch = createEventDispatcher();
 
 	const resetForm = () => {
-		// Default to 'box' or random type if available
 		type = types.length > 0 ? types[Math.floor(Math.random() * types.length)] : 'box';
 		name = type;
-
-		// Random color
 		color = `#${Math.floor(Math.random() * 16777215)
 			.toString(16)
 			.padStart(6, '0')}`;
-
-		// Defaults: 0, 0, 0 for Pos/Rot, 1, 1, 1 for Scale
 		position = { x: 0, y: 0, z: 0 };
 		rotation = { x: 0, y: 0, z: 0 };
 		scale = { x: 1, y: 1, z: 1 };
 		isUniformScale = true;
-
 		isEditing = false;
 		selectedGeometryId = '';
 		file = null;
@@ -169,30 +151,25 @@
 			resetForm();
 		})();
 
-		// Global listener for direct scene drops
 		const handleDirectDrop = (e: any) => {
 			if (e.detail?.file) {
 				const droppedFile = e.detail.file;
 				file = droppedFile;
 				if (!isEditing && droppedFile) name = droppedFile.name.split('.')[0];
-				// Trigger immediate upload
 				setTimeout(handleSubmit, 100);
 			}
 		};
 		window.addEventListener('directSceneUpload', handleDirectDrop);
 
-		// Synchronize UI when user manipulates in scene
 		const handleManualSync = (e: any) => {
 			const data = e.detail;
 			if (!data?.id) return;
 
-			// If selecting a NEW object from scene, load its full details into the form
 			if (data.id !== selectedGeometryId) {
 				loadGeometryDetails(data.id);
 				return;
 			}
 
-			// Otherwise, update current form values in real-time
 			if (data.position)
 				position = {
 					x: formatVal(data.position.x),
@@ -212,10 +189,7 @@
 					z: formatVal(data.scale.z)
 				};
 
-			// Optional: auto-save to DB after manual move
-			if (data.save) {
-				handleSubmit();
-			}
+			if (data.save) handleSubmit();
 		};
 		window.addEventListener('manualTransformSync', handleManualSync);
 
@@ -227,16 +201,7 @@
 
 	const loadGeometries = async () => {
 		try {
-			const response = await fetch(ENDPOINTS.GEOMETRIES, {
-				headers: { Accept: 'application/json' }
-			});
-			if (!response.ok) throw new Error(`HTTP ${response.status}`);
-			const data = await response.json();
-			if (data.results && Array.isArray(data.results)) {
-				geometries = data.results;
-			} else if (Array.isArray(data)) {
-				geometries = data;
-			}
+			geometries = await geometryService.getAll();
 		} catch (error) {
 			console.error('Error loading geometries:', error);
 			addToast('Failed to load geometries.', 'error');
@@ -251,7 +216,6 @@
 			const getUniqueName = (baseName: string) => {
 				const existingNames = geometries.map((g) => g.name);
 				if (!existingNames.includes(baseName)) return baseName;
-
 				let counter = 1;
 				while (existingNames.includes(`${baseName}-${counter}`)) {
 					counter++;
@@ -260,7 +224,6 @@
 			};
 
 			let uniqueName = isEditing ? name : '';
-
 			if (!isEditing) {
 				const baseName =
 					name || (file ? file.name.split('.')[0] : type === 'text' ? 'Hello 3D' : type);
@@ -277,16 +240,12 @@
 				formData.append('model_file', file);
 				const ext = file.name.split('.').pop()?.toLowerCase() || '';
 				const isImage = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'].includes(ext);
-
-				// Correctly set type: image_plane for images, gltf_model for models
 				formData.append('type', isImage ? 'image_plane' : 'gltf_model');
 				formData.append('model_type', ext);
 			} else if (type === 'spaceship') {
 				formData.append('type', 'gltf_model');
-				formData.append('model_url', 'spaceship.glb'); // Backend helper or full URL
+				formData.append('model_url', 'spaceship.glb');
 			} else if (type === 'textmd') {
-				// Backend doesn't accept 'textmd', send 'text' instead
-				// Frontend will detect it's textmd by the name
 				formData.append('type', 'text');
 			} else if (type === 'text_scene') {
 				formData.append('type', 'text_scene');
@@ -294,48 +253,16 @@
 				formData.append('type', type);
 			}
 
-			// For new items, force visible=true. For existing items, retain current visibility.
 			if (!isEditing) {
 				formData.append('visible', 'true');
 			} else {
-				// When editing, retrieve the current visibility state of the selected geometry
 				const currentGeometry = geometries.find((g) => g.id === selectedGeometryId);
-				if (currentGeometry) {
-					formData.append('visible', String(currentGeometry.visible));
-				}
+				if (currentGeometry) formData.append('visible', String(currentGeometry.visible));
 			}
 
-			let url = ENDPOINTS.GEOMETRIES;
-			let method = 'POST';
-
-			if (isEditing && selectedGeometryId) {
-				url = `${url}${selectedGeometryId}/`;
-				method = 'PUT';
-			}
-
-			const response = await fetch(url, {
-				method,
-				body: formData
-			});
-
-			if (!response.ok) {
-				const errorData = await response.json().catch(() => ({ detail: 'Save failed' }));
-				// Better error display: join all error messages
-				let errorMsg = errorData.detail || '';
-				if (!errorMsg) {
-					errorMsg = Object.entries(errorData)
-						.map(([key, value]) => `${key}: ${Array.isArray(value) ? value[0] : value}`)
-						.join(' | ');
-				}
-				throw new Error(errorMsg || 'Save failed');
-			}
+			await geometryService.save(formData, isEditing ? selectedGeometryId : undefined);
 
 			addToast(isEditing ? 'Geometry updated!' : 'Geometry added!', 'success');
-
-			// If adding new, select it? Or just reset?
-			// User said "tu upload et vois direct".
-			// If we re-load geometries, we should see it.
-
 			if (!isEditing) resetForm();
 
 			dispatch('geometryChanged');
@@ -363,10 +290,7 @@
 	const deleteGeometry = async () => {
 		if (!selectedGeometryId) return;
 		try {
-			const response = await fetch(`${ENDPOINTS.GEOMETRIES}${selectedGeometryId}/`, {
-				method: 'DELETE'
-			});
-			if (!response.ok) throw new Error('Failed to delete geometry');
+			await geometryService.delete(selectedGeometryId);
 			addToast('Geometry deleted!', 'success');
 			resetForm();
 			dispatch('geometryChanged');
@@ -380,9 +304,9 @@
 
 	const loadGeometryDetails = async (id: string) => {
 		try {
-			const response = await fetch(`${ENDPOINTS.GEOMETRIES}${id}/`);
-			if (!response.ok) throw new Error('Failed to fetch geometry details');
-			const geometry = await response.json();
+			const geometry = geometries.find((g) => g.id == id);
+			if (!geometry) throw new Error('Not found');
+
 			name = geometry.name;
 			type = geometry.type;
 			color = geometry.color;
@@ -391,61 +315,33 @@
 			scale = geometry.scale ? { ...geometry.scale } : { x: 1, y: 1, z: 1 };
 
 			isEditing = true;
-			selectedGeometryId = id;
+			selectedGeometryId = id.toString();
 			file = null;
 		} catch (error) {
 			console.error('Error loading geometry details:', error);
-			addToast('Failed to load geometry details', 'error');
 		}
 	};
 
 	const toggleGeometryVisibility = async (id: string) => {
 		const originalGeometries = [...geometries];
 		const geometry = geometries.find((g) => g.id === id);
-
 		if (!geometry) return;
 
 		const newVisibleState = !geometry.visible;
-
-		// Optimistic update
 		geometries = geometries.map((g) => (g.id === id ? { ...g, visible: newVisibleState } : g));
+
 		window.dispatchEvent(
-			new CustomEvent('geometryVisibilityChanged', {
-				detail: { id, visible: newVisibleState }
-			})
+			new CustomEvent('geometryVisibilityChanged', { detail: { id, visible: newVisibleState } })
 		);
-		dispatch('geometryVisibilityChanged', { id, visible: newVisibleState });
 
 		try {
-			const response = await fetch(ENDPOINTS.TOGGLE_VISIBILITY(Number(id)), {
-				method: 'PATCH'
-			});
-
-			if (!response.ok) {
-				throw new Error('Failed to toggle visibility');
-			}
-
-			const data = await response.json();
-			if (data.visible !== newVisibleState) {
-				geometries = geometries.map((g) => (g.id === id ? { ...g, visible: data.visible } : g));
-				window.dispatchEvent(
-					new CustomEvent('geometryVisibilityChanged', {
-						detail: { id, visible: data.visible }
-					})
-				);
-			}
-
+			// Re-use save logically for visibility or implement specific patch in service
+			const formData = new FormData();
+			formData.append('visible', String(newVisibleState));
+			await geometryService.save(formData, id);
 			window.dispatchEvent(new Event('modelAdded'));
-			addToast(data.message, 'success');
 		} catch (error) {
-			console.error('Error toggling visibility:', error);
 			geometries = originalGeometries;
-			window.dispatchEvent(
-				new CustomEvent('geometryVisibilityChanged', {
-					detail: { id, visible: !newVisibleState }
-				})
-			);
-			addToast(error instanceof Error ? error.message : 'Failed to toggle visibility', 'error');
 		}
 	};
 
@@ -496,6 +392,7 @@
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<div
 			class="upload-container-wrapper"
+			role="presentation"
 			class:dragging={isDragging}
 			ondragover={(e) => {
 				e.preventDefault();

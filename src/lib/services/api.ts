@@ -1,68 +1,151 @@
-import { API_URL } from '../config';
+import { base } from '$app/paths';
+import { browser } from '$app/environment';
+import { ENDPOINTS } from '$lib/config';
 
-class ApiClient {
-	private baseUrl: string;
-
-	constructor() {
-		this.baseUrl = API_URL || '';
-	}
-
-	private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-		const url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
-
-		const headers = {
-			'Content-Type': 'application/json',
-			...options.headers
-		};
-
-		const config = {
-			...options,
-			headers
-		};
-
-		try {
-			const response = await fetch(url, config);
-
-			if (!response.ok) {
-				const errorBody = await response.text();
-				throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorBody}`);
-			}
-
-			// Si le body est vide (ex: 204 No Content), on retourne null
-			if (response.status === 204) {
-				return null as T;
-			}
-
-			return response.json();
-		} catch (error) {
-			console.error(`API Request Failed: ${url}`, error);
-			throw error;
-		}
-	}
-
-	get<T>(endpoint: string, options?: RequestInit): Promise<T> {
-		return this.request<T>(endpoint, { ...options, method: 'GET' });
-	}
-
-	post<T>(endpoint: string, body: any, options?: RequestInit): Promise<T> {
-		return this.request<T>(endpoint, {
-			...options,
-			method: 'POST',
-			body: JSON.stringify(body)
-		});
-	}
-
-	put<T>(endpoint: string, body: any, options?: RequestInit): Promise<T> {
-		return this.request<T>(endpoint, {
-			...options,
-			method: 'PUT',
-			body: JSON.stringify(body)
-		});
-	}
-
-	delete<T>(endpoint: string, options?: RequestInit): Promise<T> {
-		return this.request<T>(endpoint, { ...options, method: 'DELETE' });
-	}
+export interface GeometryItem {
+	id: string;
+	name: string;
+	type: string;
+	color: string;
+	position: { x: number; y: number; z: number };
+	rotation: { x: number; y: number; z: number };
+	scale: { x: number; y: number; z: number };
+	visible: boolean;
+	model_url?: string;
 }
 
-export const api = new ApiClient();
+const LOCAL_STORAGE_KEY = 'dv_threlte_geometries_v1';
+
+export const geometryService = {
+	async getAll(): Promise<GeometryItem[]> {
+		// 1. Try to get from LocalStorage first if in browser (for user changes on static site)
+		if (browser) {
+			const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
+			if (localData) {
+				console.log('📦 Loaded from LocalStorage');
+				return JSON.parse(localData);
+			}
+		}
+
+		// 2. Try to get from real API
+		try {
+			const response = await fetch(ENDPOINTS.GEOMETRIES, {
+				headers: { Accept: 'application/json' }
+			});
+			if (response.ok) {
+				const data = await response.json();
+				const results = Array.isArray(data) ? data : (data.results || []);
+				if (browser && results.length > 0) this.saveLocal(results); // Cache it
+				return results;
+			}
+		} catch (e) {
+			console.warn('⚠️ API Backend unreachable, falling back to static JSON');
+		}
+
+		// 3. Fallback to static snapshot (GitHub Pages context)
+		try {
+			const staticUrl = `${base}/data/geometries.json`;
+			const response = await fetch(staticUrl);
+			if (response.ok) {
+				const data = await response.json();
+				if (browser) this.saveLocal(data);
+				return data;
+			}
+		} catch (e) {
+			console.error('❌ Static snapshot not found');
+		}
+
+		return [];
+	},
+
+	saveLocal(items: GeometryItem[]) {
+		if (browser) {
+			localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
+		}
+	},
+
+	async save(formData: FormData, id?: string): Promise<GeometryItem> {
+		// Try real API first
+		try {
+			let url = ENDPOINTS.GEOMETRIES;
+			let method = 'POST';
+			if (id) {
+				url = `${url}${id}/`;
+				method = 'PUT';
+			}
+
+			const response = await fetch(url, { method, body: formData });
+			if (response.ok) {
+				const result = await response.json();
+				// Refresh local cache after successful server save
+				const all = await this.getAll();
+				this.saveLocal(all);
+				return result;
+			}
+		} catch (e) {
+			console.warn('⚠️ Could not save to backend, using LocalStorage only');
+		}
+
+		// Local Fallback for GitHub Pages
+		if (browser) {
+			const items = await this.getAll();
+			const data: any = {};
+
+			// Extract data from FormData
+			formData.forEach((value, key) => {
+				if (key === 'position' || key === 'rotation' || key === 'scale') {
+					try {
+						data[key] = JSON.parse(value as string);
+					} catch (e) {
+						data[key] = value;
+					}
+				} else {
+					data[key] = value;
+				}
+			});
+
+			let newItem: GeometryItem;
+			if (id) {
+				const index = items.findIndex(i => i.id == id);
+				if (index !== -1) {
+					newItem = { ...items[index], ...data, id };
+					items[index] = newItem;
+				} else {
+					newItem = { ...data, id };
+					items.push(newItem);
+				}
+			} else {
+				newItem = {
+					...data,
+					id: Date.now().toString(),
+					visible: data.visible === 'true'
+				};
+				items.push(newItem);
+			}
+
+			this.saveLocal(items);
+			return newItem;
+		}
+
+		throw new Error('Save failed');
+	},
+
+	async delete(id: string): Promise<void> {
+		try {
+			const response = await fetch(`${ENDPOINTS.GEOMETRIES}${id}/`, { method: 'DELETE' });
+			if (response.ok) {
+				// Remove from local cache
+				const items = (await this.getAll()).filter(i => i.id != id);
+				this.saveLocal(items);
+				return;
+			}
+		} catch (e) {
+			console.warn('⚠️ Backend delete failed, deleting locally');
+		}
+
+		if (browser) {
+			const items = (await this.getAll()).filter(i => i.id != id);
+			this.saveLocal(items);
+		}
+	}
+};

@@ -11,7 +11,7 @@
 		'https://cdn.jsdelivr.net/npm/three@0.161.0/examples/fonts/helvetiker_bold.typeface.json';
 
 	interface GeometryData {
-		id: number;
+		id: string | number;
 		name: string;
 		type: string;
 		model_url?: string;

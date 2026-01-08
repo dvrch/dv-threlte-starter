@@ -21,23 +21,12 @@
 	import ScenePremiumEffects from './components/ScenePremiumEffects.svelte';
 	import SceneText2 from '../Text/scene.svelte';
 
-	interface GeometryItem {
-		id: string;
-		name: string;
-		type: string;
-		color: string;
-		position: { x: number; y: number; z: number };
-		rotation: { x: number; y: number; z: number };
-		scale: { x: number; y: number; z: number };
-		visible: boolean; // Add visible property
-		model_url?: string; // Assuming this exists for gltf_model types
-	}
+	import { geometryService, type GeometryItem } from '$lib/services/api';
 
 	let geometries = $state<GeometryItem[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let isBloomEnabled = $state(true); // State to control Bloom effect
-
 	let isPremiumEnabled = $state(true); // Premium Effects Toggle
 
 	// Transform Controls State
@@ -47,35 +36,37 @@
 		modes: ['translate', 'rotate', 'scale'] as ('translate' | 'rotate' | 'scale')[]
 	});
 
-	onMount(() => {
-		fetchGeometries();
-		window.addEventListener('modelAdded', fetchGeometries);
-
-		// ... listeners ...
-
-		const handleTogglePremium = (event: Event) => {
-			const customEvent = event as CustomEvent;
-			isPremiumEnabled = customEvent.detail.enabled;
-		};
-		window.addEventListener('togglePremiumEffect', handleTogglePremium);
-
-		const handleToggleTransform = (event: Event) => {
-			const customEvent = event as CustomEvent;
-			transformSettings = {
-				enabled: customEvent.detail.enabled,
-				selectedId: customEvent.detail.id,
-				modes: customEvent.detail.modes || ['translate']
-			};
-		};
-		// ...
-		return () => {
-			// ...
-			window.removeEventListener('togglePremiumEffect', handleTogglePremium);
-		};
-	});
-
 	// Store for model refs
 	let modelRefs = $state<Record<string, Group>>({});
+
+	// Function to fetch geometries
+	const fetchGeometries = async () => {
+		try {
+			loading = true;
+			const results = await geometryService.getAll();
+
+			geometries = results.filter((g: any) => {
+				if (g.type === 'gltf' || g.type === 'glb' || g.type === 'gltf_model') {
+					return true;
+				}
+				return true;
+			});
+
+			// Pre-initialize model refs
+			geometries.forEach((g) => {
+				if (!modelRefs[g.id]) {
+					modelRefs[g.id] = new Group();
+				}
+			});
+
+			console.log('✅ Loaded geometries:', geometries.length);
+		} catch (e) {
+			error = (e as Error).message;
+			console.error('❌ Error loading geometries:', e);
+		} finally {
+			loading = false;
+		}
+	};
 
 	const syncGeometry = (geometry: GeometryItem, obj: Group) => {
 		if (obj && geometry) {
@@ -95,7 +86,6 @@
 				z: Number(obj.scale.z.toFixed(2))
 			};
 
-			// Sync form real-time during move
 			window.dispatchEvent(
 				new CustomEvent('manualTransformSync', {
 					detail: {
@@ -109,58 +99,14 @@
 		}
 	};
 
-	// Function to fetch geometries
-	const fetchGeometries = async () => {
-		try {
-			const apiUrl = `${base}/data/geometries.json`;
-			console.log('Fetching geometries from:', apiUrl);
-			const response = await fetch(apiUrl);
-
-			if (!response.ok) {
-				const errorText = await response.text();
-				console.error('API Error Response:', errorText);
-				throw new Error(`HTTP error! status: ${response.status} - ${errorText.substring(0, 200)}`);
-			}
-
-			const data = await response.json();
-			const results = Array.isArray(data) ? data : data.results || [];
-			// Filter out geometries that expect an URL but have none
-			geometries = results.filter((g: any) => {
-				if (g.type === 'gltf' || g.type === 'glb') {
-					return g.model_url && g.model_url.trim() !== '';
-				}
-				return true;
-			});
-
-			// Pre-initialize model refs to ensure stability
-			geometries.forEach((g) => {
-				if (!modelRefs[g.id]) {
-					modelRefs[g.id] = new Group();
-				}
-			});
-
-			console.log('✅ Loaded geometries:', geometries.length);
-		} catch (e) {
-			error = (e as Error).message;
-			console.error('❌ Error loading geometries:', e);
-		} finally {
-			loading = false;
-		}
-
-		// Debug: log final state
-		console.log('Final state:', { loading, error, geometriesCount: geometries.length });
-	};
-
 	onMount(() => {
 		fetchGeometries();
 		window.addEventListener('modelAdded', fetchGeometries);
 
 		const handleVisibilityChange = (event: Event) => {
 			const customEvent = event as CustomEvent;
-			const { id, visible } = customEvent.detail; // 'visible' is the NEW desired state
-			if (typeof visible !== 'boolean') return; // Safety check
-
-			// Update local state without calling API (AddGeometry handles the API call)
+			const { id, visible } = customEvent.detail;
+			if (typeof visible !== 'boolean') return;
 			geometries = geometries.map((g) => (g.id == id ? { ...g, visible: visible } : g));
 		};
 		window.addEventListener('geometryVisibilityChanged', handleVisibilityChange);
@@ -170,6 +116,12 @@
 			isBloomEnabled = customEvent.detail.enabled;
 		};
 		window.addEventListener('toggleBloomEffect', handleToggleBloom);
+
+		const handleTogglePremium = (event: Event) => {
+			const customEvent = event as CustomEvent;
+			isPremiumEnabled = customEvent.detail.enabled;
+		};
+		window.addEventListener('togglePremiumEffect', handleTogglePremium);
 
 		const handleToggleTransform = (event: Event) => {
 			const customEvent = event as CustomEvent;
@@ -185,6 +137,7 @@
 			window.removeEventListener('modelAdded', fetchGeometries);
 			window.removeEventListener('geometryVisibilityChanged', handleVisibilityChange);
 			window.removeEventListener('toggleBloomEffect', handleToggleBloom);
+			window.removeEventListener('togglePremiumEffect', handleTogglePremium);
 			window.removeEventListener('toggleTransformControls', handleToggleTransform);
 		};
 	});
@@ -198,11 +151,11 @@
 
 	<HTML center>
 		{#if error}
-			<p class="error">Erreur: {error}</p>
+			<div class="error">Erreur: {error}</div>
 		{:else if loading}
-			<p class="loading">Chargement des géométries...</p>
+			<div class="loading">Chargement des géométries...</div>
 		{:else if geometries.length === 0}
-			<p class="empty">Aucune géométrie trouvée</p>
+			<div class="empty">Aucune géométrie trouvée</div>
 		{/if}
 	</HTML>
 

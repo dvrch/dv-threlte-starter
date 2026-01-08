@@ -31,6 +31,11 @@ jobs:
       - name: 🔧 Install dependencies
         run: npm ci
 
+      - name: 🏗️ Sync database snapshot
+        env:
+          VITE_PUBLIC_API_URL: https://dv-threlte-starter-backend.up.railway.app
+        run: node scripts/sync-db.js
+
       - name: 🏗️ Build for GitHub Pages
         env:
           DEPLOY_TARGET: GH_PAGES
