@@ -1,4 +1,5 @@
 import { getCloudinaryAssetUrl } from './cloudinaryAssets';
+import { base } from '$app/paths';
 
 // Map for files that have been renamed or replaced but we still want to support old names
 const ASSET_MAPPING: Record<string, string> = {
@@ -44,8 +45,8 @@ export async function getWorkingAssetUrl(
     const checkLocal = async (name: string) => {
         const paths =
             type === 'models'
-                ? [`/models/${name}`, `/public/${name}`, `/${name}`]
-                : [`/textures/${name}`, `/public/${name}`, `/${name}`];
+                ? [`${base}/models/${name}`, `${base}/public/${name}`, `${base}/${name}`]
+                : [`${base}/textures/${name}`, `${base}/public/${name}`, `${base}/${name}`];
 
         for (const path of paths) {
             try {

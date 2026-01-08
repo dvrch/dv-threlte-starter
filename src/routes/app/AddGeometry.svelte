@@ -2,6 +2,7 @@
 	import { onMount, createEventDispatcher } from 'svelte';
 	import { addToast } from '$lib/stores/toasts';
 	import { ENDPOINTS } from '$lib/config';
+	import { base } from '$app/paths';
 
 	const { selectedGeometry = null } = $props();
 
@@ -89,14 +90,38 @@
 
 	const loadTypes = async () => {
 		try {
-			// We still need types, we can use a small static list for GitHub Pages
-			const response = await fetch(ENDPOINTS.TYPES, {
-				headers: { Accept: 'application/json' }
-			});
-			if (!response.ok) throw new Error(`HTTP ${response.status}`);
-			const data = await response.json();
-			if (Array.isArray(data)) {
-				const fetchedTypes = data.map((type: any) => type.id);
+			// 1. Tenter l'API si dispo
+			if (ENDPOINTS.TYPES && !ENDPOINTS.TYPES.startsWith('/api')) {
+				const response = await fetch(ENDPOINTS.TYPES, {
+					headers: { Accept: 'application/json' }
+				});
+				if (response.ok) {
+					const data = await response.json();
+					if (Array.isArray(data)) {
+						const fetchedTypes = data.map((type: any) => type.id);
+						const baseTypes = [
+							'box',
+							'sphere',
+							'torus',
+							'icosahedron',
+							'spaceship',
+							'vague',
+							'nissangame',
+							'bibigame',
+							'textmd',
+							'text_scene'
+						];
+						types = [...new Set([...baseTypes, ...fetchedTypes])];
+						return;
+					}
+				}
+			}
+
+			// 2. Fallback sur l'écho statique (DB snapshot)
+			const staticResponse = await fetch(`${base}/data/types.json`);
+			if (staticResponse.ok) {
+				const data = await staticResponse.json();
+				const fetchedTypes = (data || []).map((type: any) => type.id);
 				const baseTypes = [
 					'box',
 					'sphere',
@@ -126,7 +151,6 @@
 			];
 		}
 	};
-
 	const dispatch = createEventDispatcher();
 
 	const resetForm = () => {
