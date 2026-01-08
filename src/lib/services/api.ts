@@ -81,6 +81,8 @@ export const geometryService = {
 				const all = await this.getAll();
 				this.saveLocal(all);
 				return result;
+			} else {
+				console.warn(`⚠️ Server returned ${response.status}, falling back to LocalStorage`);
 			}
 		} catch (e) {
 			console.warn('⚠️ Could not save to backend, using LocalStorage only');

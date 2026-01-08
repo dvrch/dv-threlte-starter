@@ -39,6 +39,7 @@ jobs:
       - name: 🏗️ Build for GitHub Pages
         env:
           DEPLOY_TARGET: GH_PAGES
+          VITE_PUBLIC_API_URL: https://dv-threlte-starter-backend.up.railway.app
         run: npm run build
 
       - name: 📤 Upload artifact
