@@ -144,18 +144,12 @@
 	});
 </script>
 
-<!-- 🏁 Éléments permanents de débogage -->
-<Grid sectionSize={1} sectionColor="#4db6ac" cellSize={0.5} cellColor="#333" infiniteGrid />
+<T.AmbientLight intensity={isPremiumEnabled ? 1.0 : 1.5} />
+<T.DirectionalLight position={[10, 10, 10]} intensity={5} castShadow />
+<T.DirectionalLight position={[-10, 5, -10]} intensity={3} color="#4287f5" />
+<T.HemisphereLight intensity={1.0} groundColor="#444444" skyColor="#ffffff" />
 
-<!-- Sphère au centre (Toujours là pour référence) -->
-<T.Mesh position={[0, 0, 0]}>
-	<T.SphereGeometry args={[0.1, 16, 16]} />
-	<T.MeshStandardMaterial color="cyan" emissive="cyan" emissiveIntensity={2} />
-</T.Mesh>
-
-<HTML center position={[0, -0.5, 0]}>
-	<div class="scene-label">SCENE ACTIVE</div>
-</HTML>
+<Stars />
 
 <HTML center>
 	{#if error}

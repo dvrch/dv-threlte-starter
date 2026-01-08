@@ -4,28 +4,43 @@ import { execSync } from 'child_process';
 
 const API_URL = process.env.VITE_PUBLIC_API_URL || 'https://dv-threlte-starter-backend.up.railway.app';
 const STATIC_DIR = path.join(process.cwd(), 'static/data');
-const DB_FILE = path.join(STATIC_DIR, 'inventory.db');
+const DB_FILE = path.join(STATIC_DIR, 'inventory.sqlite'); // Changé en .sqlite pour éviter les blocages MIME
 
 async function sync() {
     console.log(`📡 Fetching data from ${API_URL}/api/...`);
     try {
         // 1. Fetch Geometries
-        const geoResponse = await fetch(`${API_URL}/api/geometries/`);
-        const geoData = await geoResponse.json();
-        const geometries = Array.isArray(geoData) ? geoData : (geoData.results || []);
+        let geometries = [];
+        try {
+            const geoResponse = await fetch(`${API_URL}/api/geometries/`);
+            const geoData = await geoResponse.json();
+            geometries = Array.isArray(geoData) ? geoData : (geoData.results || []);
+        } catch (e) {
+            console.log("⚠️ API unreachable, using sample geometries.");
+            geometries = [
+                { id: "sample-1", name: "Sample Box", type: "box", color: "#4db6ac", position: { x: 0, y: 0.5, z: 0 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 }, visible: true },
+                { id: "sample-2", name: "World Model", type: "gltf", model_url: "/fkisios/glb/world2.glb", position: { x: 5, y: 0, z: 5 }, rotation: { x: 0, y: 0, z: 0 }, scale: { x: 1, y: 1, z: 1 }, visible: true }
+            ];
+        }
 
-        // 2. Fetch Types
-        const typeResponse = await fetch(`${API_URL}/api/types/`);
-        const types = await typeResponse.json();
-        const typeList = Array.isArray(types) ? types : (types.results || []);
+        // 2. Fetch Types (Base + API)
+        const baseTypesList = ['box', 'sphere', 'torus', 'icosahedron', 'spaceship', 'vague', 'nissangame', 'bibigame', 'textmd', 'text_scene', 'image_plane'];
+        let apiTypes = [];
+        try {
+            const typeResponse = await fetch(`${API_URL}/api/types/`);
+            const typeData = await typeResponse.json();
+            apiTypes = Array.isArray(typeData) ? typeData : (typeData.results || []);
+        } catch (e) { }
+
+        const finalTypes = [...new Set([...baseTypesList, ...apiTypes.map(t => t.id || t)])].map(id => ({ id, name: id }));
 
         if (!fs.existsSync(STATIC_DIR)) fs.mkdirSync(STATIC_DIR, { recursive: true });
 
         // Sauvegarde des JSON
         fs.writeFileSync(path.join(STATIC_DIR, 'geometries.json'), JSON.stringify(geometries, null, 2));
-        fs.writeFileSync(path.join(STATIC_DIR, 'types.json'), JSON.stringify(typeList, null, 2));
+        fs.writeFileSync(path.join(STATIC_DIR, 'types.json'), JSON.stringify(finalTypes, null, 2));
 
-        // 🗄️ Création de la VRAIE Base de Données SQLite (.db)
+        // 🗄️ Création de la Base de Données SQLite
         console.log(`🔨 Creating SQLite database at ${DB_FILE} ...`);
         if (fs.existsSync(DB_FILE)) fs.unlinkSync(DB_FILE);
 
@@ -45,7 +60,7 @@ CREATE TABLE geometries (
 );
 `;
 
-        typeList.forEach(t => {
+        finalTypes.forEach(t => {
             sqlCommands += `INSERT INTO types VALUES ('${t.id}', '${t.id}');\n`;
         });
 
@@ -78,12 +93,14 @@ CREATE TABLE geometries (
                 th { background: #334155; color: #38bdf8; }
                 .badge { padding: 3px 8px; border-radius: 12px; font-size: 0.8em; background: #0ea5e9; }
                 .color { width: 20px; height: 20px; border-radius: 4px; border: 1px solid #fff; }
+                .local-hint { background: #0ea5e9; color: white; padding: 10px; border-radius: 6px; margin-top: 20px; }
             </style>
         </head>
         <body>
             <div class="container">
-                <h1>📦 Inventaire de la Base de Données</h1>
-                <p>Date sync : ${new Date().toLocaleString()}</p>
+                <h1>📦 Inventaire Statique (Build-time Snapshot)</h1>
+                <p>Généré le : ${new Date().toLocaleString()}</p>
+                <div class="local-hint">💡 Note: Cette page montre les données du build. Les ajouts faits en direct sur le site sont stockés dans votre navigateur (LocalStorage) et n'apparaissent pas ici.</div>
                 <table>
                     <thead>
                         <tr><th>ID</th><th>Nom</th><th>Type</th><th>Position</th><th>Couleur</th></tr>
@@ -105,10 +122,9 @@ CREATE TABLE geometries (
         </html>`;
         fs.writeFileSync(path.join(STATIC_DIR, 'inventory.html'), html);
 
-        console.log(`✅ Everything synced! (JSONs, .db, .html)`);
+        console.log(`✅ Everything synced! (JSONs, .sqlite, .html)`);
     } catch (error) {
         console.error('❌ Sync failed:', error.message);
-        process.exit(0);
     }
 }
 

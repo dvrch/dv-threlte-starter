@@ -98,6 +98,10 @@ export const geometryService = {
 					} catch (e) {
 						data[key] = value;
 					}
+				} else if (key === 'file' && value instanceof File) {
+					// Créer un lien local pour la session s'il n'y a pas d'API
+					data['model_url'] = URL.createObjectURL(value);
+					data['type'] = 'gltf'; // Forcer gltf pour les uploads
 				} else {
 					data[key] = value;
 				}

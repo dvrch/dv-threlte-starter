@@ -1,11 +1,9 @@
 <script lang="ts">
-	import { useThrelte } from '@threlte/core';
-	import { Environment } from '@threlte/extras';
-	import { onMount, onDestroy } from 'svelte';
-	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
-	import { untrack } from 'svelte';
-	import { useLoader } from '@threlte/core';
+	import { onMount, untrack } from 'svelte';
+	import { useLoader, useThrelte } from '@threlte/core';
 	import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
+	import * as THREE from 'three';
+	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 
 	const { scene } = useThrelte();
 
