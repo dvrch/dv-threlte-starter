@@ -39,7 +39,9 @@ export async function getWorkingAssetUrl(
         pureName = ASSET_MAPPING[pureName.toLowerCase()];
     }
 
+    const originalPath = fileName.startsWith('/') ? `${base}${fileName}` : null;
     const namesToTry = [pureName, ...(FALLBACK_CHAIN[pureName.toLowerCase()] || [])];
+    const fullPathsToTry = originalPath ? [originalPath] : [];
 
     // 1. Try to find local files (Dev speed)
     const checkLocal = async (name: string) => {
@@ -59,6 +61,14 @@ export async function getWorkingAssetUrl(
 
     // 1. Priority check for local files (Dev speed)
     const prioritizeLocal = ([] as string[]).includes(pureName.toLowerCase()); // Forced Cloudinary for major assets
+
+    // 0. Priority: Try original path if provided
+    for (const path of fullPathsToTry) {
+        try {
+            const res = await fetch(path, { method: 'HEAD' });
+            if (res.ok) return path;
+        } catch (e) { }
+    }
 
     if (prioritizeLocal) {
         for (const candidate of namesToTry) {

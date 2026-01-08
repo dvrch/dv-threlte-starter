@@ -14,6 +14,7 @@
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 	import { Group } from 'three';
+	import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js'; // Future-proof if we go manual
 
 	import { addToast } from '$lib/stores/toasts';
 	import Bloom from './models/bloom.svelte';
@@ -143,126 +144,109 @@
 	});
 </script>
 
-<div class="scene-container">
-	<Canvas>
-		<T.PerspectiveCamera makeDefault position={[10, 10, 10]} fov={30}>
-			<OrbitControls />
-		</T.PerspectiveCamera>
+<!-- 🏁 Éléments permanents de débogage -->
+<Grid sectionSize={1} sectionColor="#4db6ac" cellSize={0.5} cellColor="#333" infiniteGrid />
 
-		<!-- 🏁 Éléments permanents de débogage -->
-		<Grid sectionSize={1} sectionColor="#4db6ac" cellSize={0.5} cellColor="#333" infiniteGrid />
+<!-- Sphère au centre (Toujours là pour référence) -->
+<T.Mesh position={[0, 0, 0]}>
+	<T.SphereGeometry args={[0.1, 16, 16]} />
+	<T.MeshStandardMaterial color="cyan" emissive="cyan" emissiveIntensity={2} />
+</T.Mesh>
 
-		<!-- Sphère au centre (Toujours là pour référence) -->
-		<T.Mesh position={[0, 0, 0]}>
-			<T.SphereGeometry args={[0.1, 16, 16]} />
-			<T.MeshStandardMaterial color="cyan" emissive="cyan" emissiveIntensity={2} />
-		</T.Mesh>
+<HTML center position={[0, -0.5, 0]}>
+	<div class="scene-label">SCENE ACTIVE</div>
+</HTML>
 
-		<HTML center position={[0, -0.5, 0]}>
-			<div class="scene-label">SCENE ACTIVE</div>
-		</HTML>
+<HTML center>
+	{#if error}
+		<div class="error">Erreur: {error}</div>
+	{:else if loading}
+		<div class="loading">Chargement des géométries...</div>
+	{:else if geometries.length === 0}
+		<div class="empty">Aucune géométrie trouvée</div>
+	{/if}
+</HTML>
 
-		<HTML center>
-			{#if error}
-				<div class="error">Erreur: {error}</div>
-			{:else if loading}
-				<div class="loading">Chargement des géométries...</div>
-			{:else if geometries.length === 0}
-				<div class="empty">Aucune géométrie trouvée</div>
-			{/if}
-		</HTML>
+<T.AmbientLight intensity={isPremiumEnabled ? 1.0 : 1.5} />
+<T.DirectionalLight position={[10, 10, 10]} intensity={5} castShadow />
+<T.DirectionalLight position={[-10, 5, -10]} intensity={3} color="#4287f5" />
+<T.HemisphereLight intensity={1.0} groundColor="#444444" skyColor="#ffffff" />
 
-		<T.AmbientLight intensity={isPremiumEnabled ? 1.0 : 1.5} />
-		<T.DirectionalLight position={[10, 10, 10]} intensity={5} castShadow />
-		<T.DirectionalLight position={[-10, 5, -10]} intensity={3} color="#4287f5" />
-		<T.HemisphereLight intensity={1.0} groundColor="#444444" skyColor="#ffffff" />
+<Stars />
+{#if isPremiumEnabled}
+	<ScenePremiumEffects />
+{/if}
 
-		<Stars />
-		{#if isPremiumEnabled}
-			<ScenePremiumEffects />
-		{/if}
+{#if isBloomEnabled}
+	<Bloom />
+{/if}
 
-		{#if isBloomEnabled}
-			<Bloom />
-		{/if}
+{#if geometries.length > 0}
+	{#each geometries as geometry (geometry.id)}
+		{#if geometry && geometry.visible}
+			{@const isTransformed =
+				transformSettings.enabled && transformSettings.selectedId == geometry.id}
 
-		{#if geometries.length > 0}
-			{#each geometries as geometry (geometry.id)}
-				{#if geometry && geometry.visible}
-					{@const isTransformed =
-						transformSettings.enabled && transformSettings.selectedId == geometry.id}
+			{#if typeof window !== 'undefined'}
+				<Float floatIntensity={isTransformed ? 0 : 1} floatingRange={[0, 1]}>
+					<Dynamic3DModel
+						{geometry}
+						bind:ref={modelRefs[geometry.id]}
+						onPointerDown={() => {
+							if (transformSettings.selectedId !== geometry.id) {
+								transformSettings.selectedId = geometry.id;
+								// Inform form about selection
+								window.dispatchEvent(
+									new CustomEvent('manualTransformSync', {
+										detail: {
+											id: geometry.id,
+											position: geometry.position,
+											rotation: geometry.rotation,
+											scale: geometry.scale
+										}
+									})
+								);
+							}
+						}}
+					/>
+				</Float>
 
-					{#if typeof window !== 'undefined'}
-						<Float floatIntensity={isTransformed ? 0 : 1} floatingRange={[0, 1]}>
-							<Dynamic3DModel
-								{geometry}
-								bind:ref={modelRefs[geometry.id]}
-								onPointerDown={() => {
-									if (transformSettings.selectedId !== geometry.id) {
-										transformSettings.selectedId = geometry.id;
-										// Inform form about selection
-										window.dispatchEvent(
-											new CustomEvent('manualTransformSync', {
-												detail: {
-													id: geometry.id,
-													position: geometry.position,
-													rotation: geometry.rotation,
-													scale: geometry.scale
-												}
-											})
-										);
-									}
-								}}
-							/>
-						</Float>
-
-						{#if transformSettings.selectedId == geometry.id}
-							<Outlines color="#4db6ac" />
-						{/if}
-
-						{#if isTransformed && modelRefs[geometry.id]}
-							{#each transformSettings.modes as mode}
-								<TransformControls
-									object={modelRefs[geometry.id]}
-									{mode}
-									onstart={() => window.dispatchEvent(new CustomEvent('lockCamera'))}
-									onend={() => {
-										window.dispatchEvent(new CustomEvent('unlockCamera'));
-										window.dispatchEvent(
-											new CustomEvent('manualTransformSync', {
-												detail: {
-													id: geometry.id,
-													position: geometry.position,
-													rotation: geometry.rotation,
-													scale: geometry.scale,
-													save: true
-												}
-											})
-										);
-									}}
-									onchange={() => syncGeometry(geometry, modelRefs[geometry.id])}
-								/>
-							{/each}
-						{/if}
-					{:else}
-						<Dynamic3DModel {geometry} />
-					{/if}
+				{#if transformSettings.selectedId == geometry.id}
+					<Outlines color="#4db6ac" />
 				{/if}
-			{/each}
+
+				{#if isTransformed && modelRefs[geometry.id]}
+					{#each transformSettings.modes as mode}
+						<TransformControls
+							object={modelRefs[geometry.id]}
+							{mode}
+							onstart={() => window.dispatchEvent(new CustomEvent('lockCamera'))}
+							onend={() => {
+								window.dispatchEvent(new CustomEvent('unlockCamera'));
+								window.dispatchEvent(
+									new CustomEvent('manualTransformSync', {
+										detail: {
+											id: geometry.id,
+											position: geometry.position,
+											rotation: geometry.rotation,
+											scale: geometry.scale,
+											save: true
+										}
+									})
+								);
+							}}
+							onchange={() => syncGeometry(geometry, modelRefs[geometry.id])}
+						/>
+					{/each}
+				{/if}
+			{:else}
+				<Dynamic3DModel {geometry} />
+			{/if}
 		{/if}
-	</Canvas>
-</div>
+	{/each}
+{/if}
 
 <style>
-	.scene-container {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100vw;
-		height: 100vh;
-		background-color: #0c0c0c;
-	}
-
 	.scene-label {
 		color: #4db6ac;
 		font-family: monospace;

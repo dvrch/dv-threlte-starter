@@ -4,6 +4,8 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { getCloudinaryAssetUrl } from '$lib/utils/cloudinaryAssets';
 	import { untrack } from 'svelte';
+	import { useLoader } from '@threlte/core';
+	import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
 
 	const { scene } = useThrelte();
 
@@ -80,19 +82,19 @@
 		isRefreshing = false;
 	}
 
+	const hdr = useLoader(HDRLoader).load(hdrUrl);
+
 	$effect(() => {
-		// Only trigger when environment is ready
-		if (scene.environment) {
+		if ($hdr && scene) {
+			const texture = $hdr;
+			texture.mapping = THREE.EquirectangularReflectionMapping;
+			scene.environment = texture;
 			untrack(refreshSceneMaterials);
 		}
 	});
 
 	onMount(() => {
-		// Delayed initial refresh
-		const timer = setTimeout(() => untrack(refreshSceneMaterials), 1000);
-
 		const handleRefresh = (e: any) => {
-			// Debounce or at least delay to let the model settle
 			setTimeout(() => untrack(refreshSceneMaterials), 300);
 		};
 
@@ -100,11 +102,8 @@
 		window.addEventListener('modelVisualLoaded', handleRefresh);
 
 		return () => {
-			clearTimeout(timer);
 			window.removeEventListener('modelAdded', handleRefresh);
 			window.removeEventListener('modelVisualLoaded', handleRefresh);
 		};
 	});
 </script>
-
-<Environment url={hdrUrl} isBackground={false} />
