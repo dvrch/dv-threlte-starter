@@ -1,8 +1,15 @@
-import adapter from '@sveltejs/adapter-static';
+// 🎯 Détection automatique de la plateforme de déploiement
+const isGitHubPages = process.env.DEPLOY_TARGET === 'GH_PAGES';
+
+// 📦 Import conditionnel de l'adapter
+const adapter = isGitHubPages
+	? (await import('@sveltejs/adapter-static')).default
+	: (await import('@sveltejs/adapter-vercel')).default;
+
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
-const dev = process.env.NODE_ENV === 'development';
-const basePath = process.env.DEPLOY_TARGET === 'GH_PAGES' ? '/dv-threlte-starter' : '';
+// 🛣️ Chemin de base selon la plateforme
+const basePath = isGitHubPages ? '/dv-threlte-starter' : '';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -12,12 +19,17 @@ const config = {
 		paths: {
 			base: basePath
 		},
-		adapter: adapter({
-			pages: 'build',
-			assets: 'build',
-			fallback: 'index.html',
-			strict: false
-		})
+		// 🔄 Adapter dynamique selon la plateforme
+		adapter: isGitHubPages
+			? adapter({
+				pages: 'build',
+				assets: 'build',
+				fallback: 'index.html',
+				strict: false
+			})
+			: adapter({
+				runtime: 'nodejs20.x'
+			})
 	},
 	compilerOptions: {
 		runes: true
