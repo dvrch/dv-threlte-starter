@@ -29,15 +29,23 @@ C'est la fonctionnalité magique ! 🪄
 3. Installe les dépendances : `pnpm install`
 4. Lance le mode dev : `pnpm dev`
 
-### 🏗️ Développer et Personnaliser
-- **Ajouter des Types d'objets** : Élite ! Modifie `scripts/sync-db.js` dans la liste `baseTypesList` pour ajouter tes propres modèles ou formes par défaut.
-- **Base de Données de Travail** : À chaque build, le script génère `inventory.sqlite`. C'est ta base de référence. Tu peux l'éditer avec un outil comme *DB Browser for SQLite*.
+### 🏗️ Développer et Personnaliser : "Database-First" 🗄️
+Vous pouvez maintenant utiliser un gestionnaire de base de données externe (ex: **DB Browser for SQLite**) pour modifier vos objets.
+
+1.  Ouvrez `static/data/inventory.sqlite` dans votre logiciel favori.
+2.  Modifiez vos types, positions, couleurs ou chemins (`model_url`).
+3.  Lancez la commande magique pour appliquer vos changements à l'app :
+    ```bash
+    pnpm db:push
+    ```
+4.  Votre application est à jour ! 🚀
 
 | Commande | Action |
 | :--- | :--- |
 | `pnpm dev` | Lancer le serveur de développement 🚀 |
-| `pnpm build` | Compiler pour la production (Génère la DB statique) 🏗️ |
-| `node scripts/sync-db.js` | Synchroniser manuellement les données depuis l'API 📡 |
+| `pnpm db:pull` | Synchroniser (écraser) depuis l'API distante 📡 |
+| `pnpm db:push` | Appliquer vos modifs SQLite locales à l'App 🏗️ |
+| `pnpm build` | Compiler pour la production 🏗️ |
 
 ---
 

@@ -48,10 +48,8 @@ jobs:
       - name: 🔧 Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: 🏗️ Sync database snapshot
-        env:
-          VITE_PUBLIC_API_URL: https://dv-threlte-starter-backend.up.railway.app
-        run: node scripts/sync-db.js
+      - name: 🏗️ Sync local database (Database-First)
+        run: pnpm db:push
 
       - name: 🏗️ Build for GitHub Pages
         env:

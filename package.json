@@ -8,7 +8,9 @@
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"sync": "svelte-kit sync"
+		"sync": "svelte-kit sync",
+		"db:pull": "node scripts/sync-db.js",
+		"db:push": "node scripts/db-to-json.js"
 	},
 	"devDependencies": {
 		"@dimforge/rapier3d-compat": "^0.19.3",
