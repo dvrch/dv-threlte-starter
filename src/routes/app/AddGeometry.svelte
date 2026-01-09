@@ -497,6 +497,20 @@
 				>
 			</div>
 		</div>
+		<input
+			id="scene-import"
+			type="file"
+			accept=".json,.sqlite,.db"
+			style="display:none"
+			onchange={async (e) => {
+				const f = (e.target as any).files[0];
+				if (f) {
+					await geometryService.importScene(f);
+					await loadGeometries();
+					window.dispatchEvent(new Event('modelAdded'));
+				}
+			}}
+		/>
 	</form>
 </div>
 
