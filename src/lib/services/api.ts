@@ -12,44 +12,78 @@ export interface GeometryItem {
 	scale: { x: number; y: number; z: number };
 	visible: boolean;
 	model_url?: string;
+	local_file_id?: string; // ID pour IndexedDB
 }
 
 const LOCAL_STORAGE_KEY = 'dv_threlte_geometries_v1';
+const DB_NAME = 'dv_threlte_assets';
+const STORE_NAME = 'models';
+
+/** 🗄️ IndexedDB helper pour les fichiers volumineux (GLB) */
+const dbPromise = browser ? new Promise<IDBDatabase>((resolve, reject) => {
+	const request = indexedDB.open(DB_NAME, 1);
+	request.onupgradeneeded = () => request.result.createObjectStore(STORE_NAME);
+	request.onsuccess = () => resolve(request.result);
+	request.onerror = () => reject(request.error);
+}) : null;
+
+async function saveFileToDB(id: string, file: File) {
+	const db = await dbPromise;
+	if (!db) return;
+	return new Promise((resolve, reject) => {
+		const tx = db.transaction(STORE_NAME, 'readwrite');
+		tx.objectStore(STORE_NAME).put(file, id);
+		tx.oncomplete = resolve;
+		tx.onerror = reject;
+	});
+}
+
+async function getFileFromDB(id: string): Promise<File | null> {
+	const db = await dbPromise;
+	if (!db) return null;
+	return new Promise((resolve) => {
+		const tx = db.transaction(STORE_NAME, 'readonly');
+		const req = tx.objectStore(STORE_NAME).get(id);
+		req.onsuccess = () => resolve(req.result);
+		req.onerror = () => resolve(null);
+	});
+}
 
 export const geometryService = {
 	async getAll(): Promise<GeometryItem[]> {
 		let serverGeometries: GeometryItem[] = [];
 
-		// 1. Charger l'Écho Statique (DB Snapshot du build)
+		// 1. Charger l'Écho Statique (DB Snapshot)
 		try {
 			const staticUrl = `${base}/data/geometries.json`.replace('//', '/');
 			const response = await fetch(staticUrl);
 			if (response.ok) {
 				serverGeometries = await response.json();
-				console.log(`📡 Echo DB chargé : ${serverGeometries.length} objets`);
 			}
-		} catch (e) {
-			console.warn('⚠️ Impossible de charger l\'écho DB');
-		}
+		} catch (e) { }
 
-		// 2. Récupérer les modifs locales (LocalStorage)
+		// 2. LocalStorage et IndexedDB
 		if (browser) {
 			const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
-			if (localData) {
-				const userGeometries: GeometryItem[] = JSON.parse(localData);
-				console.log(`📦 LocalStorage chargé : ${userGeometries.length} objets`);
+			let userGeometries: GeometryItem[] = localData ? JSON.parse(localData) : [];
 
-				// Fusionner : On garde les objets du serveur, mais si l'utilisateur les a modifiés (même ID), 
-				// on prend la version utilisateur. Et on ajoute les nouveaux objets créés localement.
-				const mergedMap = new Map();
-				serverGeometries.forEach(g => mergedMap.set(g.id.toString(), g));
-				userGeometries.forEach(g => mergedMap.set(g.id.toString(), g));
-
-				return Array.from(mergedMap.values());
-			} else if (serverGeometries.length > 0) {
-				// Premier chargement : on initialise le LocalStorage avec l'écho
-				this.saveLocal(serverGeometries);
+			// Restaurer les liens ObjectURL pour les fichiers locaux
+			for (const item of userGeometries) {
+				if (item.local_file_id) {
+					const file = await getFileFromDB(item.local_file_id);
+					if (file) {
+						item.model_url = URL.createObjectURL(file);
+					}
+				}
 			}
+
+			const mergedMap = new Map();
+			serverGeometries.forEach(g => mergedMap.set(g.id.toString(), g));
+			userGeometries.forEach(g => mergedMap.set(g.id.toString(), g));
+
+			const result = Array.from(mergedMap.values());
+			if (!localData && result.length > 0) this.saveLocal(result);
+			return result;
 		}
 
 		return serverGeometries;
@@ -57,12 +91,16 @@ export const geometryService = {
 
 	saveLocal(items: GeometryItem[]) {
 		if (browser) {
-			localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
+			// On nettoie les ObjectURLs avant de sauver pour pas polluer le JSON
+			const cleanItems = items.map(p => ({
+				...p,
+				model_url: p.local_file_id ? '' : p.model_url
+			}));
+			localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cleanItems));
 		}
 	},
 
 	async save(formData: FormData, id?: string): Promise<GeometryItem> {
-		// Try real API first
 		try {
 			let url = ENDPOINTS.GEOMETRIES;
 			let method = 'POST';
@@ -74,40 +112,41 @@ export const geometryService = {
 			const response = await fetch(url, { method, body: formData });
 			if (response.ok) {
 				const result = await response.json();
-				// Refresh local cache after successful server save
 				const all = await this.getAll();
 				this.saveLocal(all);
 				return result;
-			} else {
-				console.warn(`⚠️ Server returned ${response.status}, falling back to LocalStorage`);
 			}
-		} catch (e) {
-			console.warn('⚠️ Could not save to backend, using LocalStorage only');
-		}
+		} catch (e) { }
 
-		// Local Fallback for GitHub Pages
+		// Fallback LocalStorage + IndexedDB
 		if (browser) {
 			const items = await this.getAll();
 			const data: any = {};
 
-			// Extract data from FormData
 			formData.forEach((value, key) => {
-				if (key === 'position' || key === 'rotation' || key === 'scale') {
-					try {
-						data[key] = JSON.parse(value as string);
-					} catch (e) {
-						data[key] = value;
-					}
+				if (['position', 'rotation', 'scale'].includes(key)) {
+					try { data[key] = JSON.parse(value as string); } catch (e) { data[key] = value; }
 				} else if (key === 'file' && value instanceof File) {
-					// Créer un lien local pour la session s'il n'y a pas d'API
-					data['model_url'] = URL.createObjectURL(value);
-					data['type'] = 'gltf'; // Forcer gltf pour les uploads
+					data['_file'] = value;
+				} else if (key === 'visible') {
+					data['visible'] = value === 'true' || value === true;
 				} else {
 					data[key] = value;
 				}
 			});
 
 			let newItem: GeometryItem;
+			const targetId = id || Date.now().toString();
+
+			if (data._file) {
+				const fileId = `file_${targetId}`;
+				await saveFileToDB(fileId, data._file);
+				data.local_file_id = fileId;
+				data.model_url = URL.createObjectURL(data._file);
+				data.type = 'gltf';
+				delete data._file;
+			}
+
 			if (id) {
 				const index = items.findIndex(i => i.id == id);
 				if (index !== -1) {
@@ -120,8 +159,11 @@ export const geometryService = {
 			} else {
 				newItem = {
 					...data,
-					id: Date.now().toString(),
-					visible: data.visible === 'true'
+					id: targetId,
+					visible: data.visible ?? true,
+					position: data.position || { x: 0, y: 0, z: 0 },
+					rotation: data.rotation || { x: 0, y: 0, z: 0 },
+					scale: data.scale || { x: 1, y: 1, z: 1 }
 				};
 				items.push(newItem);
 			}
@@ -129,7 +171,6 @@ export const geometryService = {
 			this.saveLocal(items);
 			return newItem;
 		}
-
 		throw new Error('Save failed');
 	},
 
@@ -141,9 +182,7 @@ export const geometryService = {
 				this.saveLocal(items);
 				return;
 			}
-		} catch (e) {
-			console.warn('⚠️ Backend delete failed, deleting locally');
-		}
+		} catch (e) { }
 
 		if (browser) {
 			const items = (await this.getAll()).filter(i => i.id != id);
@@ -151,12 +190,10 @@ export const geometryService = {
 		}
 	},
 
-	/** 📤 Exporte toute la scène actuelle en JSON pour sauvegarde client */
 	exportScene() {
 		if (!browser) return;
 		const data = localStorage.getItem(LOCAL_STORAGE_KEY);
 		if (!data) return;
-
 		const blob = new Blob([data], { type: 'application/json' });
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
@@ -166,7 +203,6 @@ export const geometryService = {
 		URL.revokeObjectURL(url);
 	},
 
-	/** 📥 Importe et fusionne une scène JSON externe dans le LocalStorage */
 	async importScene(file: File): Promise<void> {
 		if (!browser) return;
 		return new Promise((resolve, reject) => {
@@ -176,29 +212,19 @@ export const geometryService = {
 					const importedItems = JSON.parse(e.target?.result as string);
 					if (Array.isArray(importedItems)) {
 						const currentItems = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
-
-						// Fusion intelligente par ID (l'importé écrase le local en cas de conflit)
 						const mergedMap = new Map();
 						currentItems.forEach((item: any) => mergedMap.set(item.id.toString(), item));
 						importedItems.forEach((item: any) => mergedMap.set(item.id.toString(), item));
-
-						const finalItems = Array.from(mergedMap.values());
-						this.saveLocal(finalItems);
+						this.saveLocal(Array.from(mergedMap.values()));
 						resolve();
-					} else {
-						reject(new Error("Format de fichier invalide (doit être un tableau JSON)"));
-					}
-				} catch (err) {
-					reject(err);
-				}
+					} else reject(new Error("Format invalide"));
+				} catch (err) { reject(err); }
 			};
-			reader.onerror = () => reject(new Error("Erreur de lecture du fichier"));
 			reader.readAsText(file);
 		});
 	}
 };
 
-// 🏁 Export pour la compatibilité avec d'autres parties du code
 export const api = {
 	get: async <T>(url: string) => {
 		try {
@@ -206,10 +232,7 @@ export const api = {
 			const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
 			const response = await fetch(fullUrl);
 			return (await response.json()) as T;
-		} catch (e) {
-			console.error('API Get failed', e);
-			return null as any;
-		}
+		} catch (e) { return null as any; }
 	},
 	delete: async (url: string) => {
 		try {
@@ -217,10 +240,6 @@ export const api = {
 			const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
 			const response = await fetch(fullUrl, { method: 'DELETE' });
 			return await response.json();
-		} catch (e) {
-			console.error('API Delete failed', e);
-			return null;
-		}
+		} catch (e) { return null; }
 	}
 };
-

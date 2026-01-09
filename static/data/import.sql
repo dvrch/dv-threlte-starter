@@ -11,3 +11,13 @@ CREATE TABLE geometries (
     visible INTEGER,
     model_url TEXT
 );
+INSERT INTO types VALUES ('box', 'box');
+INSERT INTO types VALUES ('sphere', 'sphere');
+INSERT INTO types VALUES ('torus', 'torus');
+INSERT INTO types VALUES ('icosahedron', 'icosahedron');
+INSERT INTO types VALUES ('textmd', 'textmd');
+INSERT INTO types VALUES ('image_plane', 'image_plane');
+INSERT INTO types VALUES ('spaceship', 'spaceship');
+INSERT INTO types VALUES ('vague', 'vague');
+INSERT INTO types VALUES ('nissangame', 'nissangame');
+INSERT INTO types VALUES ('bibigame', 'bibigame');
