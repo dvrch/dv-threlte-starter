@@ -384,10 +384,10 @@
 		}
 	};
 
-	// 📤 Export / 📥 Import
+	// 📤 Export / 📥 Import JSON
 	const handleExport = () => {
 		geometryService.exportScene();
-		addToast('Scène exportée avec succès ! 📤', 'success');
+		addToast('Scène exportée avec succès (JSON) ! 📤', 'success');
 	};
 
 	let importFileInput = $state<HTMLInputElement>();
@@ -398,9 +398,40 @@
 				await geometryService.importScene(target.files[0]);
 				await loadGeometries();
 				window.dispatchEvent(new Event('modelAdded'));
-				addToast('Scène importée et fusionnée ! 📥✨', 'success');
+				addToast('Scène JSON importée et fusionnée ! 📥✨', 'success');
 			} catch (err) {
-				addToast("Erreur lors de l'import : " + (err as Error).message, 'error');
+				addToast("Erreur lors de l'import JSON : " + (err as Error).message, 'error');
+			}
+		}
+	};
+
+	// 🗄️ Export / 📥 Import SQLite
+	const handleExportSQLite = async () => {
+		try {
+			isLoading = true;
+			await geometryService.exportSceneToSQLite();
+			addToast('Base de données (.sqlite) exportée ! 🗄️💎', 'success');
+		} catch (err) {
+			addToast("Erreur d'export SQLite : " + (err as Error).message, 'error');
+		} finally {
+			isLoading = false;
+		}
+	};
+
+	let importSQLiteFileInput = $state<HTMLInputElement>();
+	const handleImportSQLite = async (e: Event) => {
+		const target = e.target as HTMLInputElement;
+		if (target.files && target.files[0]) {
+			try {
+				isLoading = true;
+				await geometryService.importSceneFromSQLite(target.files[0]);
+				await loadGeometries();
+				window.dispatchEvent(new Event('modelAdded'));
+				addToast('Base SQLite importée et fusionnée ! 📥🏗️', 'success');
+			} catch (err) {
+				addToast("Erreur d'import SQLite : " + (err as Error).message, 'error');
+			} finally {
+				isLoading = false;
 			}
 		}
 	};
@@ -916,59 +947,90 @@
 
 			<!-- Partage / Portabilité Section -->
 			<div class="portability-section">
-				<h4>📂 Portabilité & Base de Données</h4>
-				<p class="port-hint">
-					Editez <a
-						href="{base}/data/inventory.sqlite"
-						download
-						style="color: #4db6ac; text-decoration: underline;">inventory.sqlite</a
-					>
-					dans <strong>DBeaver</strong> puis synchronisez ! 🗄️✨
-				</p>
-				<div class="portability-grid">
-					<button
-						type="button"
-						class="port-btn export"
-						onclick={handleExport}
-						title="Sauvegarder en JSON"
-					>
-						📤 Exporter (JSON)
-					</button>
-					<button
-						type="button"
-						class="port-btn import"
-						onclick={() => importFileInput?.click()}
-						title="Charger un JSON"
-					>
-						📥 Importer (JSON)
-					</button>
+				<h4>📂 Portabilité de la Scène</h4>
+
+				<!-- Mode JSON -->
+				<div class="port-group">
+					<label>Format JSON (Standard)</label>
+					<div class="portability-grid">
+						<button
+							type="button"
+							class="port-btn export"
+							onclick={handleExport}
+							title="Sauvegarder en JSON"
+						>
+							📤 Exporter JSON
+						</button>
+						<button
+							type="button"
+							class="port-btn import"
+							onclick={() => importFileInput?.click()}
+							title="Charger un JSON"
+						>
+							📥 Importer JSON
+						</button>
+					</div>
 				</div>
+
+				<!-- Mode SQLite Professionnel -->
+				<div class="port-group professional">
+					<label>Format SQLite (Professionnel - DBeaver)</label>
+					<div class="portability-grid">
+						<button
+							type="button"
+							class="port-btn export sqlite"
+							onclick={handleExportSQLite}
+							title="Exporter en base de données réelle"
+						>
+							🗄️ Exporter .sqlite
+						</button>
+						<button
+							type="button"
+							class="port-btn import sqlite"
+							onclick={() => importSQLiteFileInput?.click()}
+							title="Importer une base SQLite"
+						>
+							📥 Importer .sqlite
+						</button>
+					</div>
+					<p class="port-hint-mini">
+						Ouvrez le fichier .sqlite dans <strong>DBeaver</strong> pour éditer en masse ! 🛠️
+					</p>
+				</div>
+
+				<div class="divider">ou</div>
+
 				<button
 					type="button"
 					class="port-btn sync-db"
 					onclick={() => {
 						if (
 							confirm(
-								'Cela écrasera vos modifications locales par les données de la base statique. Continuer ?'
+								'Cela écrasera vos modifications locales par les données de la base système. Continuer ?'
 							)
 						) {
 							localStorage.removeItem('dv_threlte_geometries_v1');
 							window.location.reload();
 						}
 					}}
-					style="width: 100%; margin-top: 8px; background: rgba(77, 182, 172, 0.1); border-color: #4db6ac;"
 				>
-					🔄 Synchroniser depuis inventory.sqlite
+					🔄 Reset depuis inventory.sqlite (système)
 				</button>
-				<p class="port-hint">
-					Utilisez <code>pnpm db:push</code> après vos modifs dans DBeaver ! 🛠️
-				</p>
+
+				<!-- Hidden Inputs -->
 				<input
 					bind:this={importFileInput}
 					type="file"
 					accept=".json"
 					style="display:none"
 					onchange={handleImport}
+				/>
+				<input
+					bind:this={importSQLiteFileInput}
+					type="file"
+					accept=".sqlite,.db"
+					style="display:none"
+					onchange={handleImportSQLite}
 				/>
 			</div>
 
@@ -1367,6 +1429,120 @@
 		text-align: center;
 		color: #777;
 		font-style: italic;
+	}
+
+	.portability-section {
+		margin-top: 20px;
+		padding: 12px;
+		background: rgba(0, 0, 0, 0.2);
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		border-radius: 8px;
+	}
+
+	.portability-section h4 {
+		margin: 0 0 10px 0;
+		font-size: 0.85rem;
+		color: #80cbc4;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.port-group {
+		margin-bottom: 15px;
+	}
+
+	.port-group label {
+		display: block;
+		font-size: 0.65rem;
+		color: #777;
+		margin-bottom: 6px;
+	}
+
+	.port-group.professional {
+		padding: 8px;
+		background: rgba(77, 182, 172, 0.03);
+		border-radius: 6px;
+		border: 1px solid rgba(77, 182, 172, 0.1);
+	}
+
+	.portability-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 8px;
+	}
+
+	.port-btn {
+		padding: 6px 10px;
+		font-size: 0.75rem;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 4px;
+		color: #ddd;
+		cursor: pointer;
+		transition: all 0.2s;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+	}
+
+	.port-btn:hover {
+		background: rgba(255, 255, 255, 0.1);
+		border-color: rgba(255, 255, 255, 0.2);
+	}
+
+	.port-btn.sqlite {
+		background: rgba(77, 182, 172, 0.1);
+		border-color: rgba(77, 182, 172, 0.3);
+		color: #80cbc4;
+	}
+
+	.port-btn.sqlite:hover {
+		background: rgba(77, 182, 172, 0.2);
+		border-color: #4db6ac;
+	}
+
+	.port-hint-mini {
+		font-size: 0.6rem;
+		color: #666;
+		margin-top: 5px;
+		font-style: italic;
+	}
+
+	.divider {
+		display: flex;
+		align-items: center;
+		text-align: center;
+		color: #444;
+		font-size: 0.6rem;
+		margin: 10px 0;
+		text-transform: uppercase;
+	}
+
+	.divider::before,
+	.divider::after {
+		content: '';
+		flex: 1;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+	}
+
+	.divider:not(:empty)::before {
+		margin-right: 10px;
+	}
+	.divider:not(:empty)::after {
+		margin-left: 10px;
+	}
+
+	.sync-db {
+		width: 100%;
+		background: rgba(244, 67, 54, 0.05) !important;
+		border-color: rgba(244, 67, 54, 0.2) !important;
+		color: #ef5350 !important;
+	}
+
+	.sync-db:hover {
+		background: rgba(244, 67, 54, 0.1) !important;
+		border-color: #f44336 !important;
 	}
 
 	/* Reusing visibility-toggle style from existing code, ensuring it fits */

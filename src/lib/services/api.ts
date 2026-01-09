@@ -225,6 +225,113 @@ export const geometryService = {
 			};
 			reader.readAsText(file);
 		});
+	},
+
+	/** 🗄️ EXPORT Professionnel en SQLite réel (Binaire) */
+	async exportSceneToSQLite() {
+		if (!browser) return;
+		const initSqlJs = (await import('sql.js')).default;
+		const SQL = await initSqlJs({
+			locateFile: (file: string) => `${base}/js/${file}`
+		});
+		const db = new SQL.Database();
+
+		db.run(`
+			CREATE TABLE geometries (
+				id TEXT PRIMARY KEY,
+				name TEXT,
+				type TEXT,
+				color TEXT,
+				position_x REAL, position_y REAL, position_z REAL,
+				rotation_x REAL, rotation_y REAL, rotation_z REAL,
+				scale_x REAL, scale_y REAL, scale_z REAL,
+				visible INTEGER,
+				model_url TEXT
+			)
+		`);
+
+		const items = await this.getAll();
+		items.forEach((g) => {
+			db.run(`INSERT INTO geometries VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [
+				g.id,
+				g.name,
+				g.type,
+				g.color,
+				g.position.x,
+				g.position.y,
+				g.position.z,
+				g.rotation.x,
+				g.rotation.y,
+				g.rotation.z,
+				g.scale.x,
+				g.scale.y,
+				g.scale.z,
+				g.visible ? 1 : 0,
+				g.model_url || ''
+			]);
+		});
+
+		const binary = db.export();
+		const blob = new Blob([binary], { type: 'application/x-sqlite3' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `dv-scene-${new Date().toISOString().split('T')[0]}.sqlite`;
+		a.click();
+		URL.revokeObjectURL(url);
+		db.close();
+	},
+
+	/** 📥 IMPORT de base SQLite réelle (.sqlite) */
+	async importSceneFromSQLite(file: File): Promise<void> {
+		if (!browser) return;
+		const initSqlJs = (await import('sql.js')).default;
+		const SQL = await initSqlJs({
+			locateFile: (file: string) => `${base}/js/${file}`
+		});
+
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = async (e) => {
+				try {
+					const uInt8Array = new Uint8Array(e.target?.result as ArrayBuffer);
+					const db = new SQL.Database(uInt8Array);
+					const results = db.exec('SELECT * FROM geometries');
+					if (results.length === 0) throw new Error('Base de données vide ou table geometries manquante');
+
+					const columns = results[0].columns;
+					const rows = results[0].values;
+
+					const importedItems = rows.map((row) => {
+						const obj: any = {};
+						columns.forEach((col, i) => (obj[col] = row[i]));
+						return {
+							id: obj.id,
+							name: obj.name,
+							type: obj.type,
+							color: obj.color,
+							position: { x: obj.position_x, y: obj.position_y, z: obj.position_z },
+							rotation: { x: obj.rotation_x, y: obj.rotation_y, z: obj.rotation_z },
+							scale: { x: obj.scale_x, y: obj.scale_y, z: obj.scale_z },
+							visible: obj.visible === 1,
+							model_url: obj.model_url
+						} as GeometryItem;
+					});
+
+					const currentItems = (await this.getAll());
+					const mergedMap = new Map();
+					currentItems.forEach((item) => mergedMap.set(item.id.toString(), item));
+					importedItems.forEach((item) => mergedMap.set(item.id.toString(), item));
+
+					this.saveLocal(Array.from(mergedMap.values()));
+					db.close();
+					resolve();
+				} catch (err) {
+					reject(err);
+				}
+			};
+			reader.readAsArrayBuffer(file);
+		});
 	}
 };
 
