@@ -916,25 +916,60 @@
 
 			<!-- Partage / Portabilité Section -->
 			<div class="portability-section">
-				<h4>📂 Portabilité de la Scène</h4>
+				<h4>📂 Portabilité & Base de Données</h4>
+				<p class="port-hint">
+					Editez <a
+						href="{base}/data/inventory.sqlite"
+						download
+						style="color: #4db6ac; text-decoration: underline;">inventory.sqlite</a
+					>
+					dans <strong>DBeaver</strong> puis synchronisez ! 🗄️✨
+				</p>
 				<div class="portability-grid">
-					<button type="button" class="port-btn export" onclick={handleExport}>
+					<button
+						type="button"
+						class="port-btn export"
+						onclick={handleExport}
+						title="Sauvegarder en JSON"
+					>
 						📤 Exporter (JSON)
 					</button>
-					<button type="button" class="port-btn import" onclick={() => importFileInput?.click()}>
+					<button
+						type="button"
+						class="port-btn import"
+						onclick={() => importFileInput?.click()}
+						title="Charger un JSON"
+					>
 						📥 Importer (JSON)
 					</button>
-					<input
-						bind:this={importFileInput}
-						type="file"
-						accept=".json"
-						style="display:none"
-						onchange={handleImport}
-					/>
 				</div>
+				<button
+					type="button"
+					class="port-btn sync-db"
+					onclick={() => {
+						if (
+							confirm(
+								'Cela écrasera vos modifications locales par les données de la base statique. Continuer ?'
+							)
+						) {
+							localStorage.removeItem('dv_threlte_geometries_v1');
+							window.location.reload();
+						}
+					}}
+					style="width: 100%; margin-top: 8px; background: rgba(77, 182, 172, 0.1); border-color: #4db6ac;"
+				>
+					🔄 Synchroniser depuis inventory.sqlite
+				</button>
 				<p class="port-hint">
-					Sauvegardez votre monde construit sur votre PC pour le recharger plus tard ! 💾✨
+					Utilisez <code>pnpm db:push</code> après vos modifs dans DBeaver ! 🛠️
 				</p>
+				<input
+					bind:this={importFileInput}
+					type="file"
+					accept=".json"
+					style="display:none"
+					onchange={handleImport}
+				/>
 			</div>
 
 			<!-- Scene Controls -->

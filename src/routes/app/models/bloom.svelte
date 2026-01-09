@@ -101,16 +101,28 @@
 
 	// Workaround for initialization glitches: brief delay before rendering
 	let ready = $state(false);
+	let isEnabled = $state(true);
+
 	onMount(() => {
 		const timer = setTimeout(() => {
 			ready = true;
 		}, 100);
-		return () => clearTimeout(timer);
+
+		const handleToggle = (e: any) => {
+			isEnabled = e.detail.enabled;
+		};
+
+		window.addEventListener('toggleBloomEffect', handleToggle);
+
+		return () => {
+			clearTimeout(timer);
+			window.removeEventListener('toggleBloomEffect', handleToggle);
+		};
 	});
 
 	useTask(
 		(delta) => {
-			if (!ready || !composer || !currentCamera || composer.passes.length < 2) return;
+			if (!ready || !isEnabled || !composer || !currentCamera || composer.passes.length < 2) return;
 			composer.render(delta);
 		},
 		{ stage: renderStage }

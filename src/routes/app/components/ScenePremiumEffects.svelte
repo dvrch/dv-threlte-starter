@@ -91,17 +91,33 @@
 		}
 	});
 
+	let isEnabled = true;
+
 	onMount(() => {
-		const handleRefresh = (e: any) => {
+		const handleRefresh = (e?: any) => {
+			if (!isEnabled) return;
 			setTimeout(() => untrack(refreshSceneMaterials), 300);
+			setTimeout(() => untrack(refreshSceneMaterials), 1000);
 		};
+
+		const handleToggle = (e: any) => {
+			isEnabled = e.detail.enabled;
+			if (isEnabled) handleRefresh();
+		};
+
+		// 🚀 Initial bursts for slow loaders
+		setTimeout(() => handleRefresh(), 500);
+		setTimeout(() => handleRefresh(), 2000);
+		setTimeout(() => handleRefresh(), 5000);
 
 		window.addEventListener('modelAdded', handleRefresh);
 		window.addEventListener('modelVisualLoaded', handleRefresh);
+		window.addEventListener('togglePremiumEffect', handleToggle);
 
 		return () => {
 			window.removeEventListener('modelAdded', handleRefresh);
 			window.removeEventListener('modelVisualLoaded', handleRefresh);
+			window.removeEventListener('togglePremiumEffect', handleToggle);
 		};
 	});
 </script>

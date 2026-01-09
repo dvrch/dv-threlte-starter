@@ -36,6 +36,9 @@
 						mixer?.clipAction(clip).play();
 					});
 				}
+
+				// ✨ Notify scene that a new visual is ready for premium effects
+				window.dispatchEvent(new Event('modelVisualLoaded'));
 			} catch (e) {
 				console.error(`Failed to load GLTF from ${url}:`, e);
 			} finally {
