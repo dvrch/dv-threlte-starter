@@ -1,1 +1,209 @@
-[]
+[
+  {
+    "id": "1",
+    "name": "Boîte de test",
+    "type": "box",
+    "color": "#ff0000",
+    "position": {
+      "x": 0,
+      "y": 0.5,
+      "z": -2
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scale": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "visible": true,
+    "model_url": ""
+  },
+  {
+    "id": "2",
+    "name": "Modèle du monde",
+    "type": "gltf",
+    "color": "#ffffff",
+    "position": {
+      "x": 2,
+      "y": 1,
+      "z": 0
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scale": {
+      "x": 0.5,
+      "y": 0.5,
+      "z": 0.5
+    },
+    "visible": true,
+    "model_url": "/fkisios/glb/world2.glb"
+  },
+  {
+    "id": "1767906108922",
+    "name": "txt gh",
+    "type": "text_scene",
+    "color": "#c919fe",
+    "position": {
+      "x": -4.73,
+      "y": -1.45,
+      "z": -2.03
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scale": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "visible": true,
+    "model_url": ""
+  },
+  {
+    "id": "1767906233387",
+    "name": "textmd",
+    "type": "text",
+    "color": "#e4c620",
+    "position": {
+      "x": -0.58,
+      "y": -1.05,
+      "z": 1.43
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scale": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "visible": true,
+    "model_url": ""
+  },
+  {
+    "id": "1767906280172",
+    "name": "spaceship",
+    "type": "gltf_model",
+    "color": "#8b0a67",
+    "position": {
+      "x": -0.29,
+      "y": 4.34,
+      "z": -2.41
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scale": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "visible": false,
+    "model_url": "spaceship.glb"
+  },
+  {
+    "id": "1767906340453",
+    "name": "nissangame",
+    "type": "nissangame",
+    "color": "#bfdadd",
+    "position": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scale": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "visible": false,
+    "model_url": ""
+  },
+  {
+    "id": "1767906718638",
+    "name": "biib gh",
+    "type": "bibigame",
+    "color": "#2e1728",
+    "position": {
+      "x": -3.41,
+      "y": 0.03,
+      "z": 3.77
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scale": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "visible": false,
+    "model_url": ""
+  },
+  {
+    "id": "1767921836674",
+    "name": "ghost",
+    "type": "gltf_model",
+    "color": "#b6b8d6",
+    "position": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scale": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "visible": true,
+    "model_url": ""
+  },
+  {
+    "id": "1767922066525",
+    "name": "Desk-bati (1)",
+    "type": "gltf_model",
+    "color": "#c1c674",
+    "position": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "scale": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "visible": true,
+    "model_url": ""
+  }
+]

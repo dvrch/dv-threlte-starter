@@ -258,7 +258,7 @@ export const geometryService = {
 
 		const items = await this.getAll();
 		items.forEach((g) => {
-			db.run(`INSERT INTO geometries VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [
+			db.run(`INSERT INTO geometries VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [
 				g.id,
 				g.name,
 				g.type,

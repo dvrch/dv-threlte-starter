@@ -3,14 +3,9 @@
 	import { addToast } from '$lib/stores/toasts';
 	import { ENDPOINTS } from '$lib/config';
 	import { base } from '$app/paths';
+	import { geometryService, type GeometryItem } from '$lib/services/api';
 
 	const { selectedGeometry = null } = $props();
-
-	$effect(() => {
-		if (selectedGeometry && selectedGeometry.id !== selectedGeometryId) {
-			loadGeometryDetails(selectedGeometry.id);
-		}
-	});
 
 	// Random Utils
 	const getRandomValue = (min: number, max: number) => Number(Math.random() * (max - min) + min);
@@ -24,16 +19,11 @@
 			.toString(16)
 			.padStart(6, '0')}`
 	);
-
-	// Transforms
 	let position = $state({ x: 0, y: 0, z: 0 });
 	let rotation = $state({ x: 0, y: 0, z: 0 });
 	let scale = $state({ x: 1, y: 1, z: 1 });
 	let isUniformScale = $state(true);
-
-	let file: File | null = $state(null); // State for the uploaded file
-
-	import { geometryService, type GeometryItem } from '$lib/services/api';
+	let file: File | null = $state(null);
 
 	let geometries = $state<GeometryItem[]>([]);
 	let selectedGeometryId = $state('');
@@ -42,12 +32,7 @@
 	let isDragging = $state(false);
 	let fileInput = $state<HTMLInputElement>();
 	let isLoading = $state(false);
-	let isFormOpen = $state(false);
 	let isDropdownOpen = $state(false);
-
-	const toggleDropdown = () => {
-		isDropdownOpen = !isDropdownOpen;
-	};
 
 	let isBloomActive = $state(true);
 	let isPremiumActive = $state(true);
@@ -55,16 +40,19 @@
 	let transformModes = $state<('translate' | 'rotate' | 'scale')[]>(['translate']);
 	let searchQuery = $state('');
 
-	// Derived state for filtered geometries
 	let filteredGeometries = $derived(
 		geometries.filter((g) => g.name.toLowerCase().includes(searchQuery.toLowerCase()))
 	);
 
 	$effect(() => {
+		if (selectedGeometry && selectedGeometry.id !== selectedGeometryId) {
+			loadGeometryDetails(selectedGeometry.id);
+		}
+	});
+
+	$effect(() => {
 		window.dispatchEvent(
-			new CustomEvent('toggleBloomEffect', {
-				detail: { enabled: isBloomActive }
-			})
+			new CustomEvent('toggleBloomEffect', { detail: { enabled: isBloomActive } })
 		);
 	});
 
@@ -82,48 +70,16 @@
 
 	$effect(() => {
 		window.dispatchEvent(
-			new CustomEvent('togglePremiumEffect', {
-				detail: { enabled: isPremiumActive }
-			})
+			new CustomEvent('togglePremiumEffect', { detail: { enabled: isPremiumActive } })
 		);
 	});
 
 	const loadTypes = async () => {
 		try {
-			// 1. Tenter l'API si dispo
-			if (ENDPOINTS.TYPES && !ENDPOINTS.TYPES.startsWith('/api')) {
-				const response = await fetch(ENDPOINTS.TYPES, {
-					headers: { Accept: 'application/json' }
-				});
-				if (response.ok) {
-					const data = await response.json();
-					if (Array.isArray(data)) {
-						const fetchedTypes = data.map((type: any) => type.id);
-						const baseTypes = [
-							'box',
-							'sphere',
-							'torus',
-							'icosahedron',
-							'spaceship',
-							'vague',
-							'nissangame',
-							'bibigame',
-							'textmd',
-							'text_scene'
-						];
-						types = [...new Set([...baseTypes, ...fetchedTypes])];
-						return;
-					}
-				}
-			}
-
-			// 2. Fallback sur l'écho statique (DB snapshot)
 			const staticResponse = await fetch(`${base}/data/types.json`);
 			if (staticResponse.ok) {
 				const data = await staticResponse.json();
-				const fetchedTypes = (data || []).map((type: any) => type.id);
-
-				// On garde les types de base "système"
+				const fetchedTypes = (data || []).map((t: any) => t.id);
 				const systemTypes = ['box', 'sphere', 'torus', 'icosahedron', 'textmd', 'image_plane'];
 				types = [...new Set([...systemTypes, ...fetchedTypes])];
 			}
@@ -131,11 +87,12 @@
 			types = ['box', 'sphere', 'torus', 'icosahedron', 'textmd', 'image_plane'];
 		}
 	};
+
 	const dispatch = createEventDispatcher();
 
 	const resetForm = () => {
-		type = types.length > 0 ? types[Math.floor(Math.random() * types.length)] : 'box';
-		name = type;
+		type = types.length > 0 ? 'box' : 'box';
+		name = '';
 		color = `#${Math.floor(Math.random() * 16777215)
 			.toString(16)
 			.padStart(6, '0')}`;
@@ -148,32 +105,109 @@
 		file = null;
 	};
 
-	onMount(() => {
-		(async () => {
-			await loadTypes();
+	const loadGeometries = async () => {
+		try {
+			geometries = await geometryService.getAll();
+		} catch (error) {
+			addToast('Failed to load geometries.', 'error');
+		}
+	};
+
+	const handleSubmit = async () => {
+		isLoading = true;
+		try {
+			const formData = new FormData();
+			const baseName = name || (file ? file.name.split('.')[0] : type);
+			formData.append('name', baseName);
+			formData.append('color', color);
+			formData.append('position', JSON.stringify(position));
+			formData.append('rotation', JSON.stringify(rotation));
+			formData.append('scale', JSON.stringify(scale));
+
+			if (file) {
+				formData.append('model_file', file);
+				const ext = file.name.split('.').pop()?.toLowerCase() || '';
+				const isImage = ['jpg', 'jpeg', 'png', 'webp'].includes(ext);
+				formData.append('type', isImage ? 'image_plane' : 'gltf_model');
+			} else {
+				formData.append('type', type === 'text' ? 'text' : type);
+			}
+
+			if (!isEditing) formData.append('visible', 'true');
+			else {
+				const current = geometries.find((g) => g.id === selectedGeometryId);
+				if (current) formData.append('visible', String(current.visible));
+			}
+
+			await geometryService.save(formData, isEditing ? selectedGeometryId : undefined);
+			addToast(isEditing ? 'Mis à jour !' : 'Ajouté !', 'success');
+			if (!isEditing) resetForm();
+
+			window.dispatchEvent(new Event('modelAdded'));
 			await loadGeometries();
-			resetForm();
-		})();
+		} catch (error) {
+			addToast('Erreur de sauvegarde', 'error');
+		} finally {
+			isLoading = false;
+		}
+	};
+
+	const loadGeometryDetails = async (id: string) => {
+		const g = geometries.find((g) => g.id == id);
+		if (!g) return;
+		name = g.name;
+		type = g.type;
+		color = g.color;
+		position = { ...g.position };
+		rotation = { ...g.rotation };
+		scale = { ...g.scale };
+		isEditing = true;
+		selectedGeometryId = id;
+		file = null;
+	};
+
+	const toggleGeometryVisibility = async (id: string) => {
+		const g = geometries.find((g) => g.id === id);
+		if (!g) return;
+		const next = !g.visible;
+		geometries = geometries.map((i) => (i.id === id ? { ...i, visible: next } : i));
+		window.dispatchEvent(
+			new CustomEvent('geometryVisibilityChanged', { detail: { id, visible: next } })
+		);
+		const fd = new FormData();
+		fd.append('visible', String(next));
+		await geometryService.save(fd, id);
+	};
+
+	const handleExport = () => geometryService.exportScene();
+	const handleExportSQLite = () => geometryService.exportSceneToSQLite();
+
+	onMount(() => {
+		loadTypes();
+		loadGeometries();
 
 		const handleDirectDrop = (e: any) => {
 			if (e.detail?.file) {
-				const droppedFile = e.detail.file;
-				file = droppedFile;
-				if (!isEditing && droppedFile) name = droppedFile.name.split('.')[0];
+				file = e.detail.file;
+				name = file?.name.split('.')[0] || '';
 				setTimeout(handleSubmit, 100);
 			}
 		};
-		window.addEventListener('directSceneUpload', handleDirectDrop);
+
+		const handleDirectImport = async (e: any) => {
+			await geometryService.importScene(e.detail.file);
+			await loadGeometries();
+			window.dispatchEvent(new Event('modelAdded'));
+			addToast('Scène importée !', 'success');
+		};
 
 		const handleManualSync = (e: any) => {
 			const data = e.detail;
 			if (!data?.id) return;
-
 			if (data.id !== selectedGeometryId) {
 				loadGeometryDetails(data.id);
 				return;
 			}
-
 			if (data.position)
 				position = {
 					x: formatVal(data.position.x),
@@ -192,1670 +226,473 @@
 					y: formatVal(data.scale.y),
 					z: formatVal(data.scale.z)
 				};
-
 			if (data.save) handleSubmit();
-		};
-		const handleDirectImport = async (e: any) => {
-			const { file } = e.detail;
-			try {
-				await geometryService.importScene(file);
-				await loadGeometries();
-				window.dispatchEvent(new Event('modelAdded'));
-				addToast('Scène importée avec succès ! 📥✨', 'success');
-			} catch (err) {
-				addToast("Erreur d'import direct : " + (err as Error).message, 'error');
-			}
 		};
 
 		window.addEventListener('directSceneUpload', handleDirectDrop);
 		window.addEventListener('directSceneImport', handleDirectImport);
 		window.addEventListener('manualTransformSync', handleManualSync);
-
 		return () => {
 			window.removeEventListener('directSceneUpload', handleDirectDrop);
 			window.removeEventListener('directSceneImport', handleDirectImport);
 			window.removeEventListener('manualTransformSync', handleManualSync);
 		};
 	});
-
-	const loadGeometries = async () => {
-		try {
-			geometries = await geometryService.getAll();
-		} catch (error) {
-			console.error('Error loading geometries:', error);
-			addToast('Failed to load geometries.', 'error');
-		}
-	};
-
-	const handleSubmit = async () => {
-		isLoading = true;
-		try {
-			const formData = new FormData();
-
-			const getUniqueName = (baseName: string) => {
-				const existingNames = geometries.map((g) => g.name);
-				if (!existingNames.includes(baseName)) return baseName;
-				let counter = 1;
-				while (existingNames.includes(`${baseName}-${counter}`)) {
-					counter++;
-				}
-				return `${baseName}-${counter}`;
-			};
-
-			let uniqueName = isEditing ? name : '';
-			if (!isEditing) {
-				const baseName =
-					name || (file ? file.name.split('.')[0] : type === 'text' ? 'Hello 3D' : type);
-				uniqueName = getUniqueName(baseName);
-			}
-
-			formData.append('name', uniqueName);
-			formData.append('color', color);
-			formData.append('position', JSON.stringify(position));
-			formData.append('rotation', JSON.stringify(rotation));
-			formData.append('scale', JSON.stringify(scale));
-
-			if (file) {
-				formData.append('model_file', file);
-				const ext = file.name.split('.').pop()?.toLowerCase() || '';
-				const isImage = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'].includes(ext);
-				formData.append('type', isImage ? 'image_plane' : 'gltf_model');
-				formData.append('model_type', ext);
-			} else if (type === 'spaceship') {
-				formData.append('type', 'gltf_model');
-				formData.append('model_url', 'spaceship.glb');
-			} else if (type === 'textmd') {
-				formData.append('type', 'text');
-			} else if (type === 'text_scene') {
-				formData.append('type', 'text_scene');
-			} else {
-				formData.append('type', type);
-			}
-
-			if (!isEditing) {
-				formData.append('visible', 'true');
-			} else {
-				const currentGeometry = geometries.find((g) => g.id === selectedGeometryId);
-				if (currentGeometry) formData.append('visible', String(currentGeometry.visible));
-			}
-
-			await geometryService.save(formData, isEditing ? selectedGeometryId : undefined);
-
-			addToast(isEditing ? 'Geometry updated!' : 'Geometry added!', 'success');
-			if (!isEditing) resetForm();
-
-			dispatch('geometryChanged');
-			window.dispatchEvent(new Event('modelAdded'));
-			await loadGeometries();
-		} catch (error) {
-			console.error('Submit error:', error);
-			addToast(error instanceof Error ? error.message : 'Save failed', 'error');
-		} finally {
-			isLoading = false;
-		}
-	};
-
-	const handleGeometrySelect = async (event: Event) => {
-		const select = event.target as HTMLSelectElement;
-		const id = select.value;
-		if (id) {
-			await loadGeometryDetails(id);
-		} else {
-			isEditing = false;
-			resetForm();
-		}
-	};
-
-	const deleteGeometry = async () => {
-		if (!selectedGeometryId) return;
-		try {
-			await geometryService.delete(selectedGeometryId);
-			addToast('Geometry deleted!', 'success');
-			resetForm();
-			dispatch('geometryChanged');
-			window.dispatchEvent(new Event('modelAdded'));
-			await loadGeometries();
-		} catch (error) {
-			console.error('Error deleting geometry:', error);
-			addToast('Failed to delete geometry', 'error');
-		}
-	};
-
-	const loadGeometryDetails = async (id: string) => {
-		try {
-			const geometry = geometries.find((g) => g.id == id);
-			if (!geometry) throw new Error('Not found');
-
-			name = geometry.name;
-			type = geometry.type;
-			color = geometry.color;
-			position = geometry.position ? { ...geometry.position } : { x: 0, y: 0, z: 0 };
-			rotation = geometry.rotation ? { ...geometry.rotation } : { x: 0, y: 0, z: 0 };
-			scale = geometry.scale ? { ...geometry.scale } : { x: 1, y: 1, z: 1 };
-
-			isEditing = true;
-			selectedGeometryId = id.toString();
-			file = null;
-		} catch (error) {
-			console.error('Error loading geometry details:', error);
-		}
-	};
-
-	const toggleGeometryVisibility = async (id: string) => {
-		const originalGeometries = [...geometries];
-		const geometry = geometries.find((g) => g.id === id);
-		if (!geometry) return;
-
-		const newVisibleState = !geometry.visible;
-		geometries = geometries.map((g) => (g.id === id ? { ...g, visible: newVisibleState } : g));
-
-		window.dispatchEvent(
-			new CustomEvent('geometryVisibilityChanged', { detail: { id, visible: newVisibleState } })
-		);
-
-		try {
-			// Re-use save logically for visibility or implement specific patch in service
-			const formData = new FormData();
-			formData.append('visible', String(newVisibleState));
-			await geometryService.save(formData, id);
-			window.dispatchEvent(new Event('modelAdded'));
-		} catch (error) {
-			geometries = originalGeometries;
-		}
-	};
-
-	// Randomization Functions
-	const randomizeVector = (
-		current: { x: number; y: number; z: number },
-		min: number,
-		max: number
-	) => {
-		return {
-			x: formatVal(getRandomValue(min, max)),
-			y: formatVal(getRandomValue(min, max)),
-			z: formatVal(getRandomValue(min, max))
-		};
-	};
-
-	const randomizeVal = (min: number, max: number) => formatVal(getRandomValue(min, max));
-
-	const randomizePosition = () => {
-		position = randomizeVector(position, -5, 5);
-	};
-	const randomizeRotation = () => {
-		rotation = randomizeVector(rotation, 0, 360);
-	};
-	const randomizeScale = () => {
-		const s = randomizeVal(0.5, 3);
-		scale = { x: s, y: s, z: s }; // Uniform random
-	};
-
-	const updateScale = (axis: 'x' | 'y' | 'z', val: number) => {
-		scale[axis] = val;
-		if (isUniformScale) {
-			scale.x = val;
-			scale.y = val;
-			scale.z = val;
-		}
-	};
-
-	// 📤 Export / 📥 Import JSON
-	const handleExport = () => {
-		geometryService.exportScene();
-		addToast('Scène exportée avec succès (JSON) ! 📤', 'success');
-	};
-
-	let importFileInput = $state<HTMLInputElement>();
-	const handleImport = async (e: Event) => {
-		const target = e.target as HTMLInputElement;
-		if (target.files && target.files[0]) {
-			try {
-				await geometryService.importScene(target.files[0]);
-				await loadGeometries();
-				window.dispatchEvent(new Event('modelAdded'));
-				addToast('Scène JSON importée et fusionnée ! 📥✨', 'success');
-			} catch (err) {
-				addToast("Erreur lors de l'import JSON : " + (err as Error).message, 'error');
-			}
-		}
-	};
-
-	// 🗄️ Export / 📥 Import SQLite
-	const handleExportSQLite = async () => {
-		try {
-			isLoading = true;
-			await geometryService.exportSceneToSQLite();
-			addToast('Base de données (.sqlite) exportée ! 🗄️💎', 'success');
-		} catch (err) {
-			addToast("Erreur d'export SQLite : " + (err as Error).message, 'error');
-		} finally {
-			isLoading = false;
-		}
-	};
-
-	let importSQLiteFileInput = $state<HTMLInputElement>();
-	const handleImportSQLite = async (e: Event) => {
-		const target = e.target as HTMLInputElement;
-		if (target.files && target.files[0]) {
-			try {
-				isLoading = true;
-				await geometryService.importSceneFromSQLite(target.files[0]);
-				await loadGeometries();
-				window.dispatchEvent(new Event('modelAdded'));
-				addToast('Base SQLite importée et fusionnée ! 📥🏗️', 'success');
-			} catch (err) {
-				addToast("Erreur d'import SQLite : " + (err as Error).message, 'error');
-			} finally {
-				isLoading = false;
-			}
-		}
-	};
 </script>
 
 <div class="form-container">
 	<form
-		onsubmit={(event) => {
-			event.preventDefault();
+		onsubmit={(e) => {
+			e.preventDefault();
 			handleSubmit();
 		}}
 	>
-		<!-- Drag & Drop Upload Zone (Top of form) -->
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<div
-			class="upload-container-wrapper"
-			role="presentation"
-			class:dragging={isDragging}
-			ondragover={(e) => {
-				e.preventDefault();
-				isDragging = true;
-			}}
-			ondragleave={() => (isDragging = false)}
-			ondrop={(e) => {
-				e.preventDefault();
-				isDragging = false;
-				if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
-					file = e.dataTransfer.files[0];
-					if (!isEditing) name = file.name.split('.')[0];
-				}
-			}}
-		>
+		<div class="upload-container-wrapper" class:dragging={isDragging}>
 			<div class="upload-controls-grid">
-				<!-- Upload Zone (Left) -->
 				<div
 					class="upload-zone-compact"
 					class:has-file={!!file}
+					onclick={() => fileInput?.click()}
 					role="button"
 					tabindex="0"
-					onclick={() => fileInput?.click()}
-					title="Cliquez pour sélectionner un fichier"
 				>
 					<input
 						bind:this={fileInput}
 						type="file"
 						accept=".glb,.gltf"
 						style="display: none;"
-						onchange={(e) => {
-							const target = e.target as HTMLInputElement;
-							if (target.files && target.files.length > 0) {
-								file = target.files[0];
-								if (!isEditing) name = file.name.split('.')[0];
-							}
-						}}
+						onchange={(e) => { 
+						const t = e.target as HTMLInputElement; 
+						if (t.files?.[0]) { file = t.files[0]; name = file.name.split('.')[0]; } 
+					}}
 					/>
-
-					{#if file}
-						<div class="file-info-compact">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="24"
-								height="24"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								class="file-icon"
-								><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline
-									points="13 2 13 9 20 9"
-								/></svg
-							>
-						</div>
-					{:else}
-						<div class="upload-placeholder-compact">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="24"
-								height="24"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline
-									points="17 8 12 3 7 8"
-								/><line x1="12" y1="3" x2="12" y2="15" /></svg
-							>
-						</div>
-					{/if}
+					{file ? '✅' : '📤'}
 				</div>
 
-				<!-- Controls Grid (Right) -->
 				<div class="mini-controls-table">
-					<!-- Row 1: Hand/Edit Icon (Top Right) -->
 					<div class="mini-control-cell top-right">
-						<div
-							class="hand-icon"
-							class:active={isEditing}
-							title={isEditing ? 'Mode Édition' : 'Mode Ajout'}
-						>
-							✍️
-						</div>
+						<div class="hand-icon" class:active={isEditing}>✍️</div>
 					</div>
-
-					<!-- Row 2: Gizmo & Modes -->
 					<div class="mini-control-cell bottom-left">
 						<button
 							type="button"
 							class="tiny-btn"
 							class:active={transformModes.includes('translate')}
-							title="Position"
-							onclick={() => {
-								if (transformModes.includes('translate'))
-									transformModes = transformModes.filter((m) => m !== 'translate');
-								else transformModes = [...transformModes, 'translate'];
-							}}>P</button
+							onclick={() => (transformModes = ['translate'])}>P</button
 						>
 						<button
 							type="button"
 							class="tiny-btn"
 							class:active={transformModes.includes('rotate')}
-							title="Rotation"
-							onclick={() => {
-								if (transformModes.includes('rotate'))
-									transformModes = transformModes.filter((m) => m !== 'rotate');
-								else transformModes = [...transformModes, 'rotate'];
-							}}>R</button
+							onclick={() => (transformModes = ['rotate'])}>R</button
 						>
 						<button
 							type="button"
 							class="tiny-btn"
 							class:active={transformModes.includes('scale')}
-							title="Echelle"
-							onclick={() => {
-								if (transformModes.includes('scale'))
-									transformModes = transformModes.filter((m) => m !== 'scale');
-								else transformModes = [...transformModes, 'scale'];
-							}}>S</button
+							onclick={() => (transformModes = ['scale'])}>S</button
 						>
 					</div>
-
 					<div class="mini-control-cell bottom-right">
 						<button
 							type="button"
 							class="tiny-toggle"
 							class:active={isTransformControlsEnabled}
-							onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}
-							title="Activer Gizmos"
-						>
-							{isTransformControlsEnabled ? '✜ ON' : '✜'}
-						</button>
-					</div>
-				</div>
-			</div>
-
-			<h3>{isEditing ? 'Update' : 'Add'} Geometry</h3>
-
-			<div class="geometry-list">
-				<!-- Custom Dropdown Menu -->
-				<div
-					class="custom-dropdown"
-					onmouseleave={() => (isDropdownOpen = false)}
-					role="region"
-					aria-label="Sélection de géométrie"
-				>
-					<!-- svelte-ignore a11y_click_events_have_key_events -->
-					<div
-						class="dropdown-header"
-						onclick={toggleDropdown}
-						onmouseenter={() => (isDropdownOpen = true)}
-						role="button"
-						tabindex="0"
-						aria-label="Sélectionner une géométrie"
-					>
-						<span style="flex: 1; text-align: left;">
-							{selectedGeometryId
-								? geometries.find((g) => g.id === selectedGeometryId)?.name || 'Unknown Geometry'
-								: '-- Select Geometry --'}
-						</span>
-						<svg
-							class="chevron"
-							class:open={isDropdownOpen}
-							xmlns="http://www.w3.org/2000/svg"
-							width="16"
-							height="16"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"><polyline points="6 9 12 15 18 9" /></svg
+							onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}>✜</button
 						>
 					</div>
-
-					{#if isDropdownOpen}
-						<div class="dropdown-list">
-							<div class="dropdown-search">
-								<input
-									type="text"
-									bind:value={searchQuery}
-									placeholder="Filtrer..."
-									onclick={(e) => e.stopPropagation()}
-									onkeydown={(e) => {
-										if (e.key === 'Enter' && filteredGeometries.length > 0) {
-											loadGeometryDetails(filteredGeometries[0].id);
-											isFormOpen = false;
-											isDropdownOpen = false;
-										}
-									}}
-								/>
-							</div>
-							{#each filteredGeometries as geometry (geometry.id)}
-								<div class="dropdown-item" class:selected={selectedGeometryId === geometry.id}>
-									<!-- Name: Selects and closes form (Re-enroule le ruban) -->
-									<div
-										class="item-name"
-										onclick={() => {
-											loadGeometryDetails(geometry.id);
-											isFormOpen = false; // Close form
-											isDropdownOpen = false; // Close dropdown
-										}}
-										role="button"
-										tabindex="0"
-										onkeydown={(e) => {
-											if (e.key === 'Enter' || e.key === ' ') {
-												loadGeometryDetails(geometry.id);
-												isFormOpen = false;
-												isDropdownOpen = false;
-											}
-										}}
-									>
-										{geometry.name}
-									</div>
-
-									<!-- Eye: Toggles Visibility (stays open or just updates state) -->
-									<button
-										type="button"
-										class="visibility-toggle"
-										class:visible={geometry.visible}
-										class:hidden={!geometry.visible}
-										onclick={(e) => {
-											e.stopPropagation();
-											toggleGeometryVisibility(geometry.id);
-										}}
-										aria-label={geometry.visible ? 'Hide' : 'Show'}
-									>
-										{#if geometry.visible}
-											<svg
-												xmlns="http://www.w3.org/2000/svg"
-												width="14"
-												height="14"
-												viewBox="0 0 24 24"
-												fill="none"
-												stroke="currentColor"
-												stroke-width="2"
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle
-													cx="12"
-													cy="12"
-													r="3"
-												/></svg
-											>
-										{:else}
-											<svg
-												xmlns="http://www.w3.org/2000/svg"
-												width="14"
-												height="14"
-												viewBox="0 0 24 24"
-												fill="none"
-												stroke="currentColor"
-												stroke-width="2"
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												><path
-													d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
-												/><line x1="1" y1="1" x2="23" y2="23" /></svg
-											>
-										{/if}
-									</button>
-								</div>
-							{/each}
-
-							{#if geometries.length === 0}
-								<div class="dropdown-item empty">No geometries found</div>
-							{/if}
-						</div>
-					{/if}
-				</div>
-
-				<button
-					type="button"
-					class="add-new-button"
-					onclick={() => {
-						resetForm();
-						isEditing = false;
-					}}
-				>
-					+ Add New Geometry
-				</button>
-
-				<!-- Type Selection -->
-				{#if !file}
-					<div class="type-select-row">
-						<select bind:value={type}>
-							{#each types as geometryType}
-								<option value={geometryType}>{geometryType}</option>
-							{/each}
-							<option value="text">text</option>
-							<!-- Explicitly add text option -->
-						</select>
-
-						{#if type === 'text'}
-							<input
-								type="text"
-								bind:value={name}
-								placeholder="Enter text..."
-								class="text-content-input"
-							/>
-						{:else}
-							<input type="text" bind:value={name} placeholder="Name" required />
-						{/if}
-						<input type="color" bind:value={color} class="color-input" />
-						<button
-							type="button"
-							class="tiny-image-btn"
-							onclick={() => document.getElementById('direct-image-upload')?.click()}
-							title="Upload Image"
-						>
-							🖼️
-						</button>
-						<input
-							id="direct-image-upload"
-							type="file"
-							accept="image/*"
-							class="hidden"
-							style="display: none;"
-							onchange={(e: any) => {
-								const target = e.target as HTMLInputElement;
-								const file = target.files?.[0];
-								if (file) {
-									window.dispatchEvent(new CustomEvent('directSceneUpload', { detail: { file } }));
-								}
-							}}
-						/>
-					</div>
-				{:else}
-					<input type="text" bind:value={name} placeholder="Name" required />
-					<input type="color" bind:value={color} />
-				{/if}
-
-				<!-- Transform Controls: 3 Columns (Pos | Rot | Scl) -->
-				<div class="transforms-grid">
-					<!-- Header Row -->
-					<div class="grid-header">
-						<div class="col-header">
-							<span>Pos</span>
-							<button
-								type="button"
-								class="icon-btn tiny"
-								onclick={randomizePosition}
-								title="Rnd Pos">🎲</button
-							>
-						</div>
-						<div class="col-header">
-							<span>Rot</span>
-							<button
-								type="button"
-								class="icon-btn tiny"
-								onclick={randomizeRotation}
-								title="Rnd Rot">🎲</button
-							>
-						</div>
-						<div class="col-header">
-							<span>Scl</span>
-							<button type="button" class="icon-btn tiny" onclick={randomizeScale} title="Rnd Scl"
-								>🎲</button
-							>
-							<button
-								type="button"
-								class="icon-btn tiny"
-								class:active={isUniformScale}
-								onclick={() => (isUniformScale = !isUniformScale)}
-								title="Uniform">🔗</button
-							>
-						</div>
-					</div>
-
-					<!-- X Row -->
-					<div class="grid-row">
-						<div class="cell">
-							<input
-								type="number"
-								bind:value={position.x}
-								step="any"
-								class="mini-input"
-								placeholder="X"
-							/>
-						</div>
-						<div class="cell">
-							<input
-								type="number"
-								bind:value={rotation.x}
-								step="any"
-								class="mini-input"
-								placeholder="X"
-							/>
-						</div>
-						<div class="cell">
-							<input
-								type="number"
-								bind:value={scale.x}
-								step="any"
-								class="mini-input"
-								placeholder="X"
-								oninput={(e) => updateScale('x', parseFloat(e.currentTarget.value) || 1)}
-							/>
-						</div>
-					</div>
-
-					<!-- Y Row -->
-					<div class="grid-row">
-						<div class="cell">
-							<input
-								type="number"
-								bind:value={position.y}
-								step="any"
-								class="mini-input"
-								placeholder="Y"
-							/>
-						</div>
-						<div class="cell">
-							<input
-								type="number"
-								bind:value={rotation.y}
-								step="any"
-								class="mini-input"
-								placeholder="Y"
-							/>
-						</div>
-						{#if isUniformScale}
-							<div class="cell empty" />
-						{:else}
-							<div class="cell">
-								<input
-									type="number"
-									bind:value={scale.y}
-									step="any"
-									class="mini-input"
-									placeholder="Y"
-								/>
-							</div>
-						{/if}
-					</div>
-
-					<!-- Z Row -->
-					<div class="grid-row">
-						<div class="cell">
-							<input
-								type="number"
-								bind:value={position.z}
-								step="any"
-								class="mini-input"
-								placeholder="Z"
-							/>
-						</div>
-						<div class="cell">
-							<input
-								type="number"
-								bind:value={rotation.z}
-								step="any"
-								class="mini-input"
-								placeholder="Z"
-							/>
-						</div>
-						{#if isUniformScale}
-							<div class="cell">
-								<input
-									type="number"
-									value={scale.z}
-									step="0.01"
-									class="mini-input readonly"
-									placeholder="Z"
-									readonly
-								/>
-							</div>
-						{:else}
-							<div class="cell">
-								<input
-									type="number"
-									bind:value={scale.z}
-									step="0.01"
-									class="mini-input"
-									placeholder="Z"
-								/>
-							</div>
-						{/if}
-					</div>
-				</div>
-			</div>
-
-			<div class="submit-actions-bottom">
-				<button type="submit" class="submit-btn" disabled={isLoading}>
-					{isLoading ? 'Processing...' : isEditing ? 'Update Geometry' : 'Add Geometry'}
-				</button>
-				{#if isEditing}
-					<button type="button" onclick={resetForm} class="cancel-button"> Cancel </button>
-				{/if}
-			</div>
-
-			<!-- Partage / Portabilité Section -->
-			<div class="portability-section">
-				<h4>📂 Portabilité de la Scène</h4>
-
-				<!-- Mode JSON -->
-				<div class="port-group">
-					<label>Format JSON (Standard)</label>
-					<div class="portability-grid">
-						<button
-							type="button"
-							class="port-btn export"
-							onclick={handleExport}
-							title="Sauvegarder en JSON"
-						>
-							📤 Exporter JSON
-						</button>
-						<button
-							type="button"
-							class="port-btn import"
-							onclick={() => importFileInput?.click()}
-							title="Charger un JSON"
-						>
-							📥 Importer JSON
-						</button>
-					</div>
-				</div>
-
-				<!-- Mode SQLite Professionnel -->
-				<div class="port-group professional">
-					<label>Format SQLite (Professionnel - DBeaver)</label>
-					<div class="portability-grid">
-						<button
-							type="button"
-							class="port-btn export sqlite"
-							onclick={handleExportSQLite}
-							title="Exporter en base de données réelle"
-						>
-							🗄️ Exporter .sqlite
-						</button>
-						<button
-							type="button"
-							class="port-btn import sqlite"
-							onclick={() => importSQLiteFileInput?.click()}
-							title="Importer une base SQLite"
-						>
-							📥 Importer .sqlite
-						</button>
-					</div>
-					<p class="port-hint-mini">
-						Ouvrez le fichier .sqlite dans <strong>DBeaver</strong> pour éditer en masse ! 🛠️
-					</p>
-				</div>
-
-				<div class="divider">ou</div>
-
-				<button
-					type="button"
-					class="port-btn sync-db"
-					onclick={() => {
-						if (
-							confirm(
-								'Cela écrasera vos modifications locales par les données de la base système. Continuer ?'
-							)
-						) {
-							localStorage.removeItem('dv_threlte_geometries_v1');
-							window.location.reload();
-						}
-					}}
-				>
-					🔄 Reset depuis inventory.sqlite (système)
-				</button>
-
-				<!-- Hidden Inputs -->
-				<input
-					bind:this={importFileInput}
-					type="file"
-					accept=".json"
-					style="display:none"
-					onchange={handleImport}
-				/>
-				<input
-					bind:this={importSQLiteFileInput}
-					type="file"
-					accept=".sqlite,.db"
-					style="display:none"
-					onchange={handleImportSQLite}
-				/>
-			</div>
-
-			<!-- Scene Controls -->
-			<div class="scene-controls">
-				<div class="control-item">
-					<span>Bloom Effect</span>
-					<button
-						type="button"
-						class="toggle-btn"
-						class:active={isBloomActive}
-						onclick={() => (isBloomActive = !isBloomActive)}
-					>
-						{isBloomActive ? 'Enabled' : 'Disabled'}
-					</button>
-				</div>
-
-				<div class="control-item transform-controls-row">
-					<span>Manipuler (Direct)</span>
-					<div class="transform-actions-v2">
-						<button
-							type="button"
-							class="mode-btn toggle"
-							class:active={isTransformControlsEnabled}
-							onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}
-							title="Activer Gizmo"
-						>
-							{isTransformControlsEnabled ? 'ON' : 'OFF'}
-						</button>
-
-						<div class="mode-selector-group" class:disabled={!isTransformControlsEnabled}>
-							<button
-								type="button"
-								class="mode-btn"
-								class:active={transformModes.includes('translate')}
-								onclick={() => {
-									if (transformModes.includes('translate')) {
-										transformModes = transformModes.filter((m) => m !== 'translate');
-									} else {
-										transformModes = [...transformModes, 'translate'];
-									}
-								}}>Pos</button
-							>
-							<button
-								type="button"
-								class="mode-btn"
-								class:active={transformModes.includes('rotate')}
-								onclick={() => {
-									if (transformModes.includes('rotate')) {
-										transformModes = transformModes.filter((m) => m !== 'rotate');
-									} else {
-										transformModes = [...transformModes, 'rotate'];
-									}
-								}}>Rot</button
-							>
-							<button
-								type="button"
-								class="mode-btn"
-								class:active={transformModes.includes('scale')}
-								onclick={() => {
-									if (transformModes.includes('scale')) {
-										transformModes = transformModes.filter((m) => m !== 'scale');
-									} else {
-										transformModes = [...transformModes, 'scale'];
-									}
-								}}>Scl</button
-							>
-						</div>
-					</div>
-				</div>
-
-				<div class="control-item">
-					<span>Premium Effects</span>
-					<button
-						type="button"
-						class="toggle-btn"
-						class:active={isPremiumActive}
-						onclick={() => (isPremiumActive = !isPremiumActive)}
-					>
-						{isPremiumActive ? 'ON' : 'OFF'}
-					</button>
 				</div>
 			</div>
 		</div>
-	</form>
 
-	<div class="delete-section">
-		<button onclick={deleteGeometry} disabled={!selectedGeometryId} class="delete-button">
-			Delete Selected
-		</button>
-	</div>
+		<div class="geometry-list">
+			<div class="custom-dropdown" onmouseleave={() => (isDropdownOpen = false)} role="region">
+				<div
+					class="dropdown-header"
+					onclick={() => (isDropdownOpen = !isDropdownOpen)}
+					onmouseenter={() => (isDropdownOpen = true)}
+					role="button"
+					tabindex="0"
+				>
+					<span
+						>{selectedGeometryId
+							? geometries.find((g) => g.id === selectedGeometryId)?.name
+							: '-- Select --'}</span
+					>
+				</div>
+				{#if isDropdownOpen}
+					<div class="dropdown-list">
+						<div class="dropdown-search">
+							<input
+								type="text"
+								bind:value={searchQuery}
+								placeholder="Filter..."
+								onclick={(e) => e.stopPropagation()}
+							/>
+						</div>
+						{#each filteredGeometries as g (g.id)}
+							<div class="dropdown-item" class:selected={selectedGeometryId === g.id}>
+								<div
+									class="item-name"
+									onclick={() => {
+										loadGeometryDetails(g.id);
+										isDropdownOpen = false;
+									}}
+									role="button"
+									tabindex="0"
+								>
+									{g.name}
+								</div>
+								<button
+									type="button"
+									class="visibility-toggle"
+									class:visible={g.visible}
+									onclick={() => toggleGeometryVisibility(g.id)}>{g.visible ? '👁️' : '🕶️'}</button
+								>
+							</div>
+						{/each}
+					</div>
+				{/if}
+			</div>
+
+			<div class="type-select-row">
+				<select bind:value={type}>
+					{#each types as t}<option value={t}>{t}</option>{/each}
+					<option value="text">text</option>
+				</select>
+				<input type="text" bind:value={name} placeholder="Name" required />
+				<input type="color" bind:value={color} class="color-input" />
+			</div>
+		</div>
+
+		<div class="transform-grid mini">
+			<div class="vector-input-row">
+				<label>POS</label>
+				<input type="number" bind:value={position.x} step="0.1" />
+				<input type="number" bind:value={position.y} step="0.1" />
+				<input type="number" bind:value={position.z} step="0.1" />
+			</div>
+			<div class="vector-input-row">
+				<label>ROT</label>
+				<input type="number" bind:value={rotation.x} step="1" />
+				<input type="number" bind:value={rotation.y} step="1" />
+				<input type="number" bind:value={rotation.z} step="1" />
+			</div>
+			<div class="vector-input-row">
+				<label>SCL</label>
+				<input
+					type="number"
+					bind:value={scale.x}
+					step="0.1"
+					oninput={(e) => isUniformScale && (scale.y = scale.z = +(e.target as any).value)}
+				/>
+				<input
+					type="number"
+					bind:value={scale.y}
+					step="0.1"
+					class:readonly={isUniformScale}
+					readonly={isUniformScale}
+				/>
+				<input
+					type="number"
+					bind:value={scale.z}
+					step="0.1"
+					class:readonly={isUniformScale}
+					readonly={isUniformScale}
+				/>
+				<button
+					type="button"
+					class="tiny-toggle"
+					class:active={isUniformScale}
+					onclick={() => (isUniformScale = !isUniformScale)}>🔗</button
+				>
+			</div>
+		</div>
+
+		<div class="submit-actions-bottom">
+			<button type="submit" class="submit-btn" disabled={isLoading}
+				>{isEditing ? 'Update' : 'Add'}</button
+			>
+			{#if isEditing}<button type="button" onclick={resetForm} class="cancel-button">✖</button>{/if}
+		</div>
+
+		<div class="portability-section">
+			<div class="portability-grid">
+				<button type="button" class="port-btn" onclick={handleExport}>📤 JSON</button>
+				<button
+					type="button"
+					class="port-btn"
+					onclick={() => document.getElementById('import-json')?.click()}>📥 JSON</button
+				>
+				<button type="button" class="port-btn sqlite" onclick={handleExportSQLite}>🗄️ SQL</button>
+				<button
+					type="button"
+					class="port-btn sqlite"
+					onclick={() => document.getElementById('import-sqlite')?.click()}>📥 SQL</button
+				>
+			</div>
+			<input
+				id="import-json"
+				type="file"
+				accept=".json"
+				style="display:none"
+				onchange={(e) => geometryService.importScene((e.target as any).files[0]).then(() => loadGeometries())}
+			/>
+			<input
+				id="import-sqlite"
+				type="file"
+				accept=".sqlite,.db"
+				style="display:none"
+				onchange={(e) => geometryService.importScene((e.target as any).files[0]).then(() => loadGeometries())}
+			/>
+		</div>
+
+		<div class="scene-controls">
+			<button
+				type="button"
+				class="mode-btn toggle"
+				class:active={isBloomActive}
+				onclick={() => (isBloomActive = !isBloomActive)}>🌸 Bloom</button
+			>
+			<button
+				type="button"
+				class="mode-btn toggle"
+				class:active={isPremiumActive}
+				onclick={() => (isPremiumActive = !isPremiumActive)}>💎 Prem</button
+			>
+			<button
+				type="button"
+				class="port-btn sync-db"
+				onclick={() =>
+					(confirm('Reset ?') && localStorage.removeItem('dv_threlte_geometries_v1')) ||
+					window.location.reload()}>🔄 Reset</button
+			>
+		</div>
+	</form>
 </div>
 
 <style>
 	.form-container {
-		font-family: 'Inter', sans-serif;
-		color: #fff;
-		font-size: 0.75rem;
 		width: 100%;
-		margin: 0;
-		background: transparent;
-		padding: 0;
-		border-radius: 6px;
-		box-sizing: border-box;
-	}
-
-	.form-handle {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 4px 10px;
-		background: rgba(255, 255, 255, 0.05);
-		border-radius: 4px;
-		margin-bottom: 8px;
-		color: #4db6ac;
-		font-weight: 700;
-		font-size: 0.65rem;
-		letter-spacing: 1px;
-		text-transform: uppercase;
-	}
-
-	.expand-icon {
-		font-size: 1rem;
-		line-height: 1;
-		color: #999;
-	}
-
-	h3 {
-		margin: 0 0 12px 0;
-		font-size: 0.85rem;
-		text-align: center;
-		color: #4db6ac;
-	}
-
-	form {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-	}
-
-	input,
-	select,
-	button {
-		background: rgba(255, 255, 255, 0.05);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		color: rgb(160, 155, 155);
-		padding: 4px 6px;
-		border-radius: 3px;
-		font-size: 0.7rem;
-		width: 100%;
-		box-sizing: border-box;
-	}
-
-	input:focus,
-	select:focus {
-		outline: none;
-		border-color: #4db6ac;
-	}
-
-	/* Type Select Row */
-	.type-select-row {
-		display: flex;
-		gap: 6px;
-		align-items: center;
-	}
-	.type-select-row select {
-		flex: 1;
-	}
-	.text-content-input,
-	.color-input {
-		flex: 1;
-	}
-	.color-input {
-		max-width: 40px;
-		padding: 0;
-		border: 0;
-		height: 24px;
-	}
-
-	/* Transforms Grid */
-	.transforms-grid {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-		margin-top: 5px;
-		background: rgba(0, 0, 0, 0.2);
-		padding: 4px;
-		border-radius: 4px;
-	}
-
-	.grid-header {
-		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
-		gap: 4px;
-		margin-bottom: 2px;
-	}
-
-	.col-header {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 4px;
-		font-size: 0.65rem;
-		font-weight: bold;
-		color: #bbb;
-		text-transform: uppercase;
-	}
-
-	.grid-row {
-		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
-		gap: 4px;
-	}
-
-	.cell {
-		display: flex;
-		align-items: center;
-	}
-
-	.cell.empty {
-		visibility: hidden;
-	}
-
-	.mini-input {
-		width: 100%;
-		padding: 2px 4px;
-		font-size: 0.7rem;
-		text-align: center;
-		background: rgba(255, 255, 255, 0.07);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		color: #ddd;
-		border-radius: 2px;
-	}
-
-	.mini-input:focus {
-		border-color: #4db6ac;
-		background: rgba(255, 255, 255, 0.1);
-	}
-
-	.mini-input.readonly {
-		opacity: 0.6;
-		cursor: not-allowed;
-		background: rgba(0, 0, 0, 0.2);
-	}
-
-	.icon-btn.tiny {
-		padding: 0 2px;
-		font-size: 0.7rem;
-		background: transparent;
-		border: none;
-		color: #777;
-		cursor: pointer;
-	}
-
-	.icon-btn.tiny:hover {
-		color: #4db6ac;
-	}
-
-	.icon-btn.active {
-		color: #4db6ac;
-	}
-
-	.reset-button {
-		color: black;
-		font-size: 0.7rem;
-		font-weight: 600;
-		padding: 6px 10px;
-		margin-top: 8px;
-		cursor: pointer;
-		align-self: flex-end;
-		width: auto;
-		border-radius: 4px;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-		transition: all 0.2s ease;
-	}
-
-	.reset-button:hover {
-		background: linear-gradient(135deg, #80cbc4, #4db6ac);
-		border-color: #80cbc4;
-		transform: translateY(-1px);
-		box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-	}
-
-	/* Custom Dropdown Styles */
-	.custom-dropdown {
-		position: relative;
-		margin-bottom: 10px;
-		width: 100%;
-		font-family: 'Inter', sans-serif;
-	}
-
-	.dropdown-header {
-		background: rgba(255, 255, 255, 0.05);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		color: rgb(160, 155, 155);
-		padding: 6px 10px;
-		border-radius: 3px;
-		cursor: pointer;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		font-size: 0.75rem;
-		transition: border-color 0.2s;
-	}
-
-	.dropdown-header:hover {
-		border-color: #4db6ac;
-	}
-
-	.chevron {
-		transition: transform 0.2s ease;
-		color: #999;
-	}
-
-	.chevron.open {
-		transform: rotate(180deg);
-	}
-
-	.dropdown-list {
-		position: absolute;
-		top: 100%;
-		left: 0;
-		right: 0;
-		background: #1a1a1a;
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 4px;
-		margin-top: 4px;
-		max-height: 200px;
-		overflow-y: auto;
-		z-index: 1000;
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-	}
-
-	.dropdown-search {
-		padding: 6px;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-		background: rgba(0, 0, 0, 0.1);
-	}
-
-	.dropdown-search input {
-		width: 100%;
-		background: rgba(255, 255, 255, 0.05);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 4px;
-		padding: 4px 8px;
 		color: #eee;
-		font-size: 0.75rem;
-		outline: none;
-	}
-
-	.dropdown-search input:focus {
-		border-color: #4db6ac;
-		background: rgba(77, 182, 172, 0.05);
-	}
-
-	.dropdown-item {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 6px 10px;
-		cursor: pointer;
-		transition: background 0.2s;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-	}
-
-	.dropdown-item:last-child {
-		border-bottom: none;
-	}
-
-	.dropdown-item:hover {
-		background: rgba(255, 255, 255, 0.05);
-	}
-
-	.dropdown-item.selected {
-		background: rgba(77, 182, 172, 0.15);
-		color: #80cbc4;
-	}
-
-	.item-name {
-		flex: 1;
-		font-size: 0.75rem;
-		color: #ddd;
-		cursor: pointer;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.dropdown-item.selected .item-name {
-		color: #80cbc4;
-		font-weight: 500;
-	}
-
-	.dropdown-item.empty {
-		padding: 10px;
-		text-align: center;
-		color: #777;
-		font-style: italic;
-	}
-
-	.portability-section {
-		margin-top: 20px;
-		padding: 12px;
-		background: rgba(0, 0, 0, 0.2);
-		border: 1px solid rgba(255, 255, 255, 0.05);
-		border-radius: 8px;
-	}
-
-	.portability-section h4 {
-		margin: 0 0 10px 0;
-		font-size: 0.85rem;
-		color: #80cbc4;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-	}
-
-	.port-group {
-		margin-bottom: 15px;
-	}
-
-	.port-group label {
-		display: block;
-		font-size: 0.65rem;
-		color: #777;
-		margin-bottom: 6px;
-	}
-
-	.port-group.professional {
-		padding: 8px;
-		background: rgba(77, 182, 172, 0.03);
-		border-radius: 6px;
-		border: 1px solid rgba(77, 182, 172, 0.1);
-	}
-
-	.portability-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 8px;
-	}
-
-	.port-btn {
-		padding: 6px 10px;
-		font-size: 0.75rem;
-		background: rgba(255, 255, 255, 0.05);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 4px;
-		color: #ddd;
-		cursor: pointer;
-		transition: all 0.2s;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 6px;
-	}
-
-	.port-btn:hover {
-		background: rgba(255, 255, 255, 0.1);
-		border-color: rgba(255, 255, 255, 0.2);
-	}
-
-	.port-btn.sqlite {
-		background: rgba(77, 182, 172, 0.1);
-		border-color: rgba(77, 182, 172, 0.3);
-		color: #80cbc4;
-	}
-
-	.port-btn.sqlite:hover {
-		background: rgba(77, 182, 172, 0.2);
-		border-color: #4db6ac;
-	}
-
-	.port-hint-mini {
-		font-size: 0.6rem;
-		color: #666;
-		margin-top: 5px;
-		font-style: italic;
-	}
-
-	.divider {
-		display: flex;
-		align-items: center;
-		text-align: center;
-		color: #444;
-		font-size: 0.6rem;
-		margin: 10px 0;
-		text-transform: uppercase;
-	}
-
-	.divider::before,
-	.divider::after {
-		content: '';
-		flex: 1;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-	}
-
-	.divider:not(:empty)::before {
-		margin-right: 10px;
-	}
-	.divider:not(:empty)::after {
-		margin-left: 10px;
-	}
-
-	.sync-db {
-		width: 100%;
-		background: rgba(244, 67, 54, 0.05) !important;
-		border-color: rgba(244, 67, 54, 0.2) !important;
-		color: #ef5350 !important;
-	}
-
-	.sync-db:hover {
-		background: rgba(244, 67, 54, 0.1) !important;
-		border-color: #f44336 !important;
-	}
-
-	/* Reusing visibility-toggle style from existing code, ensuring it fits */
-	.visibility-toggle {
-		background: rgba(255, 255, 255, 0.1);
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		color: #fff;
-		padding: 4px;
-		border-radius: 3px;
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 24px;
-		height: 24px;
-		margin-left: 8px;
-	}
-
-	.visibility-toggle:hover {
-		transform: scale(1.1);
-		border-color: #fff;
-	}
-
-	.visibility-toggle.visible {
-		color: #4caf50;
-		border-color: rgba(76, 175, 80, 0.5);
-		background: rgba(76, 175, 80, 0.1);
-	}
-
-	.visibility-toggle.hidden {
-		color: #f44336;
-		border-color: rgba(244, 67, 54, 0.5);
-		background: rgba(244, 67, 54, 0.1);
-	}
-
-	/* Scene Controls */
-	.scene-controls {
-		margin-top: 10px;
-		padding-top: 8px;
-		border-top: 1px solid rgba(255, 255, 255, 0.1);
-	}
-
-	.control-item {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
 		font-size: 0.7rem;
-		color: #bbb;
 	}
-
-	.submit-actions-bottom {
-		display: flex;
-		gap: 8px;
-		width: 100%;
-		margin-top: 10px;
+	h3 {
+		margin: 0 0 8px 0;
+		font-size: 0.8rem;
+		color: #4db6ac;
 	}
-
-	.tiny-image-btn {
-		flex: 0 0 auto;
-		width: 30px;
-		padding: 4px;
-		background: rgba(255, 255, 255, 0.05);
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		border-radius: 4px;
-		cursor: pointer;
-		transition: all 0.2s;
-	}
-
-	.tiny-image-btn:hover {
-		background: rgba(255, 255, 255, 0.1);
-		border-color: #4db6ac;
-		transform: scale(1.1);
-	}
-
-	.update-button,
-	.add-button {
-		flex: 2;
-		padding: 8px;
-		border: none;
-		border-radius: 6px;
-		background: #4db6ac;
-		color: white;
-		font-weight: 700;
-		cursor: pointer;
-		transition: all 0.2s;
-	}
-
-	.cancel-button {
-		flex: 1;
-		background: rgba(255, 255, 255, 0.05);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		padding: 8px;
-		border-radius: 6px;
-		color: #999;
-	}
-
-	.toggle-btn {
-		width: auto;
-		padding: 2px 8px;
-		font-size: 0.65rem;
-		background: rgba(255, 255, 255, 0.05);
-		border-radius: 12px;
-		transition: all 0.2s;
-	}
-
-	/* Compact Upload Zone & Controls Grid */
 	.upload-container-wrapper {
 		background: rgba(0, 0, 0, 0.2);
-		border: 1px dashed rgba(255, 255, 255, 0.2);
-		border-radius: 8px;
+		border: 1px dashed #444;
+		border-radius: 4px;
 		padding: 4px;
-		margin-bottom: 10px;
-		transition: all 0.2s ease;
+		margin-bottom: 8px;
 	}
-
 	.upload-controls-grid {
 		display: grid;
-		grid-template-columns: 48px 1fr; /* Upload icon width + remaining space */
+		grid-template-columns: 40px 1fr;
 		gap: 8px;
-		align-items: stretch;
 	}
-
 	.upload-zone-compact {
-		width: 100%;
-		height: 48px;
+		height: 40px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: rgba(255, 255, 255, 0.05);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 6px;
+		background: #222;
+		border-radius: 4px;
 		cursor: pointer;
-		color: #4db6ac;
-		transition: transform 0.1s;
+		border: 1px solid #333;
 	}
-
 	.mini-controls-table {
 		display: grid;
 		grid-template-columns: 1fr auto;
-		grid-template-rows: 1fr 1fr;
-		gap: 2px;
+		gap: 4px;
 	}
-
-	.mini-control-cell {
-		display: flex;
-		align-items: center;
-	}
-
-	.top-right {
-		grid-column: 2;
-		grid-row: 1;
-		justify-content: flex-end;
-	}
-
-	.bottom-left {
-		grid-column: 1;
-		grid-row: 2;
-		gap: 2px;
-	}
-
-	.bottom-right {
-		grid-column: 2;
-		grid-row: 2;
-		justify-content: flex-end;
-	}
-
 	.tiny-btn {
-		padding: 1px 4px;
+		padding: 2px 4px;
 		font-size: 0.6rem;
-		background: rgba(255, 255, 255, 0.1);
-		border: none;
-		border-radius: 2px;
-		color: #999;
-		cursor: pointer;
-	}
-
-	.submit-btn {
-		width: 100%;
-		padding: 0.8rem;
-		background: #4db6ac;
-		color: black;
-		border: none;
-		border-radius: 6px;
-		font-weight: bold;
-		cursor: pointer;
-		transition: all 0.2s;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-	}
-
-	.submit-btn:hover {
-		background: #80cbc4;
-		transform: translateY(-2px);
-		box-shadow: 0 4px 12px rgba(77, 182, 172, 0.3);
-	}
-
-	.submit-btn:disabled {
 		background: #333;
-		color: #666;
-		cursor: not-allowed;
-		transform: none;
-	}
-
-	.tiny-btn:hover,
-	.tiny-btn.active {
-		background: #4db6ac;
-		color: black;
-	}
-
-	.tiny-toggle {
-		padding: 1px 6px;
-		font-size: 0.65rem;
-		background: rgba(255, 255, 255, 0.05);
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		border-radius: 10px;
+		border: none;
 		color: #aaa;
 		cursor: pointer;
+		border-radius: 2px;
 	}
-
+	.tiny-btn.active {
+		background: #4db6ac;
+		color: #000;
+	}
+	.tiny-toggle {
+		background: #222;
+		border: 1px solid #444;
+		color: #888;
+		padding: 2px 4px;
+		cursor: pointer;
+		border-radius: 10px;
+		font-size: 0.6rem;
+	}
 	.tiny-toggle.active {
 		border-color: #4db6ac;
 		color: #4db6ac;
 		background: rgba(77, 182, 172, 0.1);
 	}
 
-	.hand-icon {
-		font-size: 0.9rem;
-		opacity: 0.3;
-	}
-	.hand-icon.active {
-		opacity: 1;
-		filter: drop-shadow(0 0 2px #4db6ac);
-	}
-
-	.upload-zone-compact:hover {
-		background: rgba(255, 255, 255, 0.1);
-		transform: scale(1.05);
-	}
-	.upload-zone-compact.has-file {
-		color: #4caf50;
-		border-color: #4caf50;
-	}
-
-	.transform-actions-v2 {
+	.geometry-list {
 		display: flex;
-		gap: 8px;
-		align-items: center;
+		flex-direction: column;
+		gap: 4px;
+		margin-bottom: 8px;
 	}
-
-	.mode-selector-group {
-		display: flex;
-		background: rgba(0, 0, 0, 0.2);
+	.custom-dropdown {
+		position: relative;
+		border: 1px solid #333;
 		border-radius: 4px;
-		padding: 2px;
-		border: 1px solid rgba(255, 255, 255, 0.05);
-		transition: opacity 0.2s;
+		background: #1a1a1a;
 	}
-
-	.mode-selector-group.disabled {
-		opacity: 0.3;
-		pointer-events: none;
-	}
-
-	.mode-btn {
-		background: transparent;
-		border: none;
-		color: #777;
-		padding: 2px 6px;
-		font-size: 0.65rem;
+	.dropdown-header {
+		padding: 4px 8px;
 		cursor: pointer;
-		border-radius: 2px;
-		transition: all 0.2s;
+		font-size: 0.75rem;
+		color: #ccc;
+	}
+	.dropdown-list {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		right: 0;
+		background: #111;
+		border: 1px solid #333;
+		z-index: 10;
+		max-height: 150px;
+		overflow-y: auto;
+	}
+	.dropdown-item {
+		display: flex;
+		align-items: center;
+		padding: 4px 8px;
+		border-bottom: 1px solid #222;
+	}
+	.item-name {
+		flex: 1;
+		cursor: pointer;
+	}
+	.visibility-toggle {
+		background: none;
+		border: none;
+		cursor: pointer;
+		filter: grayscale(1);
+	}
+	.visibility-toggle.visible {
+		filter: none;
 	}
 
-	.mode-btn:hover {
+	.type-select-row {
+		display: grid;
+		grid-template-columns: 60px 1fr 30px;
+		gap: 4px;
+	}
+	select,
+	input {
+		background: #1a1a1a;
+		border: 1px solid #333;
 		color: #eee;
+		padding: 4px;
+		border-radius: 4px;
+		font-size: 0.7rem;
+	}
+	.color-input {
+		padding: 0;
+		height: 24px;
+		cursor: pointer;
 	}
 
-	.mode-btn.active {
-		background: rgba(77, 182, 172, 0.2);
+	.vector-input-row {
+		display: grid;
+		grid-template-columns: 30px 1fr 1fr 1fr auto;
+		gap: 2px;
+		align-items: center;
+		margin-bottom: 2px;
+	}
+	.vector-input-row label {
+		color: #666;
+		font-size: 0.6rem;
+	}
+	.vector-input-row input {
+		padding: 2px;
+		text-align: center;
+	}
+	.readonly {
+		opacity: 0.5;
+	}
+
+	.submit-actions-bottom {
+		display: flex;
+		gap: 4px;
+		margin-top: 8px;
+	}
+	.submit-btn {
+		flex: 1;
+		background: #4db6ac;
+		border: none;
+		padding: 6px;
+		font-weight: bold;
+		cursor: pointer;
+		border-radius: 4px;
+	}
+	.cancel-button {
+		background: #333;
+		border: none;
+		color: #fff;
+		padding: 0 8px;
+		cursor: pointer;
+		border-radius: 4px;
+	}
+
+	.portability-section {
+		margin-top: 8px;
+		padding-top: 8px;
+		border-top: 1px solid #333;
+	}
+	.portability-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 4px;
+	}
+	.port-btn {
+		padding: 4px;
+		font-size: 0.65rem;
+		background: #222;
+		border: 1px solid #444;
+		color: #ddd;
+		cursor: pointer;
+		border-radius: 4px;
+	}
+	.port-btn.sqlite {
 		color: #4db6ac;
+		border-color: #4db6ac;
 	}
 
+	.scene-controls {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr;
+		gap: 4px;
+		margin-top: 8px;
+	}
 	.mode-btn.toggle {
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		background: rgba(255, 255, 255, 0.05);
-		padding: 3px 8px;
-		border-radius: 12px;
+		background: #222;
+		border: 1px solid #444;
+		color: #555;
+		padding: 4px;
+		border-radius: 4px;
+		cursor: pointer;
+		font-size: 0.65rem;
 	}
-
 	.mode-btn.toggle.active {
-		background: rgba(77, 182, 172, 0.2);
 		border-color: #4db6ac;
-	}
-
-	.toggle-btn.active {
-		background: rgba(77, 182, 172, 0.2);
 		color: #4db6ac;
-		border-color: #4db6ac;
+	}
+	.sync-db {
+		color: #ef5350 !important;
+		border-color: #ef5350 !important;
 	}
 </style>
