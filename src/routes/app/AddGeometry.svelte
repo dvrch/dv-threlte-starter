@@ -323,16 +323,21 @@
 
 		<div class="selection-row">
 			<div class="custom-dropdown" onmouseleave={() => (isDropdownOpen = false)}>
-				<div
-					class="dropdown-header"
-					onclick={() => (isDropdownOpen = !isDropdownOpen)}
-					onmouseenter={() => (isDropdownOpen = true)}
-					role="button"
-					tabindex="0"
-				>
-					{selectedGeometryId
-						? geometries.find((g) => g.id === selectedGeometryId)?.name
-						: '-- List --'}
+				<div class="dropdown-header">
+					<span class="selected-label">
+						{selectedGeometryId
+							? geometries.find((g) => g.id === selectedGeometryId)?.name
+							: '-- List --'}
+					</span>
+					<div
+						class="dropdown-trigger"
+						onclick={() => (isDropdownOpen = !isDropdownOpen)}
+						onmouseenter={() => (isDropdownOpen = true)}
+						role="button"
+						tabindex="0"
+					>
+						<span class="chevron" class:open={isDropdownOpen}>V</span>
+					</div>
 				</div>
 				{#if isDropdownOpen}
 					<div class="dropdown-list">
@@ -582,12 +587,37 @@
 		border: 1px solid #333;
 	}
 	.dropdown-header {
-		padding: 3px 6px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
 		color: #4db6ac;
 		font-weight: bold;
+		white-space: nowrap;
+		height: 22px;
+	}
+	.selected-label {
+		padding: 0 6px;
+		flex: 1;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		white-space: nowrap;
+	}
+	.dropdown-trigger {
+		width: 20px;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(255, 255, 255, 0.03);
+		border-left: 1px solid #222;
+		cursor: pointer;
+	}
+	.chevron {
+		font-size: 0.5rem;
+		transition: transform 0.2s;
+		display: inline-block;
+	}
+	.chevron.open {
+		transform: rotate(180deg);
 	}
 	.dropdown-list {
 		position: absolute;
