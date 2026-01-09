@@ -1,17 +1,16 @@
 <script lang="ts">
 	import { onMount, createEventDispatcher } from 'svelte';
 	import { addToast } from '$lib/stores/toasts';
-	import { ENDPOINTS } from '$lib/config';
 	import { base } from '$app/paths';
 	import { geometryService, type GeometryItem } from '$lib/services/api';
 
 	const { selectedGeometry = null } = $props();
 
-	// Random Utils
+	// Utils
 	const getRandomValue = (min: number, max: number) => Number(Math.random() * (max - min) + min);
 	const formatVal = (val: number) => Number(val.toFixed(2));
 
-	// State for the form (runes)
+	// State (runes)
 	let name = $state('');
 	let type = $state('box');
 	let color = $state(
@@ -33,6 +32,7 @@
 	let fileInput = $state<HTMLInputElement>();
 	let isLoading = $state(false);
 	let isDropdownOpen = $state(false);
+	let portFormat = $state<'json' | 'sqlite'>('sqlite');
 
 	let isBloomActive = $state(true);
 	let isPremiumActive = $state(true);
@@ -79,19 +79,17 @@
 			const staticResponse = await fetch(`${base}/data/types.json`);
 			if (staticResponse.ok) {
 				const data = await staticResponse.json();
-				const fetchedTypes = (data || []).map((t: any) => t.id);
 				const systemTypes = ['box', 'sphere', 'torus', 'icosahedron', 'textmd', 'image_plane'];
-				types = [...new Set([...systemTypes, ...fetchedTypes])];
+				types = [...new Set([...systemTypes, ...(data || []).map((t: any) => t.id)])];
 			}
 		} catch (error) {
-			types = ['box', 'sphere', 'torus', 'icosahedron', 'textmd', 'image_plane'];
+			types = ['box', 'sphere', 'torus', 'textmd'];
 		}
 	};
 
 	const dispatch = createEventDispatcher();
 
 	const resetForm = () => {
-		type = types.length > 0 ? 'box' : 'box';
 		name = '';
 		color = `#${Math.floor(Math.random() * 16777215)
 			.toString(16)
@@ -99,26 +97,20 @@
 		position = { x: 0, y: 0, z: 0 };
 		rotation = { x: 0, y: 0, z: 0 };
 		scale = { x: 1, y: 1, z: 1 };
-		isUniformScale = true;
 		isEditing = false;
 		selectedGeometryId = '';
 		file = null;
 	};
 
 	const loadGeometries = async () => {
-		try {
-			geometries = await geometryService.getAll();
-		} catch (error) {
-			addToast('Failed to load geometries.', 'error');
-		}
+		geometries = await geometryService.getAll();
 	};
 
 	const handleSubmit = async () => {
 		isLoading = true;
 		try {
 			const formData = new FormData();
-			const baseName = name || (file ? file.name.split('.')[0] : type);
-			formData.append('name', baseName);
+			formData.append('name', name || (file ? file.name.split('.')[0] : type));
 			formData.append('color', color);
 			formData.append('position', JSON.stringify(position));
 			formData.append('rotation', JSON.stringify(rotation));
@@ -127,26 +119,24 @@
 			if (file) {
 				formData.append('model_file', file);
 				const ext = file.name.split('.').pop()?.toLowerCase() || '';
-				const isImage = ['jpg', 'jpeg', 'png', 'webp'].includes(ext);
-				formData.append('type', isImage ? 'image_plane' : 'gltf_model');
+				formData.append(
+					'type',
+					['jpg', 'jpeg', 'png', 'webp'].includes(ext) ? 'image_plane' : 'gltf_model'
+				);
 			} else {
-				formData.append('type', type === 'text' ? 'text' : type);
+				formData.append('type', type);
 			}
 
-			if (!isEditing) formData.append('visible', 'true');
-			else {
-				const current = geometries.find((g) => g.id === selectedGeometryId);
-				if (current) formData.append('visible', String(current.visible));
-			}
+			const current = geometries.find((g) => g.id === selectedGeometryId);
+			formData.append('visible', String(isEditing && current ? current.visible : true));
 
 			await geometryService.save(formData, isEditing ? selectedGeometryId : undefined);
 			addToast(isEditing ? 'Mis à jour !' : 'Ajouté !', 'success');
 			if (!isEditing) resetForm();
-
 			window.dispatchEvent(new Event('modelAdded'));
 			await loadGeometries();
 		} catch (error) {
-			addToast('Erreur de sauvegarde', 'error');
+			addToast('Erreur', 'error');
 		} finally {
 			isLoading = false;
 		}
@@ -166,7 +156,7 @@
 		file = null;
 	};
 
-	const toggleGeometryVisibility = async (id: string) => {
+	const toggleVisibility = async (id: string) => {
 		const g = geometries.find((g) => g.id === id);
 		if (!g) return;
 		const next = !g.visible;
@@ -179,64 +169,66 @@
 		await geometryService.save(fd, id);
 	};
 
-	const handleExport = () => geometryService.exportScene();
-	const handleExportSQLite = () => geometryService.exportSceneToSQLite();
+	const deleteGeometry = async (id: string) => {
+		if (!confirm('Supprimer cet élément ?')) return;
+		await geometryService.delete(id);
+		if (selectedGeometryId === id) resetForm();
+		addToast('Supprimé !', 'success');
+		window.dispatchEvent(new Event('modelAdded'));
+		await loadGeometries();
+	};
+
+	const randomize = (target: 'pos' | 'rot' | 'scl') => {
+		if (target === 'pos')
+			position = { x: getRandomValue(-5, 5), y: getRandomValue(0, 5), z: getRandomValue(-5, 5) };
+		if (target === 'rot')
+			rotation = {
+				x: getRandomValue(0, 360),
+				y: getRandomValue(0, 360),
+				z: getRandomValue(0, 360)
+			};
+		if (target === 'scl') {
+			const s = getRandomValue(0.5, 3);
+			scale = { x: s, y: s, z: s };
+		}
+	};
 
 	onMount(() => {
 		loadTypes();
 		loadGeometries();
-
-		const handleDirectDrop = (e: any) => {
-			if (e.detail?.file) {
-				file = e.detail.file;
-				name = file?.name.split('.')[0] || '';
-				setTimeout(handleSubmit, 100);
-			}
-		};
-
-		const handleDirectImport = async (e: any) => {
+		window.addEventListener('directSceneUpload', (e: any) => {
+			file = e.detail.file;
+			name = file?.name.split('.')[0] || '';
+			setTimeout(handleSubmit, 100);
+		});
+		window.addEventListener('directSceneImport', async (e: any) => {
 			await geometryService.importScene(e.detail.file);
 			await loadGeometries();
 			window.dispatchEvent(new Event('modelAdded'));
-			addToast('Scène importée !', 'success');
-		};
-
-		const handleManualSync = (e: any) => {
-			const data = e.detail;
-			if (!data?.id) return;
-			if (data.id !== selectedGeometryId) {
-				loadGeometryDetails(data.id);
+		});
+		window.addEventListener('manualTransformSync', (e: any) => {
+			const d = e.detail;
+			if (!d?.id) return;
+			if (d.id !== selectedGeometryId) {
+				loadGeometryDetails(d.id);
 				return;
 			}
-			if (data.position)
+			if (d.position)
 				position = {
-					x: formatVal(data.position.x),
-					y: formatVal(data.position.y),
-					z: formatVal(data.position.z)
+					x: formatVal(d.position.x),
+					y: formatVal(d.position.y),
+					z: formatVal(d.position.z)
 				};
-			if (data.rotation)
+			if (d.rotation)
 				rotation = {
-					x: formatVal(data.rotation.x),
-					y: formatVal(data.rotation.y),
-					z: formatVal(data.rotation.z)
+					x: formatVal(d.rotation.x),
+					y: formatVal(d.rotation.y),
+					z: formatVal(d.rotation.z)
 				};
-			if (data.scale)
-				scale = {
-					x: formatVal(data.scale.x),
-					y: formatVal(data.scale.y),
-					z: formatVal(data.scale.z)
-				};
-			if (data.save) handleSubmit();
-		};
-
-		window.addEventListener('directSceneUpload', handleDirectDrop);
-		window.addEventListener('directSceneImport', handleDirectImport);
-		window.addEventListener('manualTransformSync', handleManualSync);
-		return () => {
-			window.removeEventListener('directSceneUpload', handleDirectDrop);
-			window.removeEventListener('directSceneImport', handleDirectImport);
-			window.removeEventListener('manualTransformSync', handleManualSync);
-		};
+			if (d.scale)
+				scale = { x: formatVal(d.scale.x), y: formatVal(d.scale.y), z: formatVal(d.scale.z) };
+			if (d.save) handleSubmit();
+		});
 	});
 </script>
 
@@ -247,66 +239,69 @@
 			handleSubmit();
 		}}
 	>
-		<div class="upload-container-wrapper" class:dragging={isDragging}>
-			<div class="upload-controls-grid">
-				<div
-					class="upload-zone-compact"
-					class:has-file={!!file}
-					onclick={() => fileInput?.click()}
-					role="button"
-					tabindex="0"
-				>
-					<input
-						bind:this={fileInput}
-						type="file"
-						accept=".glb,.gltf"
-						style="display: none;"
-						onchange={(e) => { 
-						const t = e.target as HTMLInputElement; 
-						if (t.files?.[0]) { file = t.files[0]; name = file.name.split('.')[0]; } 
-					}}
-					/>
-					{file ? '✅' : '📤'}
-				</div>
+		<!-- HEADER CONTROLS (PRS + Toggles) -->
+		<div class="header-controls">
+			<div class="upload-zone" onclick={() => fileInput?.click()} role="button" tabindex="0">
+				<input
+					bind:this={fileInput}
+					type="file"
+					accept=".glb,.gltf"
+					style="display: none;"
+					onchange={(e) => { 
+					const t = e.target as HTMLInputElement; if (t.files?.[0]) { file = t.files[0]; name = file.name.split('.')[0]; } 
+				}}
+				/>
+				{file ? '✅' : '📤'}
+			</div>
 
-				<div class="mini-controls-table">
-					<div class="mini-control-cell top-right">
-						<div class="hand-icon" class:active={isEditing}>✍️</div>
-					</div>
-					<div class="mini-control-cell bottom-left">
-						<button
-							type="button"
-							class="tiny-btn"
-							class:active={transformModes.includes('translate')}
-							onclick={() => (transformModes = ['translate'])}>P</button
-						>
-						<button
-							type="button"
-							class="tiny-btn"
-							class:active={transformModes.includes('rotate')}
-							onclick={() => (transformModes = ['rotate'])}>R</button
-						>
-						<button
-							type="button"
-							class="tiny-btn"
-							class:active={transformModes.includes('scale')}
-							onclick={() => (transformModes = ['scale'])}>S</button
-						>
-					</div>
-					<div class="mini-control-cell bottom-right">
-						<button
-							type="button"
-							class="tiny-toggle"
-							class:active={isTransformControlsEnabled}
-							onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}>✜</button
-						>
-					</div>
+			<div class="modes-grid">
+				<div class="prs-row">
+					<button
+						type="button"
+						class="tiny-btn"
+						class:active={transformModes.includes('translate')}
+						onclick={() => (transformModes = ['translate'])}>P</button
+					>
+					<button
+						type="button"
+						class="tiny-btn"
+						class:active={transformModes.includes('rotate')}
+						onclick={() => (transformModes = ['rotate'])}>R</button
+					>
+					<button
+						type="button"
+						class="tiny-btn"
+						class:active={transformModes.includes('scale')}
+						onclick={() => (transformModes = ['scale'])}>S</button
+					>
+					<button
+						type="button"
+						class="tiny-btn gizmo"
+						class:active={isTransformControlsEnabled}
+						onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}>✜</button
+					>
+				</div>
+				<div class="fx-row">
+					<button
+						type="button"
+						class="fx-btn"
+						class:active={isBloomActive}
+						onclick={() => (isBloomActive = !isBloomActive)}>🌸</button
+					>
+					<button
+						type="button"
+						class="fx-btn"
+						class:active={isPremiumActive}
+						onclick={() => (isPremiumActive = !isPremiumActive)}>💎</button
+					>
+					<div class="hand-icon" class:active={isEditing}>✍️</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="geometry-list">
-			<div class="custom-dropdown" onmouseleave={() => (isDropdownOpen = false)} role="region">
+		<!-- DROPDOWN & NAME -->
+		<div class="selection-box">
+			<div class="custom-dropdown" onmouseleave={() => (isDropdownOpen = false)}>
 				<div
 					class="dropdown-header"
 					onclick={() => (isDropdownOpen = !isDropdownOpen)}
@@ -322,150 +317,155 @@
 				</div>
 				{#if isDropdownOpen}
 					<div class="dropdown-list">
-						<div class="dropdown-search">
-							<input
-								type="text"
-								bind:value={searchQuery}
-								placeholder="Filter..."
-								onclick={(e) => e.stopPropagation()}
-							/>
-						</div>
+						<input
+							type="text"
+							bind:value={searchQuery}
+							placeholder="Filter..."
+							onclick={(e) => e.stopPropagation()}
+							class="search-input"
+						/>
 						{#each filteredGeometries as g (g.id)}
 							<div class="dropdown-item" class:selected={selectedGeometryId === g.id}>
-								<div
-									class="item-name"
+								<span
 									onclick={() => {
 										loadGeometryDetails(g.id);
 										isDropdownOpen = false;
 									}}
 									role="button"
-									tabindex="0"
+									tabindex="0">{g.name}</span
 								>
-									{g.name}
+								<div class="item-actions">
+									<button
+										type="button"
+										class:visible={g.visible}
+										onclick={() => toggleVisibility(g.id)}>{g.visible ? '👁️' : '🕶️'}</button
+									>
+									<button type="button" class="del-btn" onclick={() => deleteGeometry(g.id)}
+										>🗑️</button
+									>
 								</div>
-								<button
-									type="button"
-									class="visibility-toggle"
-									class:visible={g.visible}
-									onclick={() => toggleGeometryVisibility(g.id)}>{g.visible ? '👁️' : '🕶️'}</button
-								>
 							</div>
 						{/each}
 					</div>
 				{/if}
 			</div>
 
-			<div class="type-select-row">
-				<select bind:value={type}>
+			<div class="input-row main">
+				<select bind:value={type} class="type-sel">
 					{#each types as t}<option value={t}>{t}</option>{/each}
 					<option value="text">text</option>
 				</select>
-				<input type="text" bind:value={name} placeholder="Name" required />
+				<input type="text" bind:value={name} placeholder="Name" class="name-input" />
 				<input type="color" bind:value={color} class="color-input" />
 			</div>
 		</div>
 
-		<div class="transform-grid mini">
-			<div class="vector-input-row">
-				<label>POS</label>
-				<input type="number" bind:value={position.x} step="0.1" />
-				<input type="number" bind:value={position.y} step="0.1" />
-				<input type="number" bind:value={position.z} step="0.1" />
-			</div>
-			<div class="vector-input-row">
-				<label>ROT</label>
-				<input type="number" bind:value={rotation.x} step="1" />
-				<input type="number" bind:value={rotation.y} step="1" />
-				<input type="number" bind:value={rotation.z} step="1" />
-			</div>
-			<div class="vector-input-row">
-				<label>SCL</label>
-				<input
-					type="number"
-					bind:value={scale.x}
-					step="0.1"
-					oninput={(e) => isUniformScale && (scale.y = scale.z = +(e.target as any).value)}
-				/>
-				<input
-					type="number"
-					bind:value={scale.y}
-					step="0.1"
-					class:readonly={isUniformScale}
-					readonly={isUniformScale}
-				/>
-				<input
-					type="number"
-					bind:value={scale.z}
-					step="0.1"
-					class:readonly={isUniformScale}
-					readonly={isUniformScale}
-				/>
-				<button
-					type="button"
-					class="tiny-toggle"
-					class:active={isUniformScale}
-					onclick={() => (isUniformScale = !isUniformScale)}>🔗</button
+		<!-- TRANSFORM FIELDS -->
+		<div class="transform-area">
+			<div class="vec-row">
+				<label
+					onclick={() => randomize('pos')}
+					role="button"
+					tabindex="0"
+					title="Randomize Position">POS 🎲</label
 				>
+				<div class="inputs">
+					<input type="number" bind:value={position.x} step="0.1" />
+					<input type="number" bind:value={position.y} step="0.1" />
+					<input type="number" bind:value={position.z} step="0.1" />
+				</div>
+			</div>
+			<div class="vec-row">
+				<label
+					onclick={() => randomize('rot')}
+					role="button"
+					tabindex="0"
+					title="Randomize Rotation">ROT 🎲</label
+				>
+				<div class="inputs">
+					<input type="number" bind:value={rotation.x} step="1" />
+					<input type="number" bind:value={rotation.y} step="1" />
+					<input type="number" bind:value={rotation.z} step="1" />
+				</div>
+			</div>
+			<div class="vec-row">
+				<label onclick={() => randomize('scl')} role="button" tabindex="0" title="Randomize Scale"
+					>SCL 🎲</label
+				>
+				<div class="inputs">
+					<input
+						type="number"
+						bind:value={scale.x}
+						step="0.1"
+						oninput={(e) => isUniformScale && (scale.y = scale.z = +(e.target as any).value)}
+					/>
+					<input
+						type="number"
+						bind:value={scale.y}
+						step="0.1"
+						class:readonly={isUniformScale}
+						readonly={isUniformScale}
+					/>
+					<input
+						type="number"
+						bind:value={scale.z}
+						step="0.1"
+						class:readonly={isUniformScale}
+						readonly={isUniformScale}
+					/>
+					<button
+						type="button"
+						class="uni-btn"
+						class:active={isUniformScale}
+						onclick={() => (isUniformScale = !isUniformScale)}
+						>{isUniformScale ? '🔗' : '🔓'}</button
+					>
+				</div>
 			</div>
 		</div>
 
-		<div class="submit-actions-bottom">
+		<!-- ACTIONS -->
+		<div class="action-footer">
 			<button type="submit" class="submit-btn" disabled={isLoading}
 				>{isEditing ? 'Update' : 'Add'}</button
 			>
-			{#if isEditing}<button type="button" onclick={resetForm} class="cancel-button">✖</button>{/if}
+			{#if isEditing}<button type="button" onclick={resetForm} class="cancel-btn">✖</button>{/if}
 		</div>
 
-		<div class="portability-section">
-			<div class="portability-grid">
-				<button type="button" class="port-btn" onclick={handleExport}>📤 JSON</button>
+		<!-- PORTABILITY -->
+		<div class="port-section">
+			<div class="port-header">
 				<button
 					type="button"
-					class="port-btn"
-					onclick={() => document.getElementById('import-json')?.click()}>📥 JSON</button
+					class="format-toggle"
+					onclick={() => (portFormat = portFormat === 'json' ? 'sqlite' : 'json')}
 				>
-				<button type="button" class="port-btn sqlite" onclick={handleExportSQLite}>🗄️ SQL</button>
-				<button
-					type="button"
-					class="port-btn sqlite"
-					onclick={() => document.getElementById('import-sqlite')?.click()}>📥 SQL</button
-				>
+					Mode: {portFormat.toUpperCase()}
+				</button>
+				<div class="port-btns">
+					<button
+						type="button"
+						onclick={() => (portFormat === 'json' ? handleExport() : handleExportSQLite())}
+						>� Save</button
+					>
+					<button type="button" onclick={() => document.getElementById('scene-import')?.click()}
+						>📥 Load</button
+					>
+				</div>
 			</div>
 			<input
-				id="import-json"
+				id="scene-import"
 				type="file"
-				accept=".json"
 				style="display:none"
 				onchange={(e) => geometryService.importScene((e.target as any).files[0]).then(() => loadGeometries())}
 			/>
-			<input
-				id="import-sqlite"
-				type="file"
-				accept=".sqlite,.db"
-				style="display:none"
-				onchange={(e) => geometryService.importScene((e.target as any).files[0]).then(() => loadGeometries())}
-			/>
-		</div>
-
-		<div class="scene-controls">
 			<button
 				type="button"
-				class="mode-btn toggle"
-				class:active={isBloomActive}
-				onclick={() => (isBloomActive = !isBloomActive)}>🌸 Bloom</button
-			>
-			<button
-				type="button"
-				class="mode-btn toggle"
-				class:active={isPremiumActive}
-				onclick={() => (isPremiumActive = !isPremiumActive)}>💎 Prem</button
-			>
-			<button
-				type="button"
-				class="port-btn sync-db"
+				class="reset-all"
 				onclick={() =>
-					(confirm('Reset ?') && localStorage.removeItem('dv_threlte_geometries_v1')) ||
-					window.location.reload()}>🔄 Reset</button
+					(confirm('Reinitialiser la scène ?') &&
+						localStorage.removeItem('dv_threlte_geometries_v1')) ||
+					window.location.reload()}>🔄 Hard Reset</button
 			>
 		</div>
 	</form>
@@ -475,69 +475,74 @@
 	.form-container {
 		width: 100%;
 		color: #eee;
-		font-size: 0.7rem;
+		font-family: sans-serif;
 	}
-	h3 {
-		margin: 0 0 8px 0;
-		font-size: 0.8rem;
-		color: #4db6ac;
-	}
-	.upload-container-wrapper {
-		background: rgba(0, 0, 0, 0.2);
-		border: 1px dashed #444;
+	input,
+	select,
+	button {
+		background: #1a1a1a;
+		border: 1px solid #333;
+		color: #eee;
 		border-radius: 4px;
-		padding: 4px;
+		font-size: 0.65rem;
+	}
+
+	.header-controls {
+		display: grid;
+		grid-template-columns: 44px 1fr;
+		gap: 8px;
 		margin-bottom: 8px;
 	}
-	.upload-controls-grid {
-		display: grid;
-		grid-template-columns: 40px 1fr;
-		gap: 8px;
-	}
-	.upload-zone-compact {
-		height: 40px;
+	.upload-zone {
+		height: 44px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		background: #222;
-		border-radius: 4px;
+		border: 1px dashed #555;
+		border-radius: 6px;
+		cursor: pointer;
+		font-size: 1.2rem;
+	}
+
+	.modes-grid {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+	.prs-row,
+	.fx-row {
+		display: flex;
+		gap: 4px;
+		align-items: center;
+	}
+	.tiny-btn,
+	.fx-btn {
+		flex: 1;
+		padding: 4px;
 		cursor: pointer;
 		border: 1px solid #333;
 	}
-	.mini-controls-table {
-		display: grid;
-		grid-template-columns: 1fr auto;
-		gap: 4px;
-	}
-	.tiny-btn {
-		padding: 2px 4px;
-		font-size: 0.6rem;
-		background: #333;
-		border: none;
-		color: #aaa;
-		cursor: pointer;
-		border-radius: 2px;
-	}
-	.tiny-btn.active {
+	.tiny-btn.active,
+	.fx-btn.active {
 		background: #4db6ac;
 		color: #000;
-	}
-	.tiny-toggle {
-		background: #222;
-		border: 1px solid #444;
-		color: #888;
-		padding: 2px 4px;
-		cursor: pointer;
-		border-radius: 10px;
-		font-size: 0.6rem;
-	}
-	.tiny-toggle.active {
 		border-color: #4db6ac;
-		color: #4db6ac;
-		background: rgba(77, 182, 172, 0.1);
+	}
+	.gizmo.active {
+		background: #ff9800;
+		border-color: #ff9800;
+	}
+	.hand-icon {
+		font-size: 0.8rem;
+		opacity: 0.2;
+	}
+	.hand-icon.active {
+		opacity: 1;
+		filter: drop-shadow(0 0 5px #4db6ac);
 	}
 
-	.geometry-list {
+	.selection-box {
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
@@ -547,13 +552,16 @@
 		position: relative;
 		border: 1px solid #333;
 		border-radius: 4px;
-		background: #1a1a1a;
+		background: #111;
 	}
 	.dropdown-header {
 		padding: 4px 8px;
 		cursor: pointer;
-		font-size: 0.75rem;
-		color: #ccc;
+		color: #4db6ac;
+		font-weight: bold;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 	.dropdown-list {
 		position: absolute;
@@ -562,9 +570,17 @@
 		right: 0;
 		background: #111;
 		border: 1px solid #333;
-		z-index: 10;
-		max-height: 150px;
+		z-index: 100;
+		max-height: 200px;
 		overflow-y: auto;
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+	}
+	.search-input {
+		width: 100%;
+		padding: 4px;
+		border: none;
+		border-bottom: 1px solid #333;
+		border-radius: 0;
 	}
 	.dropdown-item {
 		display: flex;
@@ -572,60 +588,82 @@
 		padding: 4px 8px;
 		border-bottom: 1px solid #222;
 	}
-	.item-name {
+	.dropdown-item:hover {
+		background: #222;
+	}
+	.dropdown-item span {
 		flex: 1;
 		cursor: pointer;
 	}
-	.visibility-toggle {
+	.item-actions {
+		display: flex;
+		gap: 4px;
+	}
+	.item-actions button {
 		background: none;
 		border: none;
 		cursor: pointer;
-		filter: grayscale(1);
+		padding: 2px;
 	}
-	.visibility-toggle.visible {
-		filter: none;
+	.del-btn:hover {
+		background: rgba(244, 67, 54, 0.2);
 	}
 
-	.type-select-row {
+	.input-row.main {
 		display: grid;
-		grid-template-columns: 60px 1fr 30px;
+		grid-template-columns: 70px 1fr 30px;
 		gap: 4px;
-	}
-	select,
-	input {
-		background: #1a1a1a;
-		border: 1px solid #333;
-		color: #eee;
-		padding: 4px;
-		border-radius: 4px;
-		font-size: 0.7rem;
 	}
 	.color-input {
 		padding: 0;
-		height: 24px;
+		height: 100%;
 		cursor: pointer;
 	}
 
-	.vector-input-row {
-		display: grid;
-		grid-template-columns: 30px 1fr 1fr 1fr auto;
+	.transform-area {
+		background: rgba(0, 0, 0, 0.3);
+		padding: 6px;
+		border-radius: 6px;
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		margin-bottom: 8px;
+	}
+	.vec-row {
+		display: flex;
+		flex-direction: column;
 		gap: 2px;
-		align-items: center;
-		margin-bottom: 2px;
+		margin-bottom: 4px;
 	}
-	.vector-input-row label {
-		color: #666;
-		font-size: 0.6rem;
+	.vec-row label {
+		font-size: 0.55rem;
+		color: #777;
+		font-weight: bold;
+		cursor: pointer;
+		width: fit-content;
 	}
-	.vector-input-row input {
-		padding: 2px;
+	.vec-row label:hover {
+		color: #4db6ac;
+	}
+	.vec-row .inputs {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr auto;
+		gap: 2px;
+	}
+	.vec-row input {
+		padding: 3px;
 		text-align: center;
 	}
 	.readonly {
-		opacity: 0.5;
+		opacity: 0.3;
+	}
+	.uni-btn {
+		padding: 0 4px;
+	}
+	.uni-btn.active {
+		color: #4db6ac;
+		border-color: #4db6ac;
 	}
 
-	.submit-actions-bottom {
+	.action-footer {
 		display: flex;
 		gap: 4px;
 		margin-top: 8px;
@@ -633,66 +671,51 @@
 	.submit-btn {
 		flex: 1;
 		background: #4db6ac;
-		border: none;
-		padding: 6px;
+		color: #000;
 		font-weight: bold;
-		cursor: pointer;
-		border-radius: 4px;
-	}
-	.cancel-button {
-		background: #333;
+		padding: 8px;
 		border: none;
-		color: #fff;
-		padding: 0 8px;
 		cursor: pointer;
-		border-radius: 4px;
+	}
+	.cancel-btn {
+		background: #333;
+		padding: 0 10px;
+		cursor: pointer;
 	}
 
-	.portability-section {
-		margin-top: 8px;
-		padding-top: 8px;
+	.port-section {
+		margin-top: 10px;
+		padding-top: 10px;
 		border-top: 1px solid #333;
-	}
-	.portability-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
+		display: flex;
+		flex-direction: column;
 		gap: 4px;
 	}
-	.port-btn {
-		padding: 4px;
-		font-size: 0.65rem;
+	.port-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	.format-toggle {
+		padding: 2px 6px;
 		background: #222;
-		border: 1px solid #444;
-		color: #ddd;
-		cursor: pointer;
-		border-radius: 4px;
+		color: #888;
+		border-color: #444;
 	}
-	.port-btn.sqlite {
-		color: #4db6ac;
-		border-color: #4db6ac;
-	}
-
-	.scene-controls {
-		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
+	.port-btns {
+		display: flex;
 		gap: 4px;
-		margin-top: 8px;
 	}
-	.mode-btn.toggle {
-		background: #222;
-		border: 1px solid #444;
-		color: #555;
+	.port-btns button {
+		padding: 4px 8px;
+		font-weight: bold;
+	}
+	.reset-all {
+		width: 100%;
+		margin-top: 4px;
 		padding: 4px;
-		border-radius: 4px;
-		cursor: pointer;
-		font-size: 0.65rem;
-	}
-	.mode-btn.toggle.active {
-		border-color: #4db6ac;
-		color: #4db6ac;
-	}
-	.sync-db {
-		color: #ef5350 !important;
-		border-color: #ef5350 !important;
+		background: rgba(244, 67, 54, 0.1);
+		border-color: rgba(244, 67, 54, 0.3);
+		color: #ef5350;
 	}
 </style>
