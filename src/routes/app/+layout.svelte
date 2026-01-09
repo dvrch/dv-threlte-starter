@@ -120,7 +120,7 @@
                 <T.AmbientLight intensity={0.2} />
                 <T.HemisphereLight intensity={0.5} groundColor="#333333" skyColor="#ffffff" />
                 
-                <RotatingWorld isPaused={isInteracting}>
+                <RotatingWorld isPaused={$isInteracting}>
                     {#if $page.url.pathname.startsWith('/app') || $page.url.pathname.startsWith('/vague')}
                         <SafeGrid position={[0, -0.001, 0]} cellColor="#ffffff" sectionColor="#ffffff" sectionThickness={0} fadeDistance={25} cellSize={2} />
                     {/if}
@@ -164,7 +164,7 @@
         backdrop-filter: blur(8px);
         padding: 0.5rem;
         border-radius: 8px;
-        width: 320px;
+        width: 220px;
         max-height: 42px; /* Ultra-compact when closed */
         overflow: hidden;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
