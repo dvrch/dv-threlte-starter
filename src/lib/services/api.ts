@@ -73,6 +73,9 @@ export const geometryService = {
 					const file = await getFileFromDB(item.local_file_id);
 					if (file) {
 						item.model_url = URL.createObjectURL(file);
+						console.log(`✅ [IndexedDB] Restauré: ${item.name} (${file.size} bytes)`);
+					} else {
+						console.warn(`❌ [IndexedDB] Fichier non trouvé pour: ${item.name} (ID: ${item.local_file_id})`);
 					}
 				}
 			}
@@ -126,10 +129,10 @@ export const geometryService = {
 			formData.forEach((value, key) => {
 				if (['position', 'rotation', 'scale'].includes(key)) {
 					try { data[key] = JSON.parse(value as string); } catch (e) { data[key] = value; }
-				} else if (key === 'file' && value instanceof File) {
+				} else if (value instanceof File) {
 					data['_file'] = value;
 				} else if (key === 'visible') {
-					data['visible'] = value === 'true' || value === true;
+					data['visible'] = value === 'true';
 				} else {
 					data[key] = value;
 				}
@@ -143,7 +146,7 @@ export const geometryService = {
 				await saveFileToDB(fileId, data._file);
 				data.local_file_id = fileId;
 				data.model_url = URL.createObjectURL(data._file);
-				data.type = 'gltf';
+				// On ne touche pas à data.type car il est déjà 'gltf_model' ou 'image_plane' via le formulaire
 				delete data._file;
 			}
 

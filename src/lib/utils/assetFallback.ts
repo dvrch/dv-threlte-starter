@@ -28,6 +28,11 @@ export async function getWorkingAssetUrl(
 ): Promise<string> {
     if (!fileName) return '';
 
+    // Détection des URLs directes (Blobs, Data URLs, URLs distantes)
+    if (fileName.startsWith('blob:') || fileName.startsWith('data:') || fileName.startsWith('http')) {
+        return fileName;
+    }
+
     let pureName = fileName;
     if (fileName.includes('/')) {
         pureName = fileName.split('/').pop() || fileName;

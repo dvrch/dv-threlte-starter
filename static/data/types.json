@@ -1,42 +1,42 @@
 [
   {
+    "id": "bibigame",
+    "name": "bibigame"
+  },
+  {
     "id": "box",
     "name": "box"
-  },
-  {
-    "id": "sphere",
-    "name": "sphere"
-  },
-  {
-    "id": "torus",
-    "name": "torus"
   },
   {
     "id": "icosahedron",
     "name": "icosahedron"
   },
   {
-    "id": "textmd",
-    "name": "textmd"
-  },
-  {
     "id": "image_plane",
     "name": "image_plane"
-  },
-  {
-    "id": "spaceship",
-    "name": "spaceship"
-  },
-  {
-    "id": "vague",
-    "name": "vague"
   },
   {
     "id": "nissangame",
     "name": "nissangame"
   },
   {
-    "id": "bibigame",
-    "name": "bibigame"
+    "id": "spaceship",
+    "name": "spaceship"
+  },
+  {
+    "id": "sphere",
+    "name": "sphere"
+  },
+  {
+    "id": "textmd",
+    "name": "textmd"
+  },
+  {
+    "id": "torus",
+    "name": "torus"
+  },
+  {
+    "id": "vague",
+    "name": "vague"
   }
 ]

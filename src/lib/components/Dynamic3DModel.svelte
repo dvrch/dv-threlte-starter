@@ -4,7 +4,7 @@
 	import { Group } from 'three';
 	import GltfModel from '$lib/components/GltfModel.svelte';
 	import { browser } from '$app/environment';
-	import { Text3DGeometry } from '@threlte/extras';
+	import { Text3DGeometry, HTML } from '@threlte/extras';
 
 	// 🌐 Font pour le texte 3D
 	const font =
@@ -28,6 +28,17 @@
 		ref = $bindable(new Group()),
 		onPointerDown
 	}: { geometry: GeometryData; ref?: Group; onPointerDown?: () => void } = $props();
+
+	$effect(() => {
+		console.log(
+			'📦 [Dynamic3DModel] Rendering:',
+			geometry.name,
+			'| Type:',
+			geometry.type,
+			'| URL:',
+			geometry.model_url
+		);
+	});
 
 	// Map geometry types to their respective Svelte components using dynamic imports
 	const componentMap: { [key: string]: () => Promise<any> } = {
@@ -182,10 +193,18 @@
 				<T.MeshStandardMaterial color={geometry.color} />
 			</T.Mesh>
 		{:else}
+			<!-- substitution cube with info -->
 			<T.Mesh>
 				<T.BoxGeometry />
-				<T.MeshStandardMaterial color="purple" />
+				<T.MeshStandardMaterial color="purple" transparent opacity={0.6} />
 			</T.Mesh>
+			<HTML center position={[0, 1, 0]}>
+				<div
+					style="background: rgba(0,0,0,0.5); padding: 4px; border-radius: 4px; font-size: 10px; color: #ff00ff; white-space: nowrap;"
+				>
+					MISSING: {geometry.name}
+				</div>
+			</HTML>
 		{/if}
 	</T.Group>
 {/if}
