@@ -52,6 +52,14 @@
         if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
             const file = e.dataTransfer.files[0];
             const ext = file.name.split('.').pop()?.toLowerCase();
+            
+            // Fichiers de Scène (Chargement direct)
+            if (ext === 'json' || ext === 'sqlite' || ext === 'db') {
+                 window.dispatchEvent(new CustomEvent('directSceneImport', { detail: { file } }));
+                 return;
+            }
+
+            // Fichiers de Modèles (Ajout à la scène)
             if (ext === 'glb' || ext === 'gltf' || ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'webp') {
                 window.dispatchEvent(new CustomEvent('directSceneUpload', { detail: { file } }));
             }

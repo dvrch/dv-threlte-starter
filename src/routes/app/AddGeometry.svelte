@@ -195,10 +195,25 @@
 
 			if (data.save) handleSubmit();
 		};
+		const handleDirectImport = async (e: any) => {
+			const { file } = e.detail;
+			try {
+				await geometryService.importScene(file);
+				await loadGeometries();
+				window.dispatchEvent(new Event('modelAdded'));
+				addToast('Scène importée avec succès ! 📥✨', 'success');
+			} catch (err) {
+				addToast("Erreur d'import direct : " + (err as Error).message, 'error');
+			}
+		};
+
+		window.addEventListener('directSceneUpload', handleDirectDrop);
+		window.addEventListener('directSceneImport', handleDirectImport);
 		window.addEventListener('manualTransformSync', handleManualSync);
 
 		return () => {
 			window.removeEventListener('directSceneUpload', handleDirectDrop);
+			window.removeEventListener('directSceneImport', handleDirectImport);
 			window.removeEventListener('manualTransformSync', handleManualSync);
 		};
 	});

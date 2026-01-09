@@ -208,6 +208,12 @@ export const geometryService = {
 
 	async importScene(file: File): Promise<void> {
 		if (!browser) return;
+
+		const ext = file.name.split('.').pop()?.toLowerCase();
+		if (ext === 'sqlite' || ext === 'db') {
+			return this.importSceneFromSQLite(file);
+		}
+
 		return new Promise((resolve, reject) => {
 			const reader = new FileReader();
 			reader.onload = (e) => {
@@ -220,7 +226,7 @@ export const geometryService = {
 						importedItems.forEach((item: any) => mergedMap.set(item.id.toString(), item));
 						this.saveLocal(Array.from(mergedMap.values()));
 						resolve();
-					} else reject(new Error("Format invalide"));
+					} else reject(new Error("Format JSON invalide (doit être un tableau d'objets)"));
 				} catch (err) { reject(err); }
 			};
 			reader.readAsText(file);
@@ -272,7 +278,7 @@ export const geometryService = {
 		});
 
 		const binary = db.export();
-		const blob = new Blob([binary], { type: 'application/x-sqlite3' });
+		const blob = new Blob([binary as any], { type: 'application/x-sqlite3' });
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;
