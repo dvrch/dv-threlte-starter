@@ -140,9 +140,17 @@
 		name = g.name;
 		type = g.type;
 		color = g.color;
-		position = { ...g.position };
-		rotation = { ...g.rotation };
-		scale = { ...g.scale };
+		position = {
+			x: formatVal(g.position.x),
+			y: formatVal(g.position.y),
+			z: formatVal(g.position.z)
+		};
+		rotation = {
+			x: formatVal(g.rotation.x),
+			y: formatVal(g.rotation.y),
+			z: formatVal(g.rotation.z)
+		};
+		scale = { x: formatVal(g.scale.x), y: formatVal(g.scale.y), z: formatVal(g.scale.z) };
 		isEditing = true;
 		selectedGeometryId = id;
 		file = null;
@@ -162,7 +170,7 @@
 	};
 
 	const deleteGeometry = async (id: string) => {
-		if (!confirm('Supprimer ?')) return;
+		if (!confirm('Supprimer définitivement cet objet ? 🗑️')) return;
 		await geometryService.delete(id);
 		if (selectedGeometryId === id) resetForm();
 		window.dispatchEvent(new Event('modelAdded'));
@@ -183,6 +191,9 @@
 			scale = { x: s, y: s, z: s };
 		}
 	};
+
+	const handleExport = () => geometryService.exportScene();
+	const handleExportSQLite = () => geometryService.exportSceneToSQLite();
 
 	onMount(() => {
 		loadTypes();
@@ -237,6 +248,21 @@
 			e.preventDefault();
 			handleSubmit();
 		}}
+		ondragover={(e) => {
+			e.preventDefault();
+			isDragging = true;
+		}}
+		ondragleave={() => (isDragging = false)}
+		ondrop={(e) => {
+			e.preventDefault();
+			isDragging = false;
+			if (e.dataTransfer?.files[0]) {
+				file = e.dataTransfer.files[0];
+				name = file.name.split('.')[0];
+				setTimeout(handleSubmit, 100);
+			}
+		}}
+		class:dragging={isDragging}
 	>
 		<div class="top-bar">
 			<div class="upload-btn" onclick={() => fileInput?.click()} role="button" tabindex="0">
@@ -351,37 +377,76 @@
 		<div class="transform-rows">
 			<div class="row">
 				<label onclick={() => randomizeRow('pos')} role="button" tabindex="0">POS</label>
-				<input type="number" bind:value={position.x} step="0.1" />
-				<input type="number" bind:value={position.y} step="0.1" />
-				<input type="number" bind:value={position.z} step="0.1" />
+				<input
+					type="number"
+					bind:value={position.x}
+					step="0.01"
+					oninput={(e: any) => (position.x = formatVal(+e.target.value))}
+				/>
+				<input
+					type="number"
+					bind:value={position.y}
+					step="0.01"
+					oninput={(e: any) => (position.y = formatVal(+e.target.value))}
+				/>
+				<input
+					type="number"
+					bind:value={position.z}
+					step="0.01"
+					oninput={(e: any) => (position.z = formatVal(+e.target.value))}
+				/>
 			</div>
 			<div class="row">
 				<label onclick={() => randomizeRow('rot')} role="button" tabindex="0">ROT</label>
-				<input type="number" bind:value={rotation.x} step="1" />
-				<input type="number" bind:value={rotation.y} step="1" />
-				<input type="number" bind:value={rotation.z} step="1" />
+				<input
+					type="number"
+					bind:value={rotation.x}
+					step="1"
+					oninput={(e: any) => (rotation.x = formatVal(+e.target.value))}
+				/>
+				<input
+					type="number"
+					bind:value={rotation.y}
+					step="1"
+					oninput={(e: any) => (rotation.y = formatVal(+e.target.value))}
+				/>
+				<input
+					type="number"
+					bind:value={rotation.z}
+					step="1"
+					oninput={(e: any) => (rotation.z = formatVal(+e.target.value))}
+				/>
 			</div>
 			<div class="row">
 				<label onclick={() => randomizeRow('scl')} role="button" tabindex="0">SCL</label>
 				<input
 					type="number"
 					bind:value={scale.x}
-					step="0.1"
-					oninput={(e: any) => isUniformScale && (scale.y = scale.z = +e.target.value)}
+					step="0.01"
+					oninput={(e: any) => {
+						const v = formatVal(+e.target.value);
+						scale.x = v;
+						if (isUniformScale) {
+							scale.y = v;
+							scale.z = v;
+						}
+					}}
 				/>
 				<input
 					type="number"
 					bind:value={scale.y}
-					step="0.1"
+					step="0.01"
 					class:readonly={isUniformScale}
 					readonly={isUniformScale}
+					oninput={(e: any) => (scale.y = formatVal(+e.target.value))}
 				/>
 				<input
 					type="number"
 					bind:value={scale.z}
-					step="0.1"
+					step="0.01"
 					class:readonly={isUniformScale}
 					readonly={isUniformScale}
+					oninput={(e: any) => (scale.z = formatVal(+e.target.value))}
 				/>
 				<button
 					type="button"
@@ -409,19 +474,23 @@
 				>
 				<button
 					type="button"
-					onclick={() => (portFormat === 'json' ? handleExport() : handleExportSQLite())}>💾</button
+					onclick={() => (portFormat === 'json' ? handleExport() : handleExportSQLite())}
+					title="Save">💾</button
 				>
-				<button type="button" onclick={() => document.getElementById('scene-import')?.click()}
-					>📂</button
+				<button
+					type="button"
+					onclick={() => document.getElementById('scene-import')?.click()}
+					title="Open">📂</button
+				>
+				<button
+					type="button"
+					class="reset-btn"
+					onclick={() =>
+						(confirm('Hard Reset Scene?') && localStorage.removeItem('dv_threlte_geometries_v1')) ||
+						window.location.reload()}
+					title="Reset">🔄</button
 				>
 			</div>
-			<button
-				type="button"
-				class="reset"
-				onclick={() =>
-					(confirm('Reset?') && localStorage.removeItem('dv_threlte_geometries_v1')) ||
-					window.location.reload()}>🔄 Reset</button
-			>
 		</div>
 	</form>
 </div>
@@ -443,6 +512,10 @@
 	}
 	button {
 		cursor: pointer;
+	}
+	form.dragging {
+		background: rgba(77, 182, 172, 0.2);
+		border: 1px dashed #4db6ac;
 	}
 
 	.top-bar {
@@ -514,6 +587,7 @@
 		font-weight: bold;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 	.dropdown-list {
 		position: absolute;
@@ -615,26 +689,27 @@
 		margin-top: 6px;
 		border-top: 1px solid #222;
 		padding-top: 4px;
-		display: flex;
-		flex-direction: column;
-		gap: 3px;
 	}
 	.port-tools {
 		display: flex;
 		gap: 2px;
-		justify-content: space-between;
+		align-items: center;
 	}
 	.port-tools button {
 		flex: 1;
 		font-weight: bold;
+		font-size: 0.6rem;
 	}
 	.fmt {
 		color: #888;
+		flex: 1.5 !important;
 	}
-	.reset {
-		width: 100%;
-		background: rgba(244, 67, 54, 0.05);
+	.reset-btn {
 		color: #ef5350;
-		border-color: rgba(244, 67, 54, 0.1);
+		border-color: rgba(244, 67, 54, 0.4);
+		background: rgba(244, 67, 54, 0.05);
+	}
+	.reset-btn:hover {
+		background: rgba(244, 67, 54, 0.2);
 	}
 </style>

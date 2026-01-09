@@ -67,7 +67,7 @@
 			return;
 		}
 
-		console.log('✨ [PremiumEffects] Refreshing materials...');
+		// console.log('✨ [PremiumEffects] Refreshing materials...');
 		const texture = s.environment;
 
 		s.traverse((child: any) => {
