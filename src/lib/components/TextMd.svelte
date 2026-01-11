@@ -11,6 +11,10 @@
 			? cvLines
 			: cvContent.split('\n').filter((line: string) => line.trim() !== '')
 	);
+
+	$effect(() => {
+		console.log('📝 [TextMd] Rendering lines:', finalLines.length);
+	});
 </script>
 
 <TextScene cvLines={finalLines} />

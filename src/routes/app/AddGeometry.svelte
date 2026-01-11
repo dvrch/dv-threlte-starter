@@ -58,9 +58,58 @@
 	);
 	let portFormat = $derived(portFormats[portFormatIndex]);
 
+	let importURL = $state('');
+	let selectedIds = $state<Set<string>>(new Set());
+
 	let filteredGeometries = $derived(
 		geometries.filter((g) => g.name.toLowerCase().includes(searchQuery.toLowerCase()))
 	);
+
+	// Multi-select actions
+	const toggleInBulk = (id: string) => {
+		const newSet = new Set(selectedIds);
+		if (newSet.has(id)) newSet.delete(id);
+		else newSet.add(id);
+		selectedIds = newSet;
+	};
+
+	const bulkDelete = async () => {
+		if (selectedIds.size === 0 || !confirm(`Supprimer ${selectedIds.size} objets ?`)) return;
+		for (const id of selectedIds) await geometryService.delete(id);
+		selectedIds = new Set();
+		await loadGeometries();
+		window.dispatchEvent(new Event('modelAdded'));
+	};
+
+	const bulkHide = async () => {
+		for (const id of selectedIds) await toggleVisibility(id, false);
+		selectedIds = new Set();
+	};
+
+	const handleURLImport = async () => {
+		if (!importURL) return;
+		isLoading = true;
+		try {
+			const fd = new FormData();
+			const rawName = importURL.split('/').pop()?.split('?')[0] || 'Imported';
+			fd.append('name', getNextName(rawName.split('.')[0]));
+			fd.append('model_url', importURL);
+			const isImg = /\.(jpg|jpeg|png|webp|gif)$/i.test(importURL);
+			fd.append('type', isImg ? 'image_plane' : 'gltf_model');
+			fd.append('position', JSON.stringify({ x: 0, y: 0, z: 0 }));
+			fd.append('rotation', JSON.stringify({ x: 0, y: 0, z: 0 }));
+			fd.append('scale', JSON.stringify({ x: 1, y: 1, z: 1 }));
+			await geometryService.save(fd);
+			importURL = '';
+			await loadGeometries();
+			window.dispatchEvent(new Event('modelAdded'));
+			addToast('Imported from URL', 'success');
+		} catch (e) {
+			addToast('URL Error', 'error');
+		} finally {
+			isLoading = false;
+		}
+	};
 
 	// ⚙️ Persistance des réglages
 	$effect(() => {
@@ -191,10 +240,10 @@
 		file = null;
 	};
 
-	const toggleVisibility = async (id: string) => {
+	const toggleVisibility = async (id: string, force?: boolean) => {
 		const g = geometries.find((g) => g.id === id);
 		if (!g) return;
-		const next = !g.visible;
+		const next = force !== undefined ? force : !g.visible;
 		geometries = geometries.map((i) => (i.id === id ? { ...i, visible: next } : i));
 		window.dispatchEvent(
 			new CustomEvent('geometryVisibilityChanged', { detail: { id, visible: next } })
@@ -390,49 +439,83 @@
 		</div>
 
 		<div class="selection-row">
-			<div class="custom-dropdown" onmouseleave={() => (isDropdownOpen = false)}>
+			<div
+				class="custom-dropdown"
+				onmouseenter={() => (isDropdownOpen = true)}
+				onmouseleave={() => (isDropdownOpen = false)}
+			>
 				<div class="dropdown-header">
 					<span class="selected-label">
-						{selectedGeometryId
+						{selectedIds.size > 0
+							? `${selectedIds.size} selected`
+							: selectedGeometryId
 							? geometries.find((g) => g.id === selectedGeometryId)?.name
-							: '-- List --'}
+							: '-- Objects --'}
 					</span>
-					<div
-						class="dropdown-trigger"
-						onclick={() => (isDropdownOpen = !isDropdownOpen)}
-						onmouseenter={() => (isDropdownOpen = true)}
-						role="button"
-						tabindex="0"
-					>
-						<span class="chevron" class:open={isDropdownOpen}>V</span>
+					<div class="bulk-tools">
+						{#if selectedIds.size > 0}
+							<button type="button" class="bulk-btn del" onclick={bulkDelete}>🗑️</button>
+							<button type="button" class="bulk-btn hide" onclick={bulkHide}>🕶️</button>
+						{/if}
+						<div class="dropdown-trigger" onclick={() => (isDropdownOpen = !isDropdownOpen)}>
+							<span class="chevron" class:open={isDropdownOpen}>V</span>
+						</div>
 					</div>
 				</div>
 				{#if isDropdownOpen}
 					<div class="dropdown-list">
-						<input
-							type="text"
-							bind:value={searchQuery}
-							placeholder="Filter..."
-							onclick={(e) => e.stopPropagation()}
-						/>
-						{#each filteredGeometries as g (g.id)}
-							<div class="item" class:selected={selectedGeometryId === g.id}>
-								<span
-									onclick={() => {
-										loadGeometryDetails(g.id);
-										isDropdownOpen = false;
-									}}
-									role="button"
-									tabindex="0">{g.name}</span
+						<div class="top-list">
+							<input
+								type="text"
+								bind:value={searchQuery}
+								placeholder="Filter..."
+								onclick={(e) => e.stopPropagation()}
+							/>
+							<input
+								type="text"
+								bind:value={importURL}
+								placeholder="URL..."
+								onclick={(e) => e.stopPropagation()}
+								onkeydown={(e) => e.key === 'Enter' && handleURLImport()}
+							/>
+						</div>
+
+						<div class="scroll-list">
+							{#each filteredGeometries as g (g.id)}
+								<div
+									class="item"
+									class:selected={selectedGeometryId === g.id}
+									class:multi={selectedIds.has(g.id)}
 								>
-								<div class="acts">
-									<button type="button" onclick={() => toggleVisibility(g.id)}
-										>{g.visible ? '👁️' : '🕶️'}</button
+									<input
+										type="checkbox"
+										checked={selectedIds.has(g.id)}
+										onclick={(e) => {
+											e.stopPropagation();
+											toggleInBulk(g.id);
+										}}
+									/>
+									<span
+										onclick={() => {
+											loadGeometryDetails(g.id);
+											isDropdownOpen = false;
+										}}
+										role="button"
+										tabindex="0">{g.name}</span
 									>
-									<button type="button" class="del" onclick={() => deleteGeometry(g.id)}>🗑️</button>
+									<div class="acts">
+										<button type="button" onclick={() => toggleVisibility(g.id)}
+											>{g.visible ? '👁️' : '🕶️'}</button
+										>
+										<button type="button" class="del" onclick={() => deleteGeometry(g.id)}
+											>🗑️</button
+										>
+									</div>
 								</div>
-							</div>
-						{/each}
+							{:else}
+								<div class="empty-list">No objects found</div>
+							{/each}
+						</div>
 					</div>
 				{/if}
 			</div>
@@ -729,6 +812,67 @@
 		flex: 1;
 		cursor: pointer;
 	}
+	.bulk-tools {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		padding-right: 4px;
+	}
+	.bulk-btn {
+		font-size: 0.7rem;
+		padding: 0 4px;
+		border-radius: 4px;
+		height: 18px;
+		background: #222;
+		border: 1px solid #444;
+	}
+	.bulk-btn.del:hover {
+		background: #b71c1c;
+		color: white;
+		border-color: #f44336;
+	}
+	.bulk-btn.hide:hover {
+		background: #455a64;
+		color: white;
+	}
+
+	.top-list {
+		display: flex;
+		flex-direction: column;
+		background: #111;
+		border-bottom: 2px solid #222;
+	}
+	.top-list input {
+		height: 20px;
+		background: #000;
+	}
+
+	.scroll-list {
+		max-height: 250px;
+		overflow-y: auto;
+	}
+
+	.item {
+		display: flex;
+		align-items: center;
+		padding: 2px 6px;
+		border-bottom: 1px solid #111;
+		gap: 6px;
+	}
+	.item.multi {
+		background: rgba(77, 182, 172, 0.1);
+	}
+	.item input[type='checkbox'] {
+		width: 10px;
+		height: 10px;
+		cursor: pointer;
+	}
+	.item span {
+		flex: 1;
+		cursor: pointer;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 	.acts {
 		display: flex;
 		gap: 2px;
@@ -736,9 +880,18 @@
 	.acts button {
 		border: none;
 		background: none;
+		opacity: 0.6;
+	}
+	.acts button:hover {
+		opacity: 1;
 	}
 	.del:hover {
 		color: #f44336;
+	}
+	.empty-list {
+		padding: 10px;
+		text-align: center;
+		opacity: 0.5;
 	}
 
 	.name-type-row {

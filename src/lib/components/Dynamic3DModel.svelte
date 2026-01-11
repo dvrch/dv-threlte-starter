@@ -37,7 +37,9 @@
 			'| Type:',
 			geometry.type,
 			'| URL:',
-			geometry.model_url
+			geometry.model_url,
+			'| Has MD:',
+			!!geometry.markdown_content
 		);
 	});
 
