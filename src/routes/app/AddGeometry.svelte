@@ -12,6 +12,15 @@
 
 	// State
 	let name = $state('');
+	const getNextName = (base: string) => {
+		let n = base;
+		let i = 1;
+		while (geometries.some((g) => g.name === n)) {
+			n = `${base} ${i++}`;
+		}
+		return n;
+	};
+
 	let type = $state('box');
 	let color = $state(
 		`#${Math.floor(Math.random() * 16777215)
@@ -106,7 +115,10 @@
 		isLoading = true;
 		try {
 			const fd = new FormData();
-			fd.append('name', name || (file ? file.name.split('.')[0] : type));
+			const finalName = isEditing
+				? name
+				: getNextName(name || (file ? file.name.split('.')[0] : type));
+			fd.append('name', finalName);
 			fd.append('color', color);
 			fd.append('position', JSON.stringify(position));
 			fd.append('rotation', JSON.stringify(rotation));
@@ -200,7 +212,17 @@
 		loadTypes();
 		loadGeometries();
 		const onDirectUpload = (e: any) => {
-			file = e.detail.file;
+			const f = e.detail.file;
+			const ext = f?.name.split('.').pop()?.toLowerCase() || '';
+
+			// Si un tissu est sélectionné et qu'on drop une image, on laisse le composant Tissus gérer le remplacement
+			const selected = geometries.find((g) => g.id === selectedGeometryId);
+			if (selected && selected.type === 'tissus' && ['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
+				addToast('Cloth Texture Sync', 'info');
+				return;
+			}
+
+			file = f;
 			name = file?.name.split('.')[0] || '';
 			setTimeout(handleSubmit, 100);
 		};
@@ -211,18 +233,17 @@
 			window.dispatchEvent(new Event('sceneUpdated'));
 		};
 		const onMarkdownUpload = (e: any) => {
-			name = e.detail.name;
+			const finalName = getNextName(e.detail.name);
+			name = finalName;
 			type = 'textmd';
-			// On stocke le contenu MD dans une variable temporaire ou on le pré-remplit
-			// Ici on va tricher : on va l'injecter via le service de sauvegarde
 			const fd = new FormData();
-			fd.append('name', e.detail.name);
+			fd.append('name', finalName);
 			fd.append('type', 'textmd');
 			fd.append('color', color);
-			fd.append('position', JSON.stringify(position));
+			fd.append('position', JSON.stringify({ x: 0, y: 5, z: 0 })); // Positionné plus haut pour être vu
 			fd.append('rotation', JSON.stringify(rotation));
-			fd.append('scale', JSON.stringify(scale));
-			fd.append('markdown_content', e.detail.content); // Nouveau champ
+			fd.append('scale', JSON.stringify({ x: 1, y: 1, z: 1 }));
+			fd.append('markdown_content', e.detail.content);
 
 			geometryService.save(fd).then(() => {
 				addToast('MD Added', 'success');
@@ -785,5 +806,9 @@
 	}
 	.reset-btn:hover {
 		background: rgba(244, 67, 54, 0.2);
+	}
+	.item.selected span {
+		color: #fff;
+		text-shadow: 0 0 5px #4db6ac;
 	}
 </style>

@@ -50,7 +50,7 @@
 <T.PointLight position={[10, 10, 10]} intensity={2} color="#40b3ff" />
 <T.PointLight position={[-10, -10, 10]} intensity={2} color="#ff3e00" />
 
-<T.Group position={[0, -5, 0]}>
+<T.Group>
 	{#each cvLines as line, i}
 		{@const style = getLineStyle(line)}
 		{@const v = variations[i]}
