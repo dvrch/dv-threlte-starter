@@ -16,7 +16,17 @@ export interface GeometryItem {
 	markdown_content?: string;
 }
 
+export interface AppSettings {
+	isBloomActive: boolean;
+	isPremiumActive: boolean;
+	isTransformControlsEnabled: boolean;
+	transformModes: ('translate' | 'rotate' | 'scale')[];
+	portFormat: 'json' | 'sqlite' | 'csv';
+	searchQuery: string;
+}
+
 const LOCAL_STORAGE_KEY = 'dv_threlte_geometries_v1';
+const SETTINGS_KEY = 'dv_threlte_settings_v1';
 const DB_NAME = 'dv_threlte_assets';
 const STORE_NAME = 'models';
 
@@ -437,6 +447,35 @@ export const geometryService = {
 			reader.readAsText(file);
 		});
 	},
+
+	/** ⚙️ Persistence des réglages Workspace */
+	getSettings(): AppSettings {
+		if (!browser) return this.getDefaultSettings();
+		const saved = localStorage.getItem(SETTINGS_KEY);
+		if (saved) {
+			try {
+				return { ...this.getDefaultSettings(), ...JSON.parse(saved) };
+			} catch (e) { }
+		}
+		return this.getDefaultSettings();
+	},
+
+	saveSettings(settings: AppSettings) {
+		if (browser) {
+			localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+		}
+	},
+
+	getDefaultSettings(): AppSettings {
+		return {
+			isBloomActive: true,
+			isPremiumActive: true,
+			isTransformControlsEnabled: false,
+			transformModes: ['translate'],
+			portFormat: 'sqlite',
+			searchQuery: ''
+		};
+	}
 };
 
 export const api = {

@@ -103,6 +103,11 @@
 	};
 
 	onMount(() => {
+		// Charger les réglages persistés
+		const settings = geometryService.getSettings();
+		isBloomEnabled = settings.isBloomActive;
+		isPremiumEnabled = settings.isPremiumActive;
+
 		fetchGeometries();
 		window.addEventListener('modelAdded', fetchGeometries);
 

@@ -41,18 +41,38 @@
 	let fileInput = $state<HTMLInputElement>();
 	let isLoading = $state(false);
 	let isDropdownOpen = $state(false);
-	let isBloomActive = $state(true);
-	let isPremiumActive = $state(true);
-	let isTransformControlsEnabled = $state(false);
-	let transformModes = $state<('translate' | 'rotate' | 'scale')[]>(['translate']);
-	let searchQuery = $state('');
-	let portFormatIndex = $state(0);
 	const portFormats: ('sqlite' | 'json' | 'csv')[] = ['sqlite', 'json', 'csv'];
+
+	// State & Persistence
+	const savedSettings = geometryService.getSettings();
+
+	let isBloomActive = $state(savedSettings.isBloomActive);
+	let isPremiumActive = $state(savedSettings.isPremiumActive);
+	let isTransformControlsEnabled = $state(savedSettings.isTransformControlsEnabled);
+	let transformModes = $state<('translate' | 'rotate' | 'scale')[]>(savedSettings.transformModes);
+	let searchQuery = $state(savedSettings.searchQuery);
+	let portFormatIndex = $state(
+		portFormats.indexOf(savedSettings.portFormat as any) === -1
+			? 0
+			: portFormats.indexOf(savedSettings.portFormat as any)
+	);
 	let portFormat = $derived(portFormats[portFormatIndex]);
 
 	let filteredGeometries = $derived(
 		geometries.filter((g) => g.name.toLowerCase().includes(searchQuery.toLowerCase()))
 	);
+
+	// ⚙️ Persistance des réglages
+	$effect(() => {
+		geometryService.saveSettings({
+			isBloomActive,
+			isPremiumActive,
+			isTransformControlsEnabled,
+			transformModes,
+			portFormat,
+			searchQuery
+		});
+	});
 
 	$effect(() => {
 		if (selectedGeometry && selectedGeometry.id !== selectedGeometryId)
