@@ -13,6 +13,7 @@ export interface GeometryItem {
 	visible: boolean;
 	model_url?: string;
 	local_file_id?: string; // ID pour IndexedDB
+	markdown_content?: string;
 }
 
 const LOCAL_STORAGE_KEY = 'dv_threlte_geometries_v1';
@@ -347,17 +348,44 @@ export const geometryService = {
 	async exportSceneToCSV() {
 		if (!browser) return;
 		const items = await this.getAll();
-		const headers = ['id', 'name', 'type', 'color', 'pos_x', 'pos_y', 'pos_z', 'rot_x', 'rot_y', 'rot_z', 'scl_x', 'scl_y', 'scl_z', 'visible', 'model_url'];
-		const rows = items.map(g => [
-			g.id, g.name, g.type, g.color,
-			g.position.x, g.position.y, g.position.z,
-			g.rotation.x, g.rotation.y, g.rotation.z,
-			g.scale.x, g.scale.y, g.scale.z,
+		const headers = [
+			'id',
+			'name',
+			'type',
+			'color',
+			'pos_x',
+			'pos_y',
+			'pos_z',
+			'rot_x',
+			'rot_y',
+			'rot_z',
+			'scl_x',
+			'scl_y',
+			'scl_z',
+			'visible',
+			'model_url',
+			'markdown_content'
+		];
+		const rows = items.map((g) => [
+			g.id,
+			g.name,
+			g.type,
+			g.color,
+			g.position.x,
+			g.position.y,
+			g.position.z,
+			g.rotation.x,
+			g.rotation.y,
+			g.rotation.z,
+			g.scale.x,
+			g.scale.y,
+			g.scale.z,
 			g.visible ? 1 : 0,
-			g.model_url || ''
+			g.model_url || '',
+			(g.markdown_content || '').replace(/\n/g, '\\n').replace(/,/g, '\\c')
 		]);
 
-		const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+		const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
 		const blob = new Blob([csvContent], { type: 'text/csv' });
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
@@ -375,13 +403,13 @@ export const geometryService = {
 			reader.onload = async (e) => {
 				try {
 					const text = e.target?.result as string;
-					const [headerLine, ...lines] = text.split('\n').filter(l => l.trim());
+					const [headerLine, ...lines] = text.split('\n').filter((l) => l.trim());
 					const headers = headerLine.split(',');
 
-					const importedItems = lines.map(line => {
+					const importedItems = lines.map((line) => {
 						const vals = line.split(',');
 						const obj: any = {};
-						headers.forEach((h, i) => obj[h] = vals[i]);
+						headers.forEach((h, i) => (obj[h] = vals[i]));
 						return {
 							id: obj.id,
 							name: obj.name,
@@ -391,21 +419,24 @@ export const geometryService = {
 							rotation: { x: +obj.rot_x, y: +obj.rot_y, z: +obj.rot_z },
 							scale: { x: +obj.scl_x, y: +obj.scl_y, z: +obj.scl_z },
 							visible: obj.visible === '1',
-							model_url: obj.model_url
+							model_url: obj.model_url,
+							markdown_content: (obj.markdown_content || '').replace(/\\n/g, '\n').replace(/\\c/g, ',')
 						} as GeometryItem;
 					});
 
 					const currentItems = await this.getAll();
 					const mergedMap = new Map();
-					currentItems.forEach(i => mergedMap.set(i.id.toString(), i));
-					importedItems.forEach(i => mergedMap.set(i.id.toString(), i));
+					currentItems.forEach((i) => mergedMap.set(i.id.toString(), i));
+					importedItems.forEach((i) => mergedMap.set(i.id.toString(), i));
 					this.saveLocal(Array.from(mergedMap.values()));
 					resolve();
-				} catch (err) { reject(err); }
+				} catch (err) {
+					reject(err);
+				}
 			};
 			reader.readAsText(file);
 		});
-	}
+	},
 };
 
 export const api = {
