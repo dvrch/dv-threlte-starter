@@ -21,6 +21,16 @@
 				// 🧼 Clean URL: if it's a full URL (from DB), getWorkingAssetUrl will handle it
 				const resolved = await getWorkingAssetUrl(url, 'models');
 
+				if (
+					url.includes('dv-scene') ||
+					url.toLowerCase().includes('.csv') ||
+					url.toLowerCase().includes('.json')
+				) {
+					console.warn(`🛑 [GltfModel] Ignored non-3D file: ${url}`);
+					isLoading = false;
+					return;
+				}
+
 				const loader = new GLTFLoader();
 				loader.setDRACOLoader(createDracoLoader());
 

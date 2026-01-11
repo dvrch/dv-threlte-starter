@@ -14,7 +14,7 @@
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 	import { Group } from 'three';
-	import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js'; // Future-proof if we go manual
+	import { RGBELoader as HDRLoader } from 'three/examples/jsm/loaders/RGBELoader.js'; // Future-proof if we go manual
 
 	import { addToast } from '$lib/stores/toasts';
 	import Bloom from './models/bloom.svelte';
