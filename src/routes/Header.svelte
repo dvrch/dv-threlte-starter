@@ -17,14 +17,18 @@
 			<path d="M0,0 L1,2 C1.5,3 1.5,3 2,3 L2,0 Z" />
 		</svg>
 		<ul>
-			<li aria-current={$page.url.pathname === base + '/' ? 'page' : undefined}>
+			<li aria-current={$page.url.pathname.startsWith(base + '/app') ? 'page' : undefined}>
 				<a href="{base}/app/">App</a>
 			</li>
 			<li aria-current={$page.url.pathname === base + '/vague' ? 'page' : undefined}>
 				<a href="{base}/vague">Vague</a>
 			</li>
 
-			<li aria-current={$page.url.pathname === base + '/' ? 'page' : undefined}>
+			<li
+				aria-current={$page.url.pathname === base + '/' || $page.url.pathname === base
+					? 'page'
+					: undefined}
+			>
 				<a href="{base}/">Home</a>
 			</li>
 			<!-- <li aria-current={$page.url.pathname === base + '/about' ? 'page' : undefined}>

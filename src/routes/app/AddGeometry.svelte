@@ -32,6 +32,9 @@
 	let fileInput = $state<HTMLInputElement>();
 	let isLoading = $state(false);
 	let isDropdownOpen = $state(false);
+	let isBloomActive = $state(true);
+	let isPremiumActive = $state(true);
+	let isTransformControlsEnabled = $state(false);
 	let transformModes = $state<('translate' | 'rotate' | 'scale')[]>(['translate']);
 	let searchQuery = $state('');
 	let portFormatIndex = $state(0);
@@ -294,9 +297,10 @@
 					accept=".glb,.gltf"
 					style="display: none;"
 					onchange={(e: any) => {
-						if (e.target.files[0]) {
-							file = e.target.files[0];
-							name = file.name.split('.')[0];
+						const f = e.target.files[0];
+						if (f) {
+							file = f;
+							name = f.name.split('.')[0];
 						}
 					}}
 				/>
@@ -615,14 +619,6 @@
 	.gizmo.active {
 		background: #ff9800 !important;
 		border-color: #ff9800 !important;
-	}
-	.edit-marker {
-		font-size: 0.7rem;
-		opacity: 0.2;
-	}
-	.edit-marker.active {
-		opacity: 1;
-		filter: drop-shadow(0 0 3px #4db6ac);
 	}
 
 	.selection-row {
