@@ -144,12 +144,16 @@
 
         <div 
             class="ui-controls" 
-            onmouseenter={() => (isFormHovered = true)} 
-            onmouseleave={() => (isFormHovered = false)}
             role="region"
             aria-label="Geometry controls"
         >
-            <div class="form-wrapper" class:is-open={isFormHovered}>
+            <div 
+                class="form-wrapper" 
+                class:is-open={isFormHovered}
+                onmouseenter={() => (isFormHovered = true)} 
+                onmouseleave={() => (isFormHovered = false)}
+                role="region"
+            >
                 <AddGeometry />
             </div>
         </div>
@@ -164,32 +168,37 @@
     }
     .ui-controls {
         position: fixed;
-        top: 80px;
-        right: 20px;
+        bottom: 10px;
+        right: 10px;
         z-index: 1000;
         display: flex;
         flex-direction: column;
-        align-items: flex-end;
+        justify-content: flex-end; /* ⚓️ Toujours coller au bas */
+        pointer-events: none;      /* 📦 Pass-through si vide */
     }
     .form-wrapper {
-        background: rgba(30, 30, 40, 0.4);
+        pointer-events: auto;      /* 🖱️ Activer interaction */
+        background: rgba(10, 10, 15, 0.4);
         backdrop-filter: blur(8px);
-        padding: 0.5rem;
+        padding: 4px;
         border-radius: 8px;
-        width: 220px;
-        max-height: 42px; /* Ultra-compact when closed */
+        width: 170px;
+        max-height: 38px;
         overflow: hidden;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         border: 1px solid rgba(255, 255, 255, 0.05);
-        cursor: pointer;
+        display: flex;
+        flex-direction: column; /* Regular column */
+        justify-content: flex-end; /* ⚓️ Align bottom (Footer visible first) */
     }
     .form-wrapper.is-open {
-        max-height: 85vh;
-        background: rgba(20, 20, 25, 0.95);
-        border-color: rgba(77, 182, 172, 0.3);
-        box-shadow: 0 12px 40px rgba(0,0,0,0.6);
-        overflow-y: auto;
+        max-height: 90vh;
+        width: 200px;      /* Légère extension x on hover */
+        background: rgba(10, 10, 15, 0.98);
+        border-color: rgba(77, 182, 172, 0.4);
+        box-shadow: -10px -10px 40px rgba(0,0,0,0.8);
+        overflow-y: visible; /* Laisser les dropdowns sortir si besoin */
     }
 
     .drop-overlay {

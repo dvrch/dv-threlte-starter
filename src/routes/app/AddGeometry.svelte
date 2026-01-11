@@ -370,15 +370,27 @@
 		ondrop={(e) => {
 			e.preventDefault();
 			isDragging = false;
-			if (e.dataTransfer?.files[0]) {
-				file = e.dataTransfer.files[0];
-				name = file.name.split('.')[0];
-				setTimeout(handleSubmit, 100);
+			const f = e.dataTransfer?.files[0];
+			if (!f) return;
+
+			const ext = f.name.split('.').pop()?.toLowerCase() || '';
+			// 📥 Gestion intelligente du Drag & Drop pour les fichiers de scène
+			if (['csv', 'json', 'sqlite', 'db'].includes(ext)) {
+				geometryService.importScene(f).then(() => {
+					loadGeometries();
+					window.dispatchEvent(new Event('modelAdded'));
+					addToast('Scene Imported via D&D', 'success');
+				});
+				return;
 			}
+
+			file = f;
+			name = f.name.split('.')[0];
+			setTimeout(handleSubmit, 100);
 		}}
 		class:dragging={isDragging}
 	>
-		<!-- 1. Hiérarchie Inversée : Contrôles en haut -->
+		<!-- 1. Détails & Objets -->
 		<div class="selection-row">
 			<div
 				class="custom-dropdown"
@@ -585,26 +597,26 @@
 			</div>
 		</div>
 
-		<!-- 2. Status & Upload en bas -->
+		<!-- 2. Zone d'Upload / Status (Dernier car visible en réduit) -->
 		<div class="footer-zone">
-			<div class="upload-btn" onclick={() => fileInput?.click()} role="button" tabindex="0">
-				<input
-					bind:this={fileInput}
-					type="file"
-					accept=".glb,.gltf"
-					style="display: none;"
-					onchange={(e: any) => {
-						const f = e.target.files[0];
-						if (f) {
-							file = f;
-							name = f.name.split('.')[0];
-						}
-					}}
-				/>
-				{file ? '✅' : '📤'}
-			</div>
-
 			<div class="port-tools">
+				<button type="button" class="upload-mini" onclick={() => fileInput?.click()} title="Upload">
+					<input
+						bind:this={fileInput}
+						type="file"
+						accept=".glb,.gltf"
+						style="display: none;"
+						onchange={(e: any) => {
+							const f = e.target.files[0];
+							if (f) {
+								file = f;
+								name = f.name.split('.')[0];
+							}
+						}}
+					/>
+					{file ? '✅' : '📤'}
+				</button>
+
 				<button
 					type="button"
 					class="fmt"
@@ -629,18 +641,19 @@
 					type="button"
 					onclick={() => window.dispatchEvent(new Event('requestSceneExportGLB'))}
 					title="Export GLB"
-					style="color: #4db6ac; border-color: #4db6ac;">📦</button
+					style="color: #4db6ac;">📦</button
 				>
 				<button
 					type="button"
 					class="reset-btn"
 					onclick={() =>
-						(confirm('Hard Reset Scene?') && localStorage.removeItem('dv_threlte_geometries_v1')) ||
+						(confirm('Hard Reset?') && localStorage.removeItem('dv_threlte_geometries_v1')) ||
 						window.location.reload()}
 					title="Reset">🔄</button
 				>
 			</div>
 		</div>
+
 		<input
 			id="scene-import"
 			type="file"
@@ -660,19 +673,9 @@
 
 <style>
 	.form-container {
-		position: fixed;
-		bottom: 10px;
-		right: 10px;
-		width: 170px;
-		font-size: 0.55rem;
+		width: 100%;
+		font-size: 0.5rem;
 		color: #ddd;
-		background: rgba(10, 10, 10, 0.95);
-		backdrop-filter: blur(10px);
-		border: 1px solid #333;
-		border-radius: 8px;
-		padding: 6px;
-		z-index: 1000;
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 	}
 	button,
 	input,
@@ -695,48 +698,17 @@
 
 	.footer-zone {
 		display: flex;
-		justify-content: space-between;
 		align-items: center;
-		padding-top: 4px;
-		border-top: 1px solid #222;
+		padding-top: 2px;
 	}
 
-	.upload-btn {
-		width: 24px;
-		height: 24px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: #222;
-		border: 1px dashed #444;
-		border-radius: 4px;
-		font-size: 0.8rem;
+	.upload-mini {
+		background: none;
+		border: none;
+		font-size: 0.7rem;
+		padding: 0 4px;
 	}
 
-	.tiny-controls-group {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-	}
-	.btn-row {
-		display: flex;
-		gap: 2px;
-		justify-content: flex-end;
-	}
-	.btn-row button {
-		width: 18px;
-		height: 18px;
-		padding: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 0.55rem;
-	}
-	.btn-row button.active {
-		background: #4db6ac;
-		color: #000;
-		border-color: #4db6ac;
-	}
 	.gizmo.active {
 		background: #ff9800 !important;
 		border-color: #ff9800 !important;
@@ -786,14 +758,16 @@
 	}
 	.dropdown-list {
 		position: absolute;
-		top: 100%;
-		left: 0;
-		right: 0;
+		bottom: 100%; /* ⬆️ Ouverture vers le haut */
+		left: auto;
+		right: 0; /* ⬅️ Alignement vers la gauche */
+		width: 250px; /* Un peu plus large pour le confort */
 		background: #0a0a0a;
 		border: 1px solid #333;
-		z-index: 100;
-		max-height: 150px;
+		z-index: 1100;
+		max-height: 300px;
 		overflow-y: auto;
+		box-shadow: -5px -5px 20px rgba(0, 0, 0, 0.8);
 	}
 	.dropdown-list input {
 		width: 100%;
