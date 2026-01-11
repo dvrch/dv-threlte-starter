@@ -44,7 +44,7 @@
 	// Map geometry types to their respective Svelte components using dynamic imports
 	const componentMap: { [key: string]: () => Promise<any> } = {
 		vague: () => import('../../routes/vague/vaguend.svelte'),
-		tissus: () => import('../../routes/bibi/tissus-simulat.svelte'),
+		tissus: () => import('$lib/components/Cloth.svelte'),
 		desk: () => import('../../routes/desksc/scene.svelte'),
 		nissan: () => import('../../routes/app/models/Nissan.svelte'),
 		bibi: () => import('../../routes/bibi/bibanime.svelte'),
@@ -62,32 +62,31 @@
 		const url = (geometry?.model_url || '').toLowerCase();
 		const type = (geometry?.type || '').toLowerCase();
 
-		// Priority 1: Image Plane (Direct match)
-		if (type === 'image_plane' || (url && /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(url))) {
+		// Priority 1: Image Plane / Cloth
+		if (type === 'image_plane') return componentMap['image_plane'];
+		if (type === 'tissus' || type === 'cloth') return componentMap['tissus'];
+
+		// Auto-detection by URL
+		if (url && /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(url)) {
 			return componentMap['image_plane'];
 		}
 
-		// Priority 2: Special detection by URL or Name for Spaceship
-		if (
-			type === 'spaceship' ||
-			name.includes('spaceship') ||
-			url.includes('spaceship.glb') ||
-			(name.includes('ship') && type !== 'bibi')
-		) {
-			return componentMap['spaceship'];
-		}
-
-		// Priority 3: Detection for Nissan Game
-		if (type === 'nissangame' || type === 'nissan' || name.includes('nissangame')) {
-			return componentMap['nissangame'];
-		}
-
-		// Priority 4: Detection for textmd
-		if (name.toLowerCase().includes('textmd') || name.toLowerCase().includes('cv')) {
+		// Priority 2: MD
+		if (type === 'textmd' || name.toLowerCase().includes('textmd')) {
 			return componentMap['textmd'];
 		}
 
-		// Priority 5: Standard type mapping
+		// Priority 3: Spaceship
+		if (type === 'spaceship' || name.includes('spaceship') || url.includes('spaceship.glb')) {
+			return componentMap['spaceship'];
+		}
+
+		// Priority 4: Nissan
+		if (type === 'nissangame' || type === 'nissan') {
+			return componentMap['nissangame'];
+		}
+
+		// Priority 5: Standard
 		return componentMap[type] ?? null;
 	});
 
@@ -96,7 +95,6 @@
 	$effect(() => {
 		const loader = DynamicComponentLoader();
 		if (browser && loader) {
-			LoadedDynamicComponent = null;
 			loader()
 				.then((module) => {
 					LoadedDynamicComponent = module.default;
@@ -109,108 +107,76 @@
 			LoadedDynamicComponent = null;
 		}
 	});
-
-	// reactive safe position/rotation/scale arrays
-	const posArray: [number, number, number] = $derived([
-		geometry?.position?.x ?? 0,
-		geometry?.position?.y ?? 0,
-		geometry?.position?.z ?? 0
-	]);
-	const DEG2RAD = Math.PI / 180;
-	const rotArray: [number, number, number] = $derived([
-		(geometry?.rotation?.x ?? 0) * DEG2RAD,
-		(geometry?.rotation?.y ?? 0) * DEG2RAD,
-		(geometry?.rotation?.z ?? 0) * DEG2RAD
-	]);
-	const scaleArray: [number, number, number] = $derived([
-		geometry?.scale?.x ?? 1,
-		geometry?.scale?.y ?? 1,
-		geometry?.scale?.z ?? 1
-	]);
 </script>
 
-{#if browser && geometry}
-	<T.Group
-		is={ref}
-		position={posArray}
-		rotation={rotArray}
-		scale={scaleArray}
-		visible={geometry.visible !== false}
-		onpointerdown={(e: any) => {
-			if (onPointerDown) {
-				e.stopPropagation();
-				onPointerDown();
-			}
-		}}
-	>
-		{#if LoadedDynamicComponent}
-			{@const Component = LoadedDynamicComponent}
-			{#if geometry.type === 'text_scene'}
-				<Component
-					cvLines={[
-						'# Welcome',
-						'## To the 3D Editor',
-						'Interactive Elements',
-						'- Drag & Drop GLB',
-						'- Real-time Sync',
-						'- Physics Games'
-					]}
-					{geometry}
-				/>
-			{:else}
-				<Component
-					{geometry}
-					cvLines={geometry.markdown_content
-						? geometry.markdown_content.split('\n').filter((l) => l.trim())
-						: []}
-				/>
-			{/if}
-		{:else if geometry.type === 'text'}
-			<T.Mesh scale={[geometry.scale?.x ?? 1, 1, 0.001]}>
-				<Text3DGeometry
-					{font}
-					text={geometry.name}
-					size={geometry.scale?.y ?? 1}
-					height={geometry.scale?.z ?? 0.01}
-					curveSegments={12}
-				/>
-				<T.MeshStandardMaterial color={geometry.color} />
-			</T.Mesh>
-		{:else if geometry.model_url && geometry.model_url.trim() !== '' && !/\.(jpg|jpeg|png|webp|gif|svg)$/i.test(geometry.model_url) && geometry.type !== 'image_plane'}
-			<GltfModel url={geometry.model_url} />
-		{:else if geometry.type === 'box'}
-			<T.Mesh>
-				<T.BoxGeometry />
-				<T.MeshStandardMaterial color={geometry.color} />
-			</T.Mesh>
-		{:else if geometry.type === 'torus'}
-			<T.Mesh>
-				<T.TorusKnotGeometry args={[0.5, 0.15, 100, 12, 2, 3]} />
-				<T.MeshStandardMaterial color={geometry.color} />
-			</T.Mesh>
-		{:else if geometry.type === 'icosahedron'}
-			<T.Mesh>
-				<T.IcosahedronGeometry />
-				<T.MeshStandardMaterial color={geometry.color} />
-			</T.Mesh>
-		{:else if geometry.type === 'sphere'}
-			<T.Mesh>
-				<T.SphereGeometry />
-				<T.MeshStandardMaterial color={geometry.color} />
-			</T.Mesh>
+<T.Group
+	bind:ref
+	position={[geometry.position.x, geometry.position.y, geometry.position.z]}
+	rotation={[
+		THREE.MathUtils.degToRad(geometry.rotation.x),
+		THREE.MathUtils.degToRad(geometry.rotation.y),
+		THREE.MathUtils.degToRad(geometry.rotation.z)
+	]}
+	scale={[geometry.scale.x, geometry.scale.y, geometry.scale.z]}
+	visible={geometry.visible}
+	onpointerdown={(e: any) => {
+		e.stopPropagation();
+		onPointerDown?.();
+	}}
+>
+	{#if geometry.type === 'gltf_model' && geometry.model_url}
+		<GltfModel url={geometry.model_url} {geometry} />
+	{:else if LoadedDynamicComponent}
+		{@const Component = LoadedDynamicComponent}
+		{#if geometry.type === 'text_scene'}
+			<Component
+				{geometry}
+				cvLines={geometry.markdown_content
+					? geometry.markdown_content.split('\n').filter((l) => l.trim())
+					: []}
+			/>
 		{:else}
-			<!-- substitution cube with info -->
-			<T.Mesh>
-				<T.BoxGeometry />
-				<T.MeshStandardMaterial color="purple" transparent opacity={0.6} />
-			</T.Mesh>
-			<HTML center position={[0, 1, 0]}>
-				<div
-					style="background: rgba(0,0,0,0.5); padding: 4px; border-radius: 4px; font-size: 10px; color: #ff00ff; white-space: nowrap;"
-				>
-					MISSING: {geometry.name}
+			<Component
+				{geometry}
+				cvLines={geometry.markdown_content
+					? geometry.markdown_content.split('\n').filter((l) => l.trim())
+					: []}
+			/>
+		{/if}
+	{:else if geometry.type === 'text'}
+		<T.Mesh scale={[geometry.scale?.x ?? 1, 1, 0.001]}>
+			<Text3DGeometry {font} text={geometry.name} size={0.5} height={0.5} />
+			<T.MeshStandardMaterial color={geometry.color} metalness={0.8} roughness={0.2} />
+		</T.Mesh>
+	{:else if geometry.type === 'box'}
+		<T.Mesh>
+			<T.BoxGeometry args={[1, 1, 1]} />
+			<T.MeshStandardMaterial color={geometry.color} metalness={0.5} roughness={0.5} />
+		</T.Mesh>
+	{:else if geometry.type === 'sphere'}
+		<T.Mesh>
+			<T.SphereGeometry args={[0.5, 32, 32]} />
+			<T.MeshStandardMaterial color={geometry.color} metalness={0.5} roughness={0.5} />
+		</T.Mesh>
+	{:else if geometry.type === 'plane'}
+		<T.Mesh rotation.x={THREE.MathUtils.degToRad(-90)}>
+			<T.PlaneGeometry args={[1, 1]} />
+			<T.MeshStandardMaterial
+				color={geometry.color}
+				side={THREE.DoubleSide}
+				metalness={0.5}
+				roughness={0.5}
+			/>
+		</T.Mesh>
+	{:else}
+		<T.Mesh>
+			<T.BoxGeometry args={[0.2, 0.2, 0.2]} />
+			<T.MeshBasicMaterial color="red" wireframe />
+			<HTML>
+				<div style="color: white; background: rgba(0,0,0,0.5); padding: 2px;">
+					{geometry.type}
 				</div>
 			</HTML>
-		{/if}
-	</T.Group>
-{/if}
+		</T.Mesh>
+	{/if}
+</T.Group>

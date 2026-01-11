@@ -126,10 +126,12 @@
 			if (file) {
 				fd.append('model_file', file);
 				const ext = file.name.split('.').pop()?.toLowerCase() || '';
-				fd.append(
-					'type',
-					['jpg', 'jpeg', 'png', 'webp'].includes(ext) ? 'image_plane' : 'gltf_model'
-				);
+				const isImage = ['jpg', 'jpeg', 'png', 'webp'].includes(ext);
+				if (isEditing) {
+					fd.append('type', type);
+				} else {
+					fd.append('type', isImage ? 'image_plane' : 'gltf_model');
+				}
 			} else fd.append('type', type);
 
 			const current = geometries.find((g) => g.id === selectedGeometryId);
@@ -213,17 +215,9 @@
 		loadGeometries();
 		const onDirectUpload = (e: any) => {
 			const f = e.detail.file;
-			const ext = f?.name.split('.').pop()?.toLowerCase() || '';
-
-			// Si un tissu est sélectionné et qu'on drop une image, on laisse le composant Tissus gérer le remplacement
-			const selected = geometries.find((g) => g.id === selectedGeometryId);
-			if (selected && selected.type === 'tissus' && ['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
-				addToast('Cloth Texture Sync', 'info');
-				return;
-			}
-
+			if (!f) return;
 			file = f;
-			name = file?.name.split('.')[0] || '';
+			name = f.name.split('.')[0] || '';
 			setTimeout(handleSubmit, 100);
 		};
 		const onDirectImport = async (e: any) => {
@@ -234,22 +228,19 @@
 		};
 		const onMarkdownUpload = (e: any) => {
 			const finalName = getNextName(e.detail.name);
-			name = finalName;
-			type = 'textmd';
 			const fd = new FormData();
 			fd.append('name', finalName);
-			fd.append('type', 'textmd');
+			fd.append('type', 'textmd'); // Type explicite
 			fd.append('color', color);
-			fd.append('position', JSON.stringify({ x: 0, y: 5, z: 0 })); // Positionné plus haut pour être vu
-			fd.append('rotation', JSON.stringify(rotation));
+			fd.append('position', JSON.stringify({ x: 0, y: 5, z: 0 }));
+			fd.append('rotation', JSON.stringify({ x: 0, y: 0, z: 0 }));
 			fd.append('scale', JSON.stringify({ x: 1, y: 1, z: 1 }));
 			fd.append('markdown_content', e.detail.content);
 
 			geometryService.save(fd).then(() => {
-				addToast('MD Added', 'success');
+				addToast('Markdown 3D Ready', 'success');
 				loadGeometries();
 				window.dispatchEvent(new Event('modelAdded'));
-				window.dispatchEvent(new Event('sceneUpdated'));
 			});
 		};
 		const onSync = (e: any) => {
