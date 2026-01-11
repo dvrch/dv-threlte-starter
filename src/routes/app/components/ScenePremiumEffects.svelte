@@ -112,11 +112,15 @@
 
 		window.addEventListener('modelAdded', handleRefresh);
 		window.addEventListener('modelVisualLoaded', handleRefresh);
+		window.addEventListener('geometryVisibilityChanged', handleRefresh);
+		window.addEventListener('sceneUpdated', handleRefresh);
 		window.addEventListener('togglePremiumEffect', handleToggle);
 
 		return () => {
 			window.removeEventListener('modelAdded', handleRefresh);
 			window.removeEventListener('modelVisualLoaded', handleRefresh);
+			window.removeEventListener('geometryVisibilityChanged', handleRefresh);
+			window.removeEventListener('sceneUpdated', handleRefresh);
 			window.removeEventListener('togglePremiumEffect', handleToggle);
 		};
 	});

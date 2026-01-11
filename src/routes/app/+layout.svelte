@@ -53,10 +53,22 @@
             const file = e.dataTransfer.files[0];
             const ext = file.name.split('.').pop()?.toLowerCase();
             
-            // Fichiers de Scène (Chargement direct)
-            if (ext === 'json' || ext === 'sqlite' || ext === 'db') {
+            if (ext === 'json' || ext === 'sqlite' || ext === 'db' || ext === 'csv') {
                  window.dispatchEvent(new CustomEvent('directSceneImport', { detail: { file } }));
                  return;
+            }
+
+            // Fichiers Markdown (Texte 3D)
+            if (ext === 'md') {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const content = e.target?.result as string;
+                    window.dispatchEvent(new CustomEvent('markdownUpload', { 
+                        detail: { name: file.name.split('.')[0], content } 
+                    }));
+                };
+                reader.readAsText(file);
+                return;
             }
 
             // Fichiers de Modèles (Ajout à la scène)

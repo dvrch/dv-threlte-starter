@@ -32,13 +32,11 @@
 	let fileInput = $state<HTMLInputElement>();
 	let isLoading = $state(false);
 	let isDropdownOpen = $state(false);
-	let portFormat = $state<'json' | 'sqlite'>('sqlite');
-
-	let isBloomActive = $state(true);
-	let isPremiumActive = $state(true);
-	let isTransformControlsEnabled = $state(false);
 	let transformModes = $state<('translate' | 'rotate' | 'scale')[]>(['translate']);
 	let searchQuery = $state('');
+	let portFormatIndex = $state(0);
+	const portFormats: ('sqlite' | 'json' | 'csv')[] = ['sqlite', 'json', 'csv'];
+	let portFormat = $derived(portFormats[portFormatIndex]);
 
 	let filteredGeometries = $derived(
 		geometries.filter((g) => g.name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -207,6 +205,28 @@
 			await geometryService.importScene(e.detail.file);
 			await loadGeometries();
 			window.dispatchEvent(new Event('modelAdded'));
+			window.dispatchEvent(new Event('sceneUpdated'));
+		};
+		const onMarkdownUpload = (e: any) => {
+			name = e.detail.name;
+			type = 'textmd';
+			// On stocke le contenu MD dans une variable temporaire ou on le pré-remplit
+			// Ici on va tricher : on va l'injecter via le service de sauvegarde
+			const fd = new FormData();
+			fd.append('name', e.detail.name);
+			fd.append('type', 'textmd');
+			fd.append('color', color);
+			fd.append('position', JSON.stringify(position));
+			fd.append('rotation', JSON.stringify(rotation));
+			fd.append('scale', JSON.stringify(scale));
+			fd.append('markdown_content', e.detail.content); // Nouveau champ
+
+			geometryService.save(fd).then(() => {
+				addToast('MD Added', 'success');
+				loadGeometries();
+				window.dispatchEvent(new Event('modelAdded'));
+				window.dispatchEvent(new Event('sceneUpdated'));
+			});
 		};
 		const onSync = (e: any) => {
 			const d = e.detail;
@@ -233,10 +253,12 @@
 		};
 		window.addEventListener('directSceneUpload', onDirectUpload);
 		window.addEventListener('directSceneImport', onDirectImport);
+		window.addEventListener('markdownUpload', onMarkdownUpload);
 		window.addEventListener('manualTransformSync', onSync);
 		return () => {
 			window.removeEventListener('directSceneUpload', onDirectUpload);
 			window.removeEventListener('directSceneImport', onDirectImport);
+			window.removeEventListener('markdownUpload', onMarkdownUpload);
 			window.removeEventListener('manualTransformSync', onSync);
 		};
 	});
@@ -302,8 +324,11 @@
 						type="button"
 						class="gizmo"
 						class:active={isTransformControlsEnabled}
-						onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}>✜</button
+						onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}
+						title="Toggle Gizmo (Hand)"
 					>
+						{isEditing ? '✍️' : '🤚'}
+					</button>
 				</div>
 				<div class="btn-row">
 					<button
@@ -316,7 +341,6 @@
 						class:active={isPremiumActive}
 						onclick={() => (isPremiumActive = !isPremiumActive)}>💎</button
 					>
-					<div class="edit-marker" class:active={isEditing}>✍️</div>
 				</div>
 			</div>
 		</div>
@@ -474,18 +498,28 @@
 				<button
 					type="button"
 					class="fmt"
-					onclick={() => (portFormat = portFormat === 'json' ? 'sqlite' : 'json')}
+					onclick={() => (portFormatIndex = (portFormatIndex + 1) % portFormats.length)}
 					>{portFormat.toUpperCase()}</button
 				>
 				<button
 					type="button"
-					onclick={() => (portFormat === 'json' ? handleExport() : handleExportSQLite())}
+					onclick={() => {
+						if (portFormat === 'json') handleExport();
+						else if (portFormat === 'sqlite') handleExportSQLite();
+						else if (portFormat === 'csv') geometryService.exportSceneToCSV();
+					}}
 					title="Save">💾</button
 				>
 				<button
 					type="button"
 					onclick={() => document.getElementById('scene-import')?.click()}
 					title="Open">📂</button
+				>
+				<button
+					type="button"
+					onclick={() => window.dispatchEvent(new Event('requestSceneExportGLB'))}
+					title="Export GLB"
+					style="color: #4db6ac; border-color: #4db6ac;">📦</button
 				>
 				<button
 					type="button"
@@ -500,7 +534,7 @@
 		<input
 			id="scene-import"
 			type="file"
-			accept=".json,.sqlite,.db"
+			accept=".json,.sqlite,.db,.csv"
 			style="display:none"
 			onchange={async (e) => {
 				const f = (e.target as any).files[0];

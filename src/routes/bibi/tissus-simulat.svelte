@@ -60,16 +60,13 @@
 				loader.load(
 					glbUrl,
 					(gltf) => {
-						// 🛡️ SECURITY: Run through buildSceneGraph to fix potential missing materials
 						buildSceneGraph(gltf);
-
 						model = gltf.scene;
 						if (gltf.animations.length > 0) {
 							mixer = new THREE.AnimationMixer(model);
 							const action = mixer.clipAction(gltf.animations[0]);
 							action.play();
 						}
-						// Apply initial texture
 						nextTexture();
 					},
 					undefined,
@@ -82,7 +79,32 @@
 			}
 		};
 
-		if (browser) loadModel();
+		const handleTexUpdate = async (e: any) => {
+			const file = e.detail.file;
+			if (!file || !/\.(jpg|jpeg|png|webp)$/i.test(file.name)) return;
+			const { TextureLoader } = await import('three');
+			const loader = new TextureLoader();
+			const url = URL.createObjectURL(file);
+			loader.load(url, (tex) => {
+				currentTexture.set(tex);
+				if (model) {
+					model.traverse((child: any) => {
+						if (child.isMesh) {
+							child.material = new THREE.MeshBasicMaterial({
+								map: tex,
+								transparent: true,
+								side: THREE.DoubleSide
+							});
+						}
+					});
+				}
+			});
+		};
+
+		if (browser) {
+			loadModel();
+			window.addEventListener('directSceneUpload', handleTexUpdate);
+		}
 
 		useTask(() => {
 			if (mixer) {
@@ -90,6 +112,10 @@
 				mixer.update(delta);
 			}
 		});
+
+		return () => {
+			window.removeEventListener('directSceneUpload', handleTexUpdate);
+		};
 	});
 </script>
 

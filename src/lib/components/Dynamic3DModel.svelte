@@ -21,6 +21,7 @@
 		scale: { x: number; y: number; z: number };
 		color: string;
 		visible: boolean;
+		markdown_content?: string;
 	}
 
 	let {
@@ -157,7 +158,12 @@
 					{geometry}
 				/>
 			{:else}
-				<Component {geometry} />
+				<Component
+					{geometry}
+					cvLines={geometry.markdown_content
+						? geometry.markdown_content.split('\n').filter((l) => l.trim())
+						: []}
+				/>
 			{/if}
 		{:else if geometry.type === 'text'}
 			<T.Mesh scale={[geometry.scale?.x ?? 1, 1, 0.001]}>

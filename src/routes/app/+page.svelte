@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { T, Canvas } from '@threlte/core';
+	import { T, Canvas, useThrelte } from '@threlte/core';
 	import {
 		Float,
 		Grid,
@@ -39,6 +39,7 @@
 
 	// Store for model refs
 	let modelRefs = $state<Record<string, Group>>({});
+	const { scene } = useThrelte();
 
 	// Function to fetch geometries
 	const fetchGeometries = async () => {
@@ -134,12 +135,38 @@
 		};
 		window.addEventListener('toggleTransformControls', handleToggleTransform);
 
+		const handleSceneExportGLB = async () => {
+			const { GLTFExporter } = await import('three/examples/jsm/exporters/GLTFExporter.js');
+			const exporter = new GLTFExporter();
+			const options = { binary: true, animations: [] };
+
+			exporter.parse(
+				scene,
+				(result) => {
+					const blob = new Blob([result as any], { type: 'application/octet-stream' });
+					const link = document.createElement('a');
+					link.href = URL.createObjectURL(blob);
+					link.download = `dv-full-scene-${new Date().toISOString().split('T')[0]}.glb`;
+					link.click();
+					addToast('GLB Exported', 'success');
+				},
+				(error) => {
+					console.error('GLB Export Error:', error);
+					addToast('Export Failed', 'error');
+				},
+				options
+			);
+		};
+
+		window.addEventListener('requestSceneExportGLB', handleSceneExportGLB);
+
 		return () => {
 			window.removeEventListener('modelAdded', fetchGeometries);
 			window.removeEventListener('geometryVisibilityChanged', handleVisibilityChange);
 			window.removeEventListener('toggleBloomEffect', handleToggleBloom);
 			window.removeEventListener('togglePremiumEffect', handleTogglePremium);
 			window.removeEventListener('toggleTransformControls', handleToggleTransform);
+			window.removeEventListener('requestSceneExportGLB', handleSceneExportGLB);
 		};
 	});
 </script>
