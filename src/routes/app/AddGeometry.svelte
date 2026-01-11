@@ -216,6 +216,14 @@
 		const onDirectUpload = (e: any) => {
 			const f = e.detail.file;
 			if (!f) return;
+
+			const ext = f.name.split('.').pop()?.toLowerCase() || '';
+			// Si c'est un fichier de scène, on le redirige vers l'import
+			if (['csv', 'json', 'sqlite'].includes(ext)) {
+				onDirectImport(e);
+				return;
+			}
+
 			file = f;
 			name = f.name.split('.')[0] || '';
 			setTimeout(handleSubmit, 100);

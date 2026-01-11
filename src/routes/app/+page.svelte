@@ -136,26 +136,44 @@
 		window.addEventListener('toggleTransformControls', handleToggleTransform);
 
 		const handleSceneExportGLB = async () => {
+			addToast('Export started...', 'info');
 			const { GLTFExporter } = await import('three/examples/jsm/exporters/GLTFExporter.js');
 			const exporter = new GLTFExporter();
-			const options = { binary: true, animations: [] };
 
-			exporter.parse(
-				scene,
-				(result) => {
-					const blob = new Blob([result as any], { type: 'application/octet-stream' });
-					const link = document.createElement('a');
-					link.href = URL.createObjectURL(blob);
-					link.download = `dv-full-scene-${new Date().toISOString().split('T')[0]}.glb`;
-					link.click();
-					addToast('GLB Exported', 'success');
-				},
-				(error) => {
-					console.error('GLB Export Error:', error);
-					addToast('Export Failed', 'error');
-				},
-				options
-			);
+			// Configuration pour la compatibilité maximale
+			const options = {
+				binary: true,
+				animations: [],
+				embedImages: true,
+				forceIndices: true
+			};
+
+			try {
+				exporter.parse(
+					scene,
+					(result) => {
+						try {
+							const blob = new Blob([result as any], { type: 'application/octet-stream' });
+							const link = document.createElement('a');
+							link.href = URL.createObjectURL(blob);
+							link.download = `dv-full-scene-${new Date().toISOString().split('T')[0]}.glb`;
+							link.click();
+							addToast('GLB Exported ✅', 'success');
+						} catch (err) {
+							console.error('Blob creation failed:', err);
+							addToast('Export Error', 'error');
+						}
+					},
+					(error) => {
+						console.error('GLB Export Error:', error);
+						addToast('Export Failed: Invalid Assets', 'error');
+					},
+					options
+				);
+			} catch (fatal) {
+				console.error('Fatal Export Error:', fatal);
+				addToast('Fatal Export Error', 'error');
+			}
 		};
 
 		window.addEventListener('requestSceneExportGLB', handleSceneExportGLB);
