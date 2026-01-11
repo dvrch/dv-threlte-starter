@@ -427,7 +427,7 @@
 							<input
 								type="text"
 								bind:value={importURL}
-								placeholder="URL..."
+								placeholder="URL (Direct Import)..."
 								onclick={(e) => e.stopPropagation()}
 								onkeydown={(e) => e.key === 'Enter' && handleURLImport()}
 							/>
@@ -578,15 +578,37 @@
 					class:active={isPremiumActive}
 					onclick={() => (isPremiumActive = !isPremiumActive)}>💎</button
 				>
-				<button
-					type="button"
-					class="gizmo"
-					class:active={isTransformControlsEnabled}
-					onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}
-					title="Toggle Gizmo (Hand)"
-				>
-					{isEditing ? '✍️' : '🤚'}
-				</button>
+				<div class="gizmo-group">
+					<button
+						type="button"
+						class="gizmo"
+						class:active={isTransformControlsEnabled}
+						onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}
+						title="Toggle Gizmo"
+					>
+						{isEditing ? '✍️' : '🤚'}
+					</button>
+					{#if isTransformControlsEnabled}
+						<button
+							type="button"
+							class:active={transformModes.includes('translate')}
+							onclick={() => (transformModes = ['translate'])}
+							title="Move">T</button
+						>
+						<button
+							type="button"
+							class:active={transformModes.includes('rotate')}
+							onclick={() => (transformModes = ['rotate'])}
+							title="Rotate">R</button
+						>
+						<button
+							type="button"
+							class:active={transformModes.includes('scale')}
+							onclick={() => (transformModes = ['scale'])}
+							title="Scale">S</button
+						>
+					{/if}
+				</div>
 			</div>
 
 			<div class="main-btns">
@@ -797,6 +819,19 @@
 		height: 18px;
 		background: #222;
 		border: 1px solid #444;
+	}
+
+	.gizmo-group {
+		display: flex;
+		gap: 1px;
+	}
+	.gizmo-group button {
+		padding: 0 4px;
+		min-width: 16px;
+	}
+	.gizmo-group button.active {
+		color: #4db6ac;
+		border-color: #4db6ac;
 	}
 	.bulk-btn.del:hover {
 		background: #b71c1c;

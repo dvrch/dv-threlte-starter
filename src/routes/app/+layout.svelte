@@ -204,15 +204,15 @@
     .drop-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(77, 182, 172, 0.2);
-        backdrop-filter: blur(4px);
+        background: rgba(77, 255, 172, 0.15); /* 🟢 Verdâtre très transparent */
+        backdrop-filter: blur(2px);
         z-index: 9999;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 4px dashed #4db6ac;
-        margin: 20px;
-        border-radius: 20px;
+        border: 4px dashed rgba(77, 255, 172, 0.6); /* 🟢 Trait vert interrompu */
+        margin: 10px;
+        border-radius: 12px;
         pointer-events: none;
     }
     .drop-message {
