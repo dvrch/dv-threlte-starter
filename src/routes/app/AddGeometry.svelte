@@ -420,26 +420,34 @@
 				{#if isDropdownOpen}
 					<div class="dropdown-list">
 						<div class="top-list">
-							<div class="search-box">
-								<input
-									type="text"
-									bind:value={searchQuery}
-									placeholder="Filter objects..."
-									onclick={(e) => e.stopPropagation()}
-								/>
-								{#if searchQuery}
-									<button type="button" class="clear-search" onclick={() => (searchQuery = '')}
-										>✖</button
-									>
-								{/if}
+							<div class="top-list">
+								<div class="search-row">
+									<span class="search-icon">🔍</span>
+									<input
+										type="text"
+										bind:value={searchQuery}
+										placeholder="Search objects..."
+										class="search-input"
+										onclick={(e) => e.stopPropagation()}
+									/>
+									{#if searchQuery}
+										<button type="button" class="clear-search" onclick={() => (searchQuery = '')}
+											>✖</button
+										>
+									{/if}
+								</div>
+								<div class="import-row">
+									<span class="search-icon">📥</span>
+									<input
+										type="text"
+										bind:value={importURL}
+										placeholder="Paste URL to import..."
+										class="search-input"
+										onclick={(e) => e.stopPropagation()}
+										onkeydown={(e) => e.key === 'Enter' && handleURLImport()}
+									/>
+								</div>
 							</div>
-							<input
-								type="text"
-								bind:value={importURL}
-								placeholder="URL (Direct Import)..."
-								onclick={(e) => e.stopPropagation()}
-								onkeydown={(e) => e.key === 'Enter' && handleURLImport()}
-							/>
 						</div>
 
 						<div class="scroll-list">
@@ -811,10 +819,7 @@
 		border: none;
 		border-bottom: 1px solid #222;
 	}
-	.search-box {
-		position: relative;
-		width: 100%;
-	}
+	/* .search-box removed */
 
 	.clear-search {
 		position: absolute;
@@ -884,10 +889,34 @@
 		flex-direction: column;
 		background: #111;
 		border-bottom: 2px solid #222;
+		padding: 4px;
+		gap: 4px;
 	}
-	.top-list input {
-		height: 20px;
+	.search-row,
+	.import-row {
+		display: flex;
+		align-items: center;
+		gap: 6px;
 		background: #000;
+		border-radius: 4px;
+		padding: 2px 6px;
+		border: 1px solid #333;
+	}
+	.search-icon {
+		font-size: 0.8rem;
+		opacity: 0.7;
+	}
+	.search-input {
+		flex: 1;
+		background: transparent !important;
+		border: none !important;
+		color: #fff !important;
+		height: 24px !important;
+		font-size: 0.8rem !important;
+		outline: none;
+	}
+	.search-input::placeholder {
+		color: #666;
 	}
 
 	.scroll-list {
