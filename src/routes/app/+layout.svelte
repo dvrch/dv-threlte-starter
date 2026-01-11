@@ -33,16 +33,29 @@
         }, 3000);
     };
 
-    // Global drag & drop for direct upload
-    const handleGlobalDragOver = (e: DragEvent) => {
+    // Global drag & drop avec compteur pour éviter le flickering
+    let dragCounter = 0;
+
+    const handleGlobalDragEnter = (e: DragEvent) => {
         if (!$page.url.pathname.startsWith('/app')) return;
         e.preventDefault();
+        dragCounter++;
         isDraggingGlobal = true;
     };
 
+    const handleGlobalDragOver = (e: DragEvent) => {
+        if (!$page.url.pathname.startsWith('/app')) return;
+        e.preventDefault();
+        // Force l'overlay tant qu'on est en drag sur la window
+         isDraggingGlobal = true;
+    };
+
     const handleGlobalDragLeave = (e: DragEvent) => {
-        // Only trigger if we actually left the window
-        isDraggingGlobal = false;
+        dragCounter--;
+        if (dragCounter <= 0) {
+            isDraggingGlobal = false;
+            dragCounter = 0;
+        }
     };
 
     const handleGlobalDrop = (e: DragEvent) => {
@@ -98,9 +111,13 @@
 <div 
     class="app" 
     class:is-app-route={$page.url.pathname.startsWith('/app') || $page.url.pathname.startsWith('/vague')}
+    ondragenter={handleGlobalDragEnter}
     ondragover={handleGlobalDragOver}
     ondragleave={handleGlobalDragLeave}
-    ondrop={handleGlobalDrop}
+    ondrop={(e) => {
+        dragCounter = 0;
+        handleGlobalDrop(e);
+    }}
     role="presentation"
 >
     {#if isDraggingGlobal}
@@ -232,7 +249,20 @@
             left: 50%;
             right: auto;
             transform: translateX(-50%);
-            top: 0.5rem;
+            bottom: 2rem;
         }
+    }
+
+    /* Force Full Screen */
+    :global(html), :global(body) {
+        height: 100%;
+        margin: 0;
+        overflow: hidden; /* Empêcher le scroll global sur l'app */
+    }
+    .app {
+        height: 100vh;
+        width: 100vw;
+        border: 4px solid red; /* DEBUG: check dimensions if needed */
+        border: none;
     }
 </style>

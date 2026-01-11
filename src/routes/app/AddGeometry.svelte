@@ -49,8 +49,10 @@
 	let isBloomActive = $state(savedSettings.isBloomActive);
 	let isPremiumActive = $state(savedSettings.isPremiumActive);
 	let isTransformControlsEnabled = $state(savedSettings.isTransformControlsEnabled);
-	let transformModes = $state<('translate' | 'rotate' | 'scale')[]>(savedSettings.transformModes);
-	let searchQuery = $state(savedSettings.searchQuery);
+	let transformModes = $state<('translate' | 'rotate' | 'scale')[]>(
+		savedSettings.transformModes || ['translate']
+	); // Default
+	let searchQuery = $state(savedSettings.searchQuery || ''); // 🛡️ Default string empty
 	let portFormatIndex = $state(
 		portFormats.indexOf(savedSettings.portFormat as any) === -1
 			? 0
