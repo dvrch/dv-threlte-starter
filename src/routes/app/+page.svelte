@@ -145,10 +145,18 @@
 			const { GLTFExporter } = await import('three/examples/jsm/exporters/GLTFExporter.js');
 			const exporter = new GLTFExporter();
 
+			// Récupération des animations
+			const animations: any[] = [];
+			exportGroup.traverse((child: any) => {
+				if (child.animations) {
+					animations.push(...child.animations);
+				}
+			});
+
 			// Configuration pour la compatibilité maximale
 			const options = {
 				binary: true,
-				animations: [],
+				animations: animations,
 				embedImages: true,
 				forceIndices: true,
 				truncateDrawRange: true

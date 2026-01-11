@@ -15,12 +15,10 @@
 			color?: string;
 		};
 	}
-
+	let { geometry }: Props = $props();
 	// 🎨 Texture Loading (Reactive String -> Store)
-	// On évite Cloudinary pour les URLs locaux (blob)
-	const imageUrl = $derived(geometry?.model_url || '');
-
-	const texture = useTexture(imageUrl);
+	// useTexture accepte une rune $derived directement dans Svelte 5 / Threlte
+	const texture = useTexture(() => geometry?.model_url || '');
 </script>
 
 {#if $texture}
@@ -31,6 +29,11 @@
 {:else}
 	<T.Mesh>
 		<T.PlaneGeometry args={[1, 1]} />
-		<T.MeshBasicMaterial color="#333" wireframe opacity={0.3} transparent />
+		<T.MeshBasicMaterial color={geometry?.color || '#4db6ac'} wireframe opacity={0.5} transparent />
+		<HTML center>
+			<div style="color: white; font-size: 8px; background: rgba(0,0,0,0.5); padding: 2px;">
+				Loading Image...
+			</div>
+		</HTML>
 	</T.Mesh>
 {/if}
