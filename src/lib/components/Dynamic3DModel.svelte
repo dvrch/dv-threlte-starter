@@ -55,7 +55,7 @@
 		bibigame: () => import('../../routes/app/bibigame.svelte'),
 		spaceship: () => import('../../routes/app/models/spaceship.svelte'),
 		text_scene: () => import('../../routes/Text/scene.svelte'),
-		textmd: () => import('$lib/components/TextMd.svelte'),
+		textmd: () => import('../../routes/Text/scene.svelte'), // 🔄 Re-mappé sur Text/scene direct
 		image_plane: () => import('$lib/components/ImagePlane.svelte')
 	};
 
@@ -128,23 +128,14 @@
 >
 	{#if geometry.type === 'gltf_model' && geometry.model_url}
 		<GltfModel url={geometry.model_url} {geometry} />
-	{:else if LoadedDynamicComponent}
-		{@const Component = LoadedDynamicComponent}
-		{#if geometry.type === 'text_scene'}
-			<Component
-				{geometry}
-				cvLines={geometry.markdown_content
-					? geometry.markdown_content.split('\n').filter((l) => l.trim())
-					: []}
-			/>
-		{:else}
-			<Component
-				{geometry}
-				cvLines={geometry.markdown_content
-					? geometry.markdown_content.split('\n').filter((l) => l.trim())
-					: []}
-			/>
-		{/if}
+	{:else if geometry.type === 'textmd' || (geometry.type === 'text_scene' && LoadedDynamicComponent)}
+		{@const Component = LoadedDynamicComponent || componentMap['textmd']}
+		<Component
+			{geometry}
+			cvLines={geometry.markdown_content
+				? geometry.markdown_content.split('\n').filter((l) => l.trim())
+				: []}
+		/>
 	{:else if geometry.type === 'text'}
 		<T.Mesh scale={[geometry.scale?.x ?? 1, 1, 0.001]}>
 			<Text3DGeometry {font} text={geometry.name} size={0.5} height={0.5} />

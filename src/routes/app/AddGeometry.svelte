@@ -52,7 +52,7 @@
 	let transformModes = $state<('translate' | 'rotate' | 'scale')[]>(
 		savedSettings.transformModes || ['translate']
 	); // Default
-	let searchQuery = $state(savedSettings.searchQuery || ''); // 🛡️ Default string empty
+	let searchQuery = $state('');
 	let portFormatIndex = $state(
 		portFormats.indexOf(savedSettings.portFormat as any) === -1
 			? 0
@@ -121,7 +121,7 @@
 			isTransformControlsEnabled,
 			transformModes,
 			portFormat,
-			searchQuery
+			searchQuery: ''
 		});
 	});
 
@@ -420,12 +420,19 @@
 				{#if isDropdownOpen}
 					<div class="dropdown-list">
 						<div class="top-list">
-							<input
-								type="text"
-								bind:value={searchQuery}
-								placeholder="Filter..."
-								onclick={(e) => e.stopPropagation()}
-							/>
+							<div class="search-box">
+								<input
+									type="text"
+									bind:value={searchQuery}
+									placeholder="Filter objects..."
+									onclick={(e) => e.stopPropagation()}
+								/>
+								{#if searchQuery}
+									<button type="button" class="clear-search" onclick={() => (searchQuery = '')}
+										>✖</button
+									>
+								{/if}
+							</div>
 							<input
 								type="text"
 								bind:value={importURL}
@@ -468,7 +475,13 @@
 									</div>
 								</div>
 							{:else}
-								<div class="empty-list">No objects found</div>
+								<div class="empty-list">
+									{#if geometries.length === 0}
+										No objects in scene
+									{:else}
+										No matches for "{searchQuery}"
+									{/if}
+								</div>
 							{/each}
 						</div>
 					</div>
@@ -784,19 +797,40 @@
 		position: absolute;
 		bottom: 100%; /* ⬆️ Ouverture vers le haut */
 		left: auto;
-		right: 0; /* ⬅️ Alignement vers la gauche */
-		width: 250px; /* Un peu plus large pour le confort */
+		right: 0;
+		width: 250px;
 		background: #0a0a0a;
 		border: 1px solid #333;
-		z-index: 1100;
-		max-height: 300px;
+		z-index: 99999; /* 🚀 Super High Z-Index */
+		max-height: 50vh; /* 📏 Limit height to viewport half */
 		overflow-y: auto;
-		box-shadow: -5px -5px 20px rgba(0, 0, 0, 0.8);
+		box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.9);
 	}
 	.dropdown-list input {
 		width: 100%;
 		border: none;
 		border-bottom: 1px solid #222;
+	}
+	.search-box {
+		position: relative;
+		width: 100%;
+	}
+
+	.clear-search {
+		position: absolute;
+		right: 4px;
+		top: 50%;
+		transform: translateY(-50%);
+		background: none;
+		border: none;
+		color: #999;
+		cursor: pointer;
+		font-size: 0.8rem;
+		padding: 0 4px;
+	}
+
+	.clear-search:hover {
+		color: #fff;
 	}
 	.item {
 		display: flex;
