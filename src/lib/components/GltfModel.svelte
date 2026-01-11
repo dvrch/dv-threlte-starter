@@ -41,6 +41,8 @@
 				gltfScene = { ...raw, nodes, materials };
 
 				if (raw.animations && raw.animations.length > 0) {
+					// Attach animations to the scene object so GLTFExporter can find them during traversal
+					raw.scene.animations = raw.animations;
 					mixer = new AnimationMixer(raw.scene);
 					raw.animations.forEach((clip: any) => {
 						mixer?.clipAction(clip).play();

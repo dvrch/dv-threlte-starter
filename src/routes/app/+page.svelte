@@ -209,12 +209,87 @@
 	});
 </script>
 
-<T.AmbientLight intensity={isPremiumEnabled ? 1.0 : 1.5} />
-<T.DirectionalLight position={[10, 10, 10]} intensity={5} castShadow />
-<T.DirectionalLight position={[-10, 5, -10]} intensity={3} color="#4287f5" />
-<T.HemisphereLight intensity={1.0} groundColor="#444444" skyColor="#ffffff" />
+<T.Group bind:ref={exportGroup}>
+	<T.AmbientLight intensity={isPremiumEnabled ? 1.0 : 1.5} />
+	<T.DirectionalLight position={[10, 10, 10]} intensity={5} castShadow />
+	<T.DirectionalLight position={[-10, 5, -10]} intensity={3} color="#4287f5" />
+	<T.HemisphereLight intensity={1.0} groundColor="#444444" skyColor="#ffffff" />
 
-<Stars />
+	<Stars />
+
+	{#if isPremiumEnabled}
+		<ScenePremiumEffects />
+	{/if}
+</T.Group>
+
+{#if isBloomEnabled}
+	<Bloom />
+{/if}
+
+{#if geometries.length > 0}
+	{#each geometries as geometry (geometry.id)}
+		{#if geometry && geometry.visible}
+			{@const isTransformed =
+				transformSettings.enabled && transformSettings.selectedId == geometry.id}
+
+			{#if typeof window !== 'undefined'}
+				<Float floatIntensity={isTransformed ? 0 : 1} floatingRange={[0, 1]}>
+					<Dynamic3DModel
+						{geometry}
+						bind:ref={modelRefs[geometry.id]}
+						onPointerDown={() => {
+							if (transformSettings.selectedId !== geometry.id) {
+								transformSettings.selectedId = geometry.id;
+								// Inform form about selection
+								window.dispatchEvent(
+									new CustomEvent('manualTransformSync', {
+										detail: {
+											id: geometry.id,
+											position: geometry.position,
+											rotation: geometry.rotation,
+											scale: geometry.scale
+										}
+									})
+								);
+							}
+						}}
+					/>
+				</Float>
+
+				{#if transformSettings.selectedId == geometry.id}
+					<Outlines color="#4db6ac" />
+				{/if}
+
+				{#if isTransformed && modelRefs[geometry.id]}
+					{#each transformSettings.modes as mode}
+						<TransformControls
+							object={modelRefs[geometry.id]}
+							{mode}
+							onstart={() => window.dispatchEvent(new CustomEvent('lockCamera'))}
+							onend={() => {
+								window.dispatchEvent(new CustomEvent('unlockCamera'));
+								window.dispatchEvent(
+									new CustomEvent('manualTransformSync', {
+										detail: {
+											id: geometry.id,
+											position: geometry.position,
+											rotation: geometry.rotation,
+											scale: geometry.scale,
+											save: true
+										}
+									})
+								);
+							}}
+							onchange={() => syncGeometry(geometry, modelRefs[geometry.id])}
+						/>
+					{/each}
+				{/if}
+			{:else}
+				<Dynamic3DModel {geometry} />
+			{/if}
+		{/if}
+	{/each}
+{/if}
 
 <HTML center>
 	{#if error}
@@ -225,81 +300,6 @@
 		<div class="empty">Aucune géométrie trouvée</div>
 	{/if}
 </HTML>
-
-{#if isPremiumEnabled}
-	<ScenePremiumEffects />
-{/if}
-
-{#if isBloomEnabled}
-	<Bloom />
-{/if}
-
-<T.Group bind:ref={exportGroup}>
-	{#if geometries.length > 0}
-		{#each geometries as geometry (geometry.id)}
-			{#if geometry && geometry.visible}
-				{@const isTransformed =
-					transformSettings.enabled && transformSettings.selectedId == geometry.id}
-
-				{#if typeof window !== 'undefined'}
-					<Float floatIntensity={isTransformed ? 0 : 1} floatingRange={[0, 1]}>
-						<Dynamic3DModel
-							{geometry}
-							bind:ref={modelRefs[geometry.id]}
-							onPointerDown={() => {
-								if (transformSettings.selectedId !== geometry.id) {
-									transformSettings.selectedId = geometry.id;
-									// Inform form about selection
-									window.dispatchEvent(
-										new CustomEvent('manualTransformSync', {
-											detail: {
-												id: geometry.id,
-												position: geometry.position,
-												rotation: geometry.rotation,
-												scale: geometry.scale
-											}
-										})
-									);
-								}
-							}}
-						/>
-					</Float>
-
-					{#if transformSettings.selectedId == geometry.id}
-						<Outlines color="#4db6ac" />
-					{/if}
-
-					{#if isTransformed && modelRefs[geometry.id]}
-						{#each transformSettings.modes as mode}
-							<TransformControls
-								object={modelRefs[geometry.id]}
-								{mode}
-								onstart={() => window.dispatchEvent(new CustomEvent('lockCamera'))}
-								onend={() => {
-									window.dispatchEvent(new CustomEvent('unlockCamera'));
-									window.dispatchEvent(
-										new CustomEvent('manualTransformSync', {
-											detail: {
-												id: geometry.id,
-												position: geometry.position,
-												rotation: geometry.rotation,
-												scale: geometry.scale,
-												save: true
-											}
-										})
-									);
-								}}
-								onchange={() => syncGeometry(geometry, modelRefs[geometry.id])}
-							/>
-						{/each}
-					{/if}
-				{:else}
-					<Dynamic3DModel {geometry} />
-				{/if}
-			{/if}
-		{/each}
-	{/if}
-</T.Group>
 
 <style>
 	.error,

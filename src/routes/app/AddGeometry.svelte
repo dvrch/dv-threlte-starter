@@ -378,66 +378,7 @@
 		}}
 		class:dragging={isDragging}
 	>
-		<div class="top-bar">
-			<div class="upload-btn" onclick={() => fileInput?.click()} role="button" tabindex="0">
-				<input
-					bind:this={fileInput}
-					type="file"
-					accept=".glb,.gltf"
-					style="display: none;"
-					onchange={(e: any) => {
-						const f = e.target.files[0];
-						if (f) {
-							file = f;
-							name = f.name.split('.')[0];
-						}
-					}}
-				/>
-				{file ? '✅' : '📤'}
-			</div>
-
-			<div class="tiny-controls-group">
-				<div class="btn-row">
-					<button
-						type="button"
-						class:active={transformModes.includes('translate')}
-						onclick={() => (transformModes = ['translate'])}>P</button
-					>
-					<button
-						type="button"
-						class:active={transformModes.includes('rotate')}
-						onclick={() => (transformModes = ['rotate'])}>R</button
-					>
-					<button
-						type="button"
-						class:active={transformModes.includes('scale')}
-						onclick={() => (transformModes = ['scale'])}>S</button
-					>
-					<button
-						type="button"
-						class="gizmo"
-						class:active={isTransformControlsEnabled}
-						onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}
-						title="Toggle Gizmo (Hand)"
-					>
-						{isEditing ? '✍️' : '🤚'}
-					</button>
-				</div>
-				<div class="btn-row">
-					<button
-						type="button"
-						class:active={isBloomActive}
-						onclick={() => (isBloomActive = !isBloomActive)}>🌸</button
-					>
-					<button
-						type="button"
-						class:active={isPremiumActive}
-						onclick={() => (isPremiumActive = !isPremiumActive)}>💎</button
-					>
-				</div>
-			</div>
-		</div>
-
+		<!-- 1. Hiérarchie Inversée : Contrôles en haut -->
 		<div class="selection-row">
 			<div
 				class="custom-dropdown"
@@ -521,18 +462,9 @@
 			</div>
 		</div>
 
-		<div class="name-type-row">
-			<select bind:value={type}>
-				{#each types as t}<option value={t}>{t}</option>{/each}
-				<option value="text">text</option>
-			</select>
-			<input type="text" bind:value={name} placeholder="Name" />
-			<input type="color" bind:value={color} />
-		</div>
-
 		<div class="transform-rows">
 			<div class="row">
-				<label onclick={() => randomizeRow('pos')} role="button" tabindex="0">POS</label>
+				<label onclick={() => randomizeRow('pos')} role="button" tabindex="0">P</label>
 				<input
 					type="number"
 					bind:value={position.x}
@@ -553,7 +485,7 @@
 				/>
 			</div>
 			<div class="row">
-				<label onclick={() => randomizeRow('rot')} role="button" tabindex="0">ROT</label>
+				<label onclick={() => randomizeRow('rot')} role="button" tabindex="0">R</label>
 				<input
 					type="number"
 					bind:value={rotation.x}
@@ -574,7 +506,7 @@
 				/>
 			</div>
 			<div class="row">
-				<label onclick={() => randomizeRow('scl')} role="button" tabindex="0">SCL</label>
+				<label onclick={() => randomizeRow('scl')} role="button" tabindex="0">S</label>
 				<input
 					type="number"
 					bind:value={scale.x}
@@ -613,14 +545,65 @@
 			</div>
 		</div>
 
-		<div class="bottom-actions">
-			<button type="submit" class="main-btn" disabled={isLoading}
-				>{isEditing ? 'SYNC' : 'ADD'}</button
-			>
-			{#if isEditing}<button type="button" class="cancel-btn" onclick={resetForm}>✖</button>{/if}
+		<div class="name-type-row">
+			<select bind:value={type}>
+				{#each types as t}<option value={t}>{t}</option>{/each}
+				<option value="text">text</option>
+			</select>
+			<input type="text" bind:value={name} placeholder="Name" />
+			<input type="color" bind:value={color} />
 		</div>
 
-		<div class="extra-footer">
+		<div class="bottom-actions">
+			<div class="extra-btns">
+				<button
+					type="button"
+					class:active={isBloomActive}
+					onclick={() => (isBloomActive = !isBloomActive)}>🌸</button
+				>
+				<button
+					type="button"
+					class:active={isPremiumActive}
+					onclick={() => (isPremiumActive = !isPremiumActive)}>💎</button
+				>
+				<button
+					type="button"
+					class="gizmo"
+					class:active={isTransformControlsEnabled}
+					onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}
+					title="Toggle Gizmo (Hand)"
+				>
+					{isEditing ? '✍️' : '🤚'}
+				</button>
+			</div>
+
+			<div class="main-btns">
+				{#if isEditing}<button type="button" class="cancel-btn" onclick={resetForm}>✖</button>{/if}
+				<button type="submit" class="main-btn" disabled={isLoading}
+					>{isEditing ? 'SYNC' : 'ADD'}</button
+				>
+			</div>
+		</div>
+
+		<!-- 2. Status & Upload en bas -->
+		<div class="footer-zone">
+			<div class="upload-btn" onclick={() => fileInput?.click()} role="button" tabindex="0">
+				<input
+					bind:this={fileInput}
+					type="file"
+					accept=".glb,.gltf"
+					style="display: none;"
+					onchange={(e: any) => {
+						const f = e.target.files[0];
+						if (f) {
+							file = f;
+							name = f.name.split('.')[0];
+						}
+					}}
+				/>
+				{file ? '✅' : '📤'}
+			</div>
+
 			<div class="port-tools">
 				<button
 					type="button"
@@ -677,8 +660,19 @@
 
 <style>
 	.form-container {
-		font-size: 0.6rem;
+		position: fixed;
+		bottom: 10px;
+		right: 10px;
+		width: 170px;
+		font-size: 0.55rem;
 		color: #ddd;
+		background: rgba(10, 10, 10, 0.95);
+		backdrop-filter: blur(10px);
+		border: 1px solid #333;
+		border-radius: 8px;
+		padding: 6px;
+		z-index: 1000;
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 	}
 	button,
 	input,
@@ -687,32 +681,36 @@
 		border: 1px solid #333;
 		color: #eee;
 		border-radius: 2px;
-		font-size: 0.6rem;
+		font-size: 0.55rem;
 		padding: 2px;
 	}
 	button {
 		cursor: pointer;
 	}
-	form.dragging {
-		background: rgba(77, 182, 172, 0.2);
-		border: 1px dashed #4db6ac;
+	form {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
 	}
 
-	.top-bar {
+	.footer-zone {
 		display: flex;
 		justify-content: space-between;
-		margin-bottom: 6px;
+		align-items: center;
+		padding-top: 4px;
+		border-top: 1px solid #222;
 	}
+
 	.upload-btn {
-		width: 30px;
-		height: 30px;
+		width: 24px;
+		height: 24px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		background: #222;
 		border: 1px dashed #444;
 		border-radius: 4px;
-		font-size: 1rem;
+		font-size: 0.8rem;
 	}
 
 	.tiny-controls-group {
@@ -894,33 +892,58 @@
 		opacity: 0.5;
 	}
 
+	.bottom-actions {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 4px;
+	}
+	.extra-btns {
+		display: flex;
+		gap: 2px;
+	}
+	.extra-btns button {
+		width: 20px;
+		height: 20px;
+	}
+	.main-btns {
+		display: flex;
+		gap: 2px;
+	}
+	.main-btn {
+		background: #4db6ac;
+		color: #000;
+		font-weight: bold;
+		padding: 2px 10px;
+	}
+	.cancel-btn {
+		color: #f44336;
+	}
+
 	.name-type-row {
 		display: grid;
-		grid-template-columns: 50px 1fr 20px;
+		grid-template-columns: 45px 1fr 20px;
 		gap: 2px;
-		margin-bottom: 4px;
 	}
 
 	.transform-rows {
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
-		background: rgba(0, 0, 0, 0.2);
+		background: rgba(255, 255, 255, 0.03);
 		padding: 4px;
 		border-radius: 4px;
-		margin-bottom: 4px;
 	}
 	.row {
 		display: grid;
-		grid-template-columns: 25px 1fr 1fr 1fr auto;
+		grid-template-columns: 20px 1fr 1fr 1fr auto;
 		gap: 2px;
 		align-items: center;
 	}
 	.row label {
 		font-size: 0.5rem;
-		color: #666;
+		color: #4db6ac;
 		cursor: pointer;
-		font-weight: bold;
 	}
 	.row input {
 		width: 100%;
@@ -934,10 +957,6 @@
 		border-color: #4db6ac;
 	}
 
-	.bottom-actions {
-		display: flex;
-		gap: 2px;
-	}
 	.main-btn {
 		flex: 1;
 		background: #4db6ac;
@@ -952,32 +971,22 @@
 		border: none;
 	}
 
-	.extra-footer {
-		margin-top: 6px;
-		border-top: 1px solid #222;
-		padding-top: 4px;
-	}
 	.port-tools {
 		display: flex;
 		gap: 2px;
 		align-items: center;
+		flex: 1;
 	}
 	.port-tools button {
 		flex: 1;
 		font-weight: bold;
-		font-size: 0.6rem;
+		padding: 2px;
 	}
 	.fmt {
 		color: #888;
-		flex: 1.5 !important;
 	}
 	.reset-btn {
 		color: #ef5350;
-		border-color: rgba(244, 67, 54, 0.4);
-		background: rgba(244, 67, 54, 0.05);
-	}
-	.reset-btn:hover {
-		background: rgba(244, 67, 54, 0.2);
 	}
 	.item.selected span {
 		color: #fff;
