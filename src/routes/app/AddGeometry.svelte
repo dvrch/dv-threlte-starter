@@ -804,7 +804,7 @@
 		right: 0;
 		background: #0a0a0a;
 		border: 1px solid #333;
-		z-index: 100;
+		z-index: 2000; /* 🚀 High Z-Index to stay on top */
 		max-height: 150px;
 		overflow-y: auto;
 		box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.5);
