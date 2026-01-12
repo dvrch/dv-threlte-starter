@@ -561,22 +561,46 @@
 		</div>
 
 		<!-- Moved from top-bar -->
-		<div class="top-bar" style="margin-top: 4px; margin-bottom: 0;">
-			<div class="upload-btn" onclick={() => fileInput?.click()} role="button" tabindex="0">
-				<input
-					bind:this={fileInput}
-					type="file"
-					accept=".glb,.gltf"
-					style="display: none;"
-					onchange={(e: any) => {
-						const f = e.target.files[0];
-						if (f) {
-							file = f;
-							name = f.name.split('.')[0];
-						}
+		<div class="top-bar" style="margin-top: 4px; margin-bottom: 0px; gap: 4px;">
+			<div class="upload-zone" style="display:flex; gap:2px; flex:1;">
+				<!-- Added Port Tools from Footer -->
+				<button
+					type="button"
+					class="fmt"
+					onclick={() => (portFormatIndex = (portFormatIndex + 1) % portFormats.length)}
+					title="Format">{portFormat.toUpperCase().slice(0, 3)}</button
+				>
+				<button
+					type="button"
+					onclick={() => {
+						if (portFormat === 'json') handleExport();
+						else if (portFormat === 'sqlite') handleExportSQLite();
+						else if (portFormat === 'csv') geometryService.exportSceneToCSV();
 					}}
-				/>
-				{file ? '✅' : '📤'}
+					title="Save">💾</button
+				>
+				<button
+					type="button"
+					onclick={() => document.getElementById('scene-import')?.click()}
+					title="Open">📂</button
+				>
+
+				<div class="upload-btn" onclick={() => fileInput?.click()} role="button" tabindex="0">
+					<input
+						bind:this={fileInput}
+						type="file"
+						accept=".glb,.gltf"
+						style="display: none;"
+						onchange={(e: any) => {
+							const f = e.target.files[0];
+							if (f) {
+								file = f;
+								name = f.name.split('.')[0];
+							}
+						}}
+					/>
+					{file ? '✅' : '📤'}
+				</div>
 			</div>
 
 			<div class="tiny-controls-group">
@@ -621,44 +645,6 @@
 			</div>
 		</div>
 
-		<div class="extra-footer">
-			<div class="port-tools">
-				<button
-					type="button"
-					class="fmt"
-					onclick={() => (portFormatIndex = (portFormatIndex + 1) % portFormats.length)}
-					>{portFormat.toUpperCase()}</button
-				>
-				<button
-					type="button"
-					onclick={() => {
-						if (portFormat === 'json') handleExport();
-						else if (portFormat === 'sqlite') handleExportSQLite();
-						else if (portFormat === 'csv') geometryService.exportSceneToCSV();
-					}}
-					title="Save">💾</button
-				>
-				<button
-					type="button"
-					onclick={() => document.getElementById('scene-import')?.click()}
-					title="Open">📂</button
-				>
-				<button
-					type="button"
-					onclick={() => window.dispatchEvent(new Event('requestSceneExportGLB'))}
-					title="Export GLB"
-					style="color: #4db6ac; border-color: #4db6ac;">📦</button
-				>
-				<button
-					type="button"
-					class="reset-btn"
-					onclick={() =>
-						(confirm('Hard Reset Scene?') && localStorage.removeItem('dv_threlte_geometries_v1')) ||
-						window.location.reload()}
-					title="Reset">🔄</button
-				>
-			</div>
-		</div>
 		<input
 			id="scene-import"
 			type="file"
@@ -750,6 +736,8 @@
 
 	.selection-row {
 		margin-bottom: 4px;
+		position: relative;
+		z-index: 500;
 	}
 	.custom-dropdown {
 		position: relative;
@@ -912,7 +900,7 @@
 
 	.name-type-row {
 		display: grid;
-		grid-template-columns: 50px 1fr 20px;
+		grid-template-columns: 50px 1fr 25px;
 		gap: 2px;
 		margin-bottom: 4px;
 	}
