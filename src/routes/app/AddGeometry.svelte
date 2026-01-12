@@ -664,11 +664,21 @@
 
 <style>
 	.form-container {
-		width: 100%;
+		position: absolute;
+		bottom: 10px;
+		left: 10px;
+		width: 280px;
+		max-height: 90vh; /* Allow growing but cap at screen height */
+		background: rgba(0, 0, 0, 0.85);
+		padding: 10px;
+		border-radius: 8px;
+		z-index: 1000;
 		font-size: 0.6rem;
 		color: #ddd;
-		overflow: visible;
-		/* Removing absolute pos/bottom to avoid collapsing issues reported by user */
+		overflow-y: auto; /* allow scroll if too tall */
+		overflow-x: visible;
+		display: flex;
+		flex-direction: column;
 	}
 	button,
 	input,
@@ -779,18 +789,15 @@
 		transform: rotate(180deg);
 	}
 	.dropdown-list {
-		position: absolute;
-		bottom: 100%;
-		left: 0;
-		right: 0;
-		background: #0a0a0a;
-		border: 1px solid #333;
-		z-index: 2000; /* 🚀 High Z-Index to stay on top */
-		max-height: 150px;
+		position: relative;
+		width: 100%;
+		background: #111;
+		border-top: 1px solid #333;
+		max-height: 200px;
 		overflow-y: auto;
-		box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.5);
-		scrollbar-width: none; /* Hide scrollbar Firefox */
-		-ms-overflow-style: none; /* Hide scrollbar IE/Edge */
+		/* box-shadow: removed to look integrated */
+		scrollbar-width: none;
+		-ms-overflow-style: none;
 	}
 	.dropdown-list::-webkit-scrollbar {
 		display: none; /* Hide scrollbar Chrome/Safari */
