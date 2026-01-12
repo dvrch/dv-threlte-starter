@@ -378,66 +378,6 @@
 		}}
 		class:dragging={isDragging}
 	>
-		<div class="top-bar">
-			<div class="upload-btn" onclick={() => fileInput?.click()} role="button" tabindex="0">
-				<input
-					bind:this={fileInput}
-					type="file"
-					accept=".glb,.gltf"
-					style="display: none;"
-					onchange={(e: any) => {
-						const f = e.target.files[0];
-						if (f) {
-							file = f;
-							name = f.name.split('.')[0];
-						}
-					}}
-				/>
-				{file ? '✅' : '📤'}
-			</div>
-
-			<div class="tiny-controls-group">
-				<div class="btn-row">
-					<button
-						type="button"
-						class:active={transformModes.includes('translate')}
-						onclick={() => (transformModes = ['translate'])}>P</button
-					>
-					<button
-						type="button"
-						class:active={transformModes.includes('rotate')}
-						onclick={() => (transformModes = ['rotate'])}>R</button
-					>
-					<button
-						type="button"
-						class:active={transformModes.includes('scale')}
-						onclick={() => (transformModes = ['scale'])}>S</button
-					>
-					<button
-						type="button"
-						class="gizmo"
-						class:active={isTransformControlsEnabled}
-						onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}
-						title="Toggle Gizmo (Hand)"
-					>
-						{isEditing ? '✍️' : '🤚'}
-					</button>
-				</div>
-				<div class="btn-row">
-					<button
-						type="button"
-						class:active={isBloomActive}
-						onclick={() => (isBloomActive = !isBloomActive)}>🌸</button
-					>
-					<button
-						type="button"
-						class:active={isPremiumActive}
-						onclick={() => (isPremiumActive = !isPremiumActive)}>💎</button
-					>
-				</div>
-			</div>
-		</div>
-
 		<div class="selection-row">
 			<div
 				class="custom-dropdown"
@@ -620,6 +560,67 @@
 			{#if isEditing}<button type="button" class="cancel-btn" onclick={resetForm}>✖</button>{/if}
 		</div>
 
+		<!-- Moved from top-bar -->
+		<div class="top-bar" style="margin-top: 4px; margin-bottom: 0;">
+			<div class="upload-btn" onclick={() => fileInput?.click()} role="button" tabindex="0">
+				<input
+					bind:this={fileInput}
+					type="file"
+					accept=".glb,.gltf"
+					style="display: none;"
+					onchange={(e: any) => {
+						const f = e.target.files[0];
+						if (f) {
+							file = f;
+							name = f.name.split('.')[0];
+						}
+					}}
+				/>
+				{file ? '✅' : '📤'}
+			</div>
+
+			<div class="tiny-controls-group">
+				<div class="btn-row">
+					<button
+						type="button"
+						class:active={transformModes.includes('translate')}
+						onclick={() => (transformModes = ['translate'])}>P</button
+					>
+					<button
+						type="button"
+						class:active={transformModes.includes('rotate')}
+						onclick={() => (transformModes = ['rotate'])}>R</button
+					>
+					<button
+						type="button"
+						class:active={transformModes.includes('scale')}
+						onclick={() => (transformModes = ['scale'])}>S</button
+					>
+					<button
+						type="button"
+						class="gizmo"
+						class:active={isTransformControlsEnabled}
+						onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}
+						title="Toggle Gizmo (Hand)"
+					>
+						{isEditing ? '✍️' : '🤚'}
+					</button>
+				</div>
+				<div class="btn-row">
+					<button
+						type="button"
+						class:active={isBloomActive}
+						onclick={() => (isBloomActive = !isBloomActive)}>🌸</button
+					>
+					<button
+						type="button"
+						class:active={isPremiumActive}
+						onclick={() => (isPremiumActive = !isPremiumActive)}>💎</button
+					>
+				</div>
+			</div>
+		</div>
+
 		<div class="extra-footer">
 			<div class="port-tools">
 				<button
@@ -688,6 +689,7 @@
 		z-index: 1000;
 		font-size: 0.6rem;
 		color: #ddd;
+		overflow: visible; /* Ensure dropdowns aren't clipped */
 	}
 	button,
 	input,
@@ -806,6 +808,11 @@
 		max-height: 150px;
 		overflow-y: auto;
 		box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.5);
+		scrollbar-width: none; /* Hide scrollbar Firefox */
+		-ms-overflow-style: none; /* Hide scrollbar IE/Edge */
+	}
+	.dropdown-list::-webkit-scrollbar {
+		display: none; /* Hide scrollbar Chrome/Safari */
 	}
 	.dropdown-list input {
 		width: 100%;
@@ -859,7 +866,13 @@
 
 	.scroll-list {
 		max-height: 250px;
+		max-height: 250px;
 		overflow-y: auto;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+	.scroll-list::-webkit-scrollbar {
+		display: none;
 	}
 
 	.item {
