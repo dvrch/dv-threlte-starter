@@ -49,10 +49,8 @@
 	let isBloomActive = $state(savedSettings.isBloomActive);
 	let isPremiumActive = $state(savedSettings.isPremiumActive);
 	let isTransformControlsEnabled = $state(savedSettings.isTransformControlsEnabled);
-	let transformModes = $state<('translate' | 'rotate' | 'scale')[]>(
-		savedSettings.transformModes || ['translate']
-	); // Default
-	let searchQuery = $state('');
+	let transformModes = $state<('translate' | 'rotate' | 'scale')[]>(savedSettings.transformModes);
+	let searchQuery = $state(savedSettings.searchQuery);
 	let portFormatIndex = $state(
 		portFormats.indexOf(savedSettings.portFormat as any) === -1
 			? 0
@@ -121,7 +119,7 @@
 			isTransformControlsEnabled,
 			transformModes,
 			portFormat,
-			searchQuery: ''
+			searchQuery
 		});
 	});
 
@@ -372,34 +370,79 @@
 		ondrop={(e) => {
 			e.preventDefault();
 			isDragging = false;
-			const f = e.dataTransfer?.files[0];
-			if (!f) return;
-
-			const ext = f.name.split('.').pop()?.toLowerCase() || '';
-			// 📥 Gestion intelligente du Drag & Drop pour les fichiers de scène
-			if (['csv', 'json', 'sqlite', 'db'].includes(ext)) {
-				geometryService.importScene(f).then(() => {
-					loadGeometries();
-					window.dispatchEvent(new Event('modelAdded'));
-					addToast('Scene Imported via D&D', 'success');
-				});
-				return;
+			if (e.dataTransfer?.files[0]) {
+				file = e.dataTransfer.files[0];
+				name = file.name.split('.')[0];
+				setTimeout(handleSubmit, 100);
 			}
-
-			file = f;
-			name = f.name.split('.')[0];
-			setTimeout(handleSubmit, 100);
 		}}
 		class:dragging={isDragging}
 	>
-		<!-- 1. Détails & Objets -->
+		<div class="top-bar">
+			<div class="upload-btn" onclick={() => fileInput?.click()} role="button" tabindex="0">
+				<input
+					bind:this={fileInput}
+					type="file"
+					accept=".glb,.gltf"
+					style="display: none;"
+					onchange={(e: any) => {
+						const f = e.target.files[0];
+						if (f) {
+							file = f;
+							name = f.name.split('.')[0];
+						}
+					}}
+				/>
+				{file ? '✅' : '📤'}
+			</div>
+
+			<div class="tiny-controls-group">
+				<div class="btn-row">
+					<button
+						type="button"
+						class:active={transformModes.includes('translate')}
+						onclick={() => (transformModes = ['translate'])}>P</button
+					>
+					<button
+						type="button"
+						class:active={transformModes.includes('rotate')}
+						onclick={() => (transformModes = ['rotate'])}>R</button
+					>
+					<button
+						type="button"
+						class:active={transformModes.includes('scale')}
+						onclick={() => (transformModes = ['scale'])}>S</button
+					>
+					<button
+						type="button"
+						class="gizmo"
+						class:active={isTransformControlsEnabled}
+						onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}
+						title="Toggle Gizmo (Hand)"
+					>
+						{isEditing ? '✍️' : '🤚'}
+					</button>
+				</div>
+				<div class="btn-row">
+					<button
+						type="button"
+						class:active={isBloomActive}
+						onclick={() => (isBloomActive = !isBloomActive)}>🌸</button
+					>
+					<button
+						type="button"
+						class:active={isPremiumActive}
+						onclick={() => (isPremiumActive = !isPremiumActive)}>💎</button
+					>
+				</div>
+			</div>
+		</div>
+
 		<div class="selection-row">
 			<div
 				class="custom-dropdown"
 				onmouseenter={() => (isDropdownOpen = true)}
 				onmouseleave={() => (isDropdownOpen = false)}
-				role="button"
-				tabindex="0"
 			>
 				<div class="dropdown-header">
 					<span class="selected-label">
@@ -411,18 +454,8 @@
 					</span>
 					<div class="bulk-tools">
 						{#if selectedIds.size > 0}
-							<button
-								type="button"
-								class="bulk-btn del"
-								onclick={bulkDelete}
-								title="Delete Selected">🗑️</button
-							>
-							<button
-								type="button"
-								class="bulk-btn hide"
-								onclick={bulkHide}
-								title="Toggle Visibility">🕶️</button
-							>
+							<button type="button" class="bulk-btn del" onclick={bulkDelete}>🗑️</button>
+							<button type="button" class="bulk-btn hide" onclick={bulkHide}>🕶️</button>
 						{/if}
 						<div class="dropdown-trigger" onclick={() => (isDropdownOpen = !isDropdownOpen)}>
 							<span class="chevron" class:open={isDropdownOpen}>V</span>
@@ -435,13 +468,13 @@
 							<input
 								type="text"
 								bind:value={searchQuery}
-								placeholder="Filter objects..."
+								placeholder="Filter..."
 								onclick={(e) => e.stopPropagation()}
 							/>
 							<input
 								type="text"
 								bind:value={importURL}
-								placeholder="Paste URL to import..."
+								placeholder="URL..."
 								onclick={(e) => e.stopPropagation()}
 								onkeydown={(e) => e.key === 'Enter' && handleURLImport()}
 							/>
@@ -480,13 +513,7 @@
 									</div>
 								</div>
 							{:else}
-								<div class="empty-list">
-									{#if geometries.length === 0}
-										No objects in scene
-									{:else}
-										No matches for "{searchQuery}"
-									{/if}
-								</div>
+								<div class="empty-list">No objects found</div>
 							{/each}
 						</div>
 					</div>
@@ -494,9 +521,18 @@
 			</div>
 		</div>
 
+		<div class="name-type-row">
+			<select bind:value={type}>
+				{#each types as t}<option value={t}>{t}</option>{/each}
+				<option value="text">text</option>
+			</select>
+			<input type="text" bind:value={name} placeholder="Name" />
+			<input type="color" bind:value={color} />
+		</div>
+
 		<div class="transform-rows">
 			<div class="row">
-				<label onclick={() => randomizeRow('pos')} role="button" tabindex="0">P</label>
+				<label onclick={() => randomizeRow('pos')} role="button" tabindex="0">POS</label>
 				<input
 					type="number"
 					bind:value={position.x}
@@ -517,7 +553,7 @@
 				/>
 			</div>
 			<div class="row">
-				<label onclick={() => randomizeRow('rot')} role="button" tabindex="0">R</label>
+				<label onclick={() => randomizeRow('rot')} role="button" tabindex="0">ROT</label>
 				<input
 					type="number"
 					bind:value={rotation.x}
@@ -538,7 +574,7 @@
 				/>
 			</div>
 			<div class="row">
-				<label onclick={() => randomizeRow('scl')} role="button" tabindex="0">S</label>
+				<label onclick={() => randomizeRow('scl')} role="button" tabindex="0">SCL</label>
 				<input
 					type="number"
 					bind:value={scale.x}
@@ -577,88 +613,15 @@
 			</div>
 		</div>
 
-		<div class="name-type-row">
-			<select bind:value={type}>
-				{#each types as t}<option value={t}>{t}</option>{/each}
-				<option value="text">text</option>
-			</select>
-			<input type="text" bind:value={name} placeholder="Name" />
-			<input type="color" bind:value={color} />
-		</div>
-
 		<div class="bottom-actions">
-			<div class="extra-btns">
-				<button
-					type="button"
-					class:active={isBloomActive}
-					onclick={() => (isBloomActive = !isBloomActive)}>🌸</button
-				>
-				<button
-					type="button"
-					class:active={isPremiumActive}
-					onclick={() => (isPremiumActive = !isPremiumActive)}>💎</button
-				>
-				<div class="gizmo-group">
-					<button
-						type="button"
-						class="gizmo"
-						class:active={isTransformControlsEnabled}
-						onclick={() => (isTransformControlsEnabled = !isTransformControlsEnabled)}
-						title="Toggle Gizmo"
-					>
-						{isEditing ? '✍️' : '🤚'}
-					</button>
-					{#if isTransformControlsEnabled}
-						<button
-							type="button"
-							class:active={transformModes.includes('translate')}
-							onclick={() => (transformModes = ['translate'])}
-							title="Move">T</button
-						>
-						<button
-							type="button"
-							class:active={transformModes.includes('rotate')}
-							onclick={() => (transformModes = ['rotate'])}
-							title="Rotate">R</button
-						>
-						<button
-							type="button"
-							class:active={transformModes.includes('scale')}
-							onclick={() => (transformModes = ['scale'])}
-							title="Scale">S</button
-						>
-					{/if}
-				</div>
-			</div>
-
-			<div class="main-btns">
-				{#if isEditing}<button type="button" class="cancel-btn" onclick={resetForm}>✖</button>{/if}
-				<button type="submit" class="main-btn" disabled={isLoading}
-					>{isEditing ? 'SYNC' : 'ADD'}</button
-				>
-			</div>
+			<button type="submit" class="main-btn" disabled={isLoading}
+				>{isEditing ? 'SYNC' : 'ADD'}</button
+			>
+			{#if isEditing}<button type="button" class="cancel-btn" onclick={resetForm}>✖</button>{/if}
 		</div>
 
-		<!-- 2. Zone d'Upload / Status (Dernier car visible en réduit) -->
-		<div class="footer-zone">
+		<div class="extra-footer">
 			<div class="port-tools">
-				<button type="button" class="upload-mini" onclick={() => fileInput?.click()} title="Upload">
-					<input
-						bind:this={fileInput}
-						type="file"
-						accept=".glb,.gltf"
-						style="display: none;"
-						onchange={(e: any) => {
-							const f = e.target.files[0];
-							if (f) {
-								file = f;
-								name = f.name.split('.')[0];
-							}
-						}}
-					/>
-					{file ? '✅' : '📤'}
-				</button>
-
 				<button
 					type="button"
 					class="fmt"
@@ -683,19 +646,18 @@
 					type="button"
 					onclick={() => window.dispatchEvent(new Event('requestSceneExportGLB'))}
 					title="Export GLB"
-					style="color: #4db6ac;">📦</button
+					style="color: #4db6ac; border-color: #4db6ac;">📦</button
 				>
 				<button
 					type="button"
 					class="reset-btn"
 					onclick={() =>
-						(confirm('Hard Reset?') && localStorage.removeItem('dv_threlte_geometries_v1')) ||
+						(confirm('Hard Reset Scene?') && localStorage.removeItem('dv_threlte_geometries_v1')) ||
 						window.location.reload()}
 					title="Reset">🔄</button
 				>
 			</div>
 		</div>
-
 		<input
 			id="scene-import"
 			type="file"
@@ -715,8 +677,7 @@
 
 <style>
 	.form-container {
-		width: 100%;
-		font-size: 0.5rem;
+		font-size: 0.6rem;
 		color: #ddd;
 	}
 	button,
@@ -726,31 +687,58 @@
 		border: 1px solid #333;
 		color: #eee;
 		border-radius: 2px;
-		font-size: 0.55rem;
+		font-size: 0.6rem;
 		padding: 2px;
 	}
 	button {
 		cursor: pointer;
 	}
-	form {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
+	form.dragging {
+		background: rgba(77, 182, 172, 0.2);
+		border: 1px dashed #4db6ac;
 	}
 
-	.footer-zone {
+	.top-bar {
+		display: flex;
+		justify-content: space-between;
+		margin-bottom: 6px;
+	}
+	.upload-btn {
+		width: 30px;
+		height: 30px;
 		display: flex;
 		align-items: center;
-		padding-top: 2px;
+		justify-content: center;
+		background: #222;
+		border: 1px dashed #444;
+		border-radius: 4px;
+		font-size: 1rem;
 	}
 
-	.upload-mini {
-		background: none;
-		border: none;
-		font-size: 0.7rem;
-		padding: 0 4px;
+	.tiny-controls-group {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
 	}
-
+	.btn-row {
+		display: flex;
+		gap: 2px;
+		justify-content: flex-end;
+	}
+	.btn-row button {
+		width: 18px;
+		height: 18px;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.55rem;
+	}
+	.btn-row button.active {
+		background: #4db6ac;
+		color: #000;
+		border-color: #4db6ac;
+	}
 	.gizmo.active {
 		background: #ff9800 !important;
 		border-color: #ff9800 !important;
@@ -800,24 +788,31 @@
 	}
 	.dropdown-list {
 		position: absolute;
-		bottom: 100%; /* ⬆️ Ouverture vers le haut */
-		left: auto;
+		bottom: 100%;
+		left: 0;
 		right: 0;
-		width: 250px;
 		background: #0a0a0a;
 		border: 1px solid #333;
-		z-index: 99999; /* 🚀 Super High Z-Index */
-		max-height: 50vh; /* 📏 Limit height to viewport half */
+		z-index: 100;
+		max-height: 150px;
 		overflow-y: auto;
-		box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.9);
+		box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.5);
 	}
 	.dropdown-list input {
 		width: 100%;
 		border: none;
 		border-bottom: 1px solid #222;
 	}
-	/* .search-box removed */
-
+	.item {
+		display: flex;
+		align-items: center;
+		padding: 2px 6px;
+		border-bottom: 1px solid #111;
+	}
+	.item span {
+		flex: 1;
+		cursor: pointer;
+	}
 	.bulk-tools {
 		display: flex;
 		align-items: center;
@@ -842,26 +837,15 @@
 		color: white;
 	}
 
-	.gizmo-group {
-		display: flex;
-		gap: 1px;
-	}
-	.gizmo-group button {
-		padding: 0 4px;
-		min-width: 16px;
-	}
-	.gizmo-group button.active {
-		color: #4db6ac;
-		border-color: #4db6ac;
-	}
-
 	.top-list {
 		display: flex;
 		flex-direction: column;
 		background: #111;
 		border-bottom: 2px solid #222;
-		padding: 4px;
-		gap: 4px;
+	}
+	.top-list input {
+		height: 20px;
+		background: #000;
 	}
 
 	.scroll-list {
@@ -911,58 +895,33 @@
 		opacity: 0.5;
 	}
 
-	.bottom-actions {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		gap: 4px;
-	}
-	.extra-btns {
-		display: flex;
-		gap: 2px;
-	}
-	.extra-btns button {
-		width: 20px;
-		height: 20px;
-	}
-	.main-btns {
-		display: flex;
-		gap: 2px;
-	}
-	.main-btn {
-		background: #4db6ac;
-		color: #000;
-		font-weight: bold;
-		padding: 2px 10px;
-	}
-	.cancel-btn {
-		color: #f44336;
-	}
-
 	.name-type-row {
 		display: grid;
-		grid-template-columns: 45px 1fr 20px;
+		grid-template-columns: 50px 1fr 20px;
 		gap: 2px;
+		margin-bottom: 4px;
 	}
 
 	.transform-rows {
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
-		background: rgba(255, 255, 255, 0.03);
+		background: rgba(0, 0, 0, 0.2);
 		padding: 4px;
 		border-radius: 4px;
+		margin-bottom: 4px;
 	}
 	.row {
 		display: grid;
-		grid-template-columns: 20px 1fr 1fr 1fr auto;
+		grid-template-columns: 25px 1fr 1fr 1fr auto;
 		gap: 2px;
 		align-items: center;
 	}
 	.row label {
 		font-size: 0.5rem;
-		color: #4db6ac;
+		color: #666;
 		cursor: pointer;
+		font-weight: bold;
 	}
 	.row input {
 		width: 100%;
@@ -976,6 +935,10 @@
 		border-color: #4db6ac;
 	}
 
+	.bottom-actions {
+		display: flex;
+		gap: 2px;
+	}
 	.main-btn {
 		flex: 1;
 		background: #4db6ac;
@@ -990,22 +953,32 @@
 		border: none;
 	}
 
+	.extra-footer {
+		margin-top: 6px;
+		border-top: 1px solid #222;
+		padding-top: 4px;
+	}
 	.port-tools {
 		display: flex;
 		gap: 2px;
 		align-items: center;
-		flex: 1;
 	}
 	.port-tools button {
 		flex: 1;
 		font-weight: bold;
-		padding: 2px;
+		font-size: 0.6rem;
 	}
 	.fmt {
 		color: #888;
+		flex: 1.5 !important;
 	}
 	.reset-btn {
 		color: #ef5350;
+		border-color: rgba(244, 67, 54, 0.4);
+		background: rgba(244, 67, 54, 0.05);
+	}
+	.reset-btn:hover {
+		background: rgba(244, 67, 54, 0.2);
 	}
 	.item.selected span {
 		color: #fff;
