@@ -900,7 +900,7 @@
 
 	.name-type-row {
 		display: grid;
-		grid-template-columns: 50px 1fr 25px;
+		grid-template-columns: 50px 1fr 25px; /* Wider color picker */
 		gap: 2px;
 		margin-bottom: 4px;
 	}
@@ -956,33 +956,7 @@
 		border: none;
 	}
 
-	.extra-footer {
-		margin-top: 6px;
-		border-top: 1px solid #222;
-		padding-top: 4px;
-	}
-	.port-tools {
-		display: flex;
-		gap: 2px;
-		align-items: center;
-	}
-	.port-tools button {
-		flex: 1;
-		font-weight: bold;
-		font-size: 0.6rem;
-	}
-	.fmt {
-		color: #888;
-		flex: 1.5 !important;
-	}
-	.reset-btn {
-		color: #ef5350;
-		border-color: rgba(244, 67, 54, 0.4);
-		background: rgba(244, 67, 54, 0.05);
-	}
-	.reset-btn:hover {
-		background: rgba(244, 67, 54, 0.2);
-	}
+	/* .port-tools removed - merged into top-bar */
 	.item.selected span {
 		color: #fff;
 		text-shadow: 0 0 5px #4db6ac;
