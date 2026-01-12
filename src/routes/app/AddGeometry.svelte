@@ -678,18 +678,11 @@
 
 <style>
 	.form-container {
-		position: absolute; /* 📍 Fixe position relative to scene */
-		bottom: 10px; /* ⬇️ Anchor to bottom */
-		left: 10px;
-		width: 280px; /* Fixed width for consistency */
-		max-height: 90vh; /* Prevent overflow */
-		background: rgba(0, 0, 0, 0.8); /* readable background */
-		padding: 10px;
-		border-radius: 8px;
-		z-index: 1000;
+		width: 100%;
 		font-size: 0.6rem;
 		color: #ddd;
-		overflow: visible; /* Ensure dropdowns aren't clipped */
+		overflow: visible;
+		/* Removing absolute pos/bottom to avoid collapsing issues reported by user */
 	}
 	button,
 	input,
