@@ -562,30 +562,9 @@
 
 		<!-- Moved from top-bar -->
 		<div class="top-bar" style="margin-top: 4px; margin-bottom: 0px; gap: 4px;">
-			<div class="upload-zone" style="display:flex; gap:2px; flex:1;">
-				<!-- Added Port Tools from Footer -->
-				<button
-					type="button"
-					class="fmt"
-					onclick={() => (portFormatIndex = (portFormatIndex + 1) % portFormats.length)}
-					title="Format">{portFormat.toUpperCase().slice(0, 3)}</button
-				>
-				<button
-					type="button"
-					onclick={() => {
-						if (portFormat === 'json') handleExport();
-						else if (portFormat === 'sqlite') handleExportSQLite();
-						else if (portFormat === 'csv') geometryService.exportSceneToCSV();
-					}}
-					title="Save">💾</button
-				>
-				<button
-					type="button"
-					onclick={() => document.getElementById('scene-import')?.click()}
-					title="Open">📂</button
-				>
-
-				<div class="upload-btn" onclick={() => fileInput?.click()} role="button" tabindex="0">
+			<div class="upload-zone">
+				<!-- Big Upload Button on Left -->
+				<div class="upload-btn large" onclick={() => fileInput?.click()} role="button" tabindex="0">
 					<input
 						bind:this={fileInput}
 						type="file"
@@ -599,7 +578,36 @@
 							}
 						}}
 					/>
-					{file ? '✅' : '📤'}
+					<div style="font-size: 1.8rem; line-height: 1;">{file ? '✅' : '📤'}</div>
+				</div>
+
+				<!-- Column of Utility Buttons -->
+				<div class="utility-col">
+					<div class="row-half">
+						<button
+							type="button"
+							class="fmt"
+							onclick={() => (portFormatIndex = (portFormatIndex + 1) % portFormats.length)}
+							title="Format">{portFormat.toUpperCase().slice(0, 3)}</button
+						>
+						<button
+							type="button"
+							onclick={() => {
+								if (portFormat === 'json') handleExport();
+								else if (portFormat === 'sqlite') handleExportSQLite();
+								else if (portFormat === 'csv') geometryService.exportSceneToCSV();
+							}}
+							title="Save">💾</button
+						>
+					</div>
+					<div class="row-half">
+						<button
+							type="button"
+							class="full-width"
+							onclick={() => document.getElementById('scene-import')?.click()}
+							title="Open">📂 Open</button
+						>
+					</div>
 				</div>
 			</div>
 
@@ -668,15 +676,14 @@
 		bottom: 10px;
 		left: 10px;
 		width: 280px;
-		max-height: 90vh; /* Allow growing but cap at screen height */
+		max-height: 90vh;
 		background: rgba(0, 0, 0, 0.85);
 		padding: 10px;
 		border-radius: 8px;
 		z-index: 1000;
 		font-size: 0.6rem;
 		color: #ddd;
-		overflow-y: auto; /* allow scroll if too tall */
-		overflow-x: visible;
+		overflow: visible; /* No scrollbars on main container */
 		display: flex;
 		flex-direction: column;
 	}
@@ -703,16 +710,35 @@
 		justify-content: space-between;
 		margin-bottom: 6px;
 	}
-	.upload-btn {
-		width: 30px;
-		height: 30px;
+	.upload-zone {
+		display: flex;
+		gap: 4px;
+		flex: 1;
+	}
+	.upload-btn.large {
+		width: 40px;
+		height: 44px; /* ~2 lines height */
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		background: #222;
 		border: 1px dashed #444;
 		border-radius: 4px;
-		font-size: 1rem;
+		cursor: pointer;
+	}
+	.utility-col {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		flex: 1;
+	}
+	.row-half {
+		display: flex;
+		gap: 2px;
+		height: 21px;
+	}
+	.row-half button {
+		flex: 1;
 	}
 
 	.tiny-controls-group {
