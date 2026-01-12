@@ -398,6 +398,8 @@
 				class="custom-dropdown"
 				onmouseenter={() => (isDropdownOpen = true)}
 				onmouseleave={() => (isDropdownOpen = false)}
+				role="button"
+				tabindex="0"
 			>
 				<div class="dropdown-header">
 					<span class="selected-label">
@@ -409,8 +411,18 @@
 					</span>
 					<div class="bulk-tools">
 						{#if selectedIds.size > 0}
-							<button type="button" class="bulk-btn del" onclick={bulkDelete}>🗑️</button>
-							<button type="button" class="bulk-btn hide" onclick={bulkHide}>🕶️</button>
+							<button
+								type="button"
+								class="bulk-btn del"
+								onclick={bulkDelete}
+								title="Delete Selected">🗑️</button
+							>
+							<button
+								type="button"
+								class="bulk-btn hide"
+								onclick={bulkHide}
+								title="Toggle Visibility">🕶️</button
+							>
 						{/if}
 						<div class="dropdown-trigger" onclick={() => (isDropdownOpen = !isDropdownOpen)}>
 							<span class="chevron" class:open={isDropdownOpen}>V</span>
@@ -420,34 +432,19 @@
 				{#if isDropdownOpen}
 					<div class="dropdown-list">
 						<div class="top-list">
-							<div class="top-list">
-								<div class="search-row">
-									<span class="search-icon">🔍</span>
-									<input
-										type="text"
-										bind:value={searchQuery}
-										placeholder="Search objects..."
-										class="search-input"
-										onclick={(e) => e.stopPropagation()}
-									/>
-									{#if searchQuery}
-										<button type="button" class="clear-search" onclick={() => (searchQuery = '')}
-											>✖</button
-										>
-									{/if}
-								</div>
-								<div class="import-row">
-									<span class="search-icon">📥</span>
-									<input
-										type="text"
-										bind:value={importURL}
-										placeholder="Paste URL to import..."
-										class="search-input"
-										onclick={(e) => e.stopPropagation()}
-										onkeydown={(e) => e.key === 'Enter' && handleURLImport()}
-									/>
-								</div>
-							</div>
+							<input
+								type="text"
+								bind:value={searchQuery}
+								placeholder="Filter objects..."
+								onclick={(e) => e.stopPropagation()}
+							/>
+							<input
+								type="text"
+								bind:value={importURL}
+								placeholder="Paste URL to import..."
+								onclick={(e) => e.stopPropagation()}
+								onkeydown={(e) => e.key === 'Enter' && handleURLImport()}
+							/>
 						</div>
 
 						<div class="scroll-list">
@@ -821,32 +818,6 @@
 	}
 	/* .search-box removed */
 
-	.clear-search {
-		position: absolute;
-		right: 4px;
-		top: 50%;
-		transform: translateY(-50%);
-		background: none;
-		border: none;
-		color: #999;
-		cursor: pointer;
-		font-size: 0.8rem;
-		padding: 0 4px;
-	}
-
-	.clear-search:hover {
-		color: #fff;
-	}
-	.item {
-		display: flex;
-		align-items: center;
-		padding: 2px 6px;
-		border-bottom: 1px solid #111;
-	}
-	.item span {
-		flex: 1;
-		cursor: pointer;
-	}
 	.bulk-tools {
 		display: flex;
 		align-items: center;
@@ -861,6 +832,15 @@
 		background: #222;
 		border: 1px solid #444;
 	}
+	.bulk-btn.del:hover {
+		background: #b71c1c;
+		color: white;
+		border-color: #f44336;
+	}
+	.bulk-btn.hide:hover {
+		background: #455a64;
+		color: white;
+	}
 
 	.gizmo-group {
 		display: flex;
@@ -874,15 +854,6 @@
 		color: #4db6ac;
 		border-color: #4db6ac;
 	}
-	.bulk-btn.del:hover {
-		background: #b71c1c;
-		color: white;
-		border-color: #f44336;
-	}
-	.bulk-btn.hide:hover {
-		background: #455a64;
-		color: white;
-	}
 
 	.top-list {
 		display: flex;
@@ -891,32 +862,6 @@
 		border-bottom: 2px solid #222;
 		padding: 4px;
 		gap: 4px;
-	}
-	.search-row,
-	.import-row {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		background: #000;
-		border-radius: 4px;
-		padding: 2px 6px;
-		border: 1px solid #333;
-	}
-	.search-icon {
-		font-size: 0.8rem;
-		opacity: 0.7;
-	}
-	.search-input {
-		flex: 1;
-		background: transparent !important;
-		border: none !important;
-		color: #fff !important;
-		height: 24px !important;
-		font-size: 0.8rem !important;
-		outline: none;
-	}
-	.search-input::placeholder {
-		color: #666;
 	}
 
 	.scroll-list {
